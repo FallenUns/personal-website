@@ -1,11 +1,12 @@
+// src/components/HeroSection.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 
 const HeroSection: React.FC = () => {
   return (
-    // Add pt-24 to give space for the fixed navbar
-    <section className="h-screen flex flex-col items-center justify-center pt-24">
+    // Add id="about" and a top padding class "pt-28"
+    <section id="about" className="h-screen flex flex-col items-center justify-center pt-28">
       {/* Centered card with LiquidGlass */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -24,7 +25,6 @@ const HeroSection: React.FC = () => {
           style={{ width: '800px', height: '350px' }}
         >
           <div className="w-full text-center text-white">
-            {/* UPDATED: Added text-shadow for readability */}
             <h1 className="text-5xl font-bold mb-4 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">Patrick Adrianus</h1>
             <h2 className="text-2xl mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">Data Scientist</h2>
             <p className="text-sm text-white/90 max-w-xl mx-auto mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">

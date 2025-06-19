@@ -1,4 +1,3 @@
-// src/components/NavBar.tsx
 import React, { useState, memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,7 +11,7 @@ interface NavbarProps {
   onToggleDayNight: () => void;
 }
 
-interface SkyControllerModalProps extends NavbarProps {
+interface SkyControllerModalProps extends Omit<NavbarProps, 'isScrolled'> {
   onClose: () => void;
 }
 
@@ -130,7 +129,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   return (
     <>
       <nav 
-        className="sticky top-5 mx-auto z-50"
+        className="sticky top-5 mx-auto z-50" // Modified line: Replaced 'left-1/2 transform -translate-x-1/2' with 'mx-auto'
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(7px)',

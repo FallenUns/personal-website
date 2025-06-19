@@ -19,15 +19,21 @@
   font-display: swap;
 }
 
-body {
+/* Prevent body from scrolling and creating a new stacking context */
+html, body {
+  width: 100%;
+  height: 100vh; /* Set a fixed viewport height */
+  overflow: hidden; /* Prevent the body itself from scrolling */
   margin: 0;
+}
+
+
+body {
   /* Prevent horizontal scrolling */
   overflow-x: hidden;
   /* Improve scroll performance */
   overscroll-behavior: contain;
-  /* Hardware acceleration for smoother animations */
-  backface-visibility: hidden;
-  transform: translateZ(0);
+  /* Hardware acceleration properties removed to fix fixed positioning */
 
   /* Hide scrollbar for Chrome, Safari and Opera */
   &::-webkit-scrollbar {
@@ -36,15 +42,6 @@ body {
   /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
-
-  /* Enable smooth scroll snapping */
-  scroll-snap-type: y mandatory; /* Mandatory snapping */
-}
-
-/* Ensure html and body fill full height */
-html, body {
-  width: 100%;
-  min-height: 100%;
 }
 
 /* Prevent any elements from causing horizontal overflow */
@@ -76,10 +73,4 @@ body::before {
   pointer-events: none;
   /* Preload font */
   font-family: system-ui, -apple-system, BlinkMacSystemFont;
-}
-
-/* Apply scroll-snap to sections or full-height containers */
-section { /* Assuming your sections are full height and you want to snap to them */
-  scroll-snap-align: start; /* Snap to the start of each section */
-  min-height: 100vh; /* Ensure sections take full viewport height for snapping effect */
 }

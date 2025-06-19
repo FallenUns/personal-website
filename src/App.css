@@ -1,7 +1,17 @@
 /* src/App.css */
 @import "tailwindcss";
 
-/* Performance optimizations */
+/* Add this to the end of src/App.css */
+
+/* Custom utility to hide scrollbars */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
 
 /* Optimize animations and transitions */
 *,
@@ -19,14 +29,6 @@
 .main-content {
   contain: layout style paint;
   will-change: scroll-position;
-}
-
-/* Optimize heavy backgrounds */
-.projects-background {
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
 /* Smooth scrolling optimization */

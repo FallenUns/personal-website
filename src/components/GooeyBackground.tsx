@@ -83,37 +83,9 @@ const GooeyBackground: React.FC<GooeyBackgroundProps> = ({ hour }) => {
   const interBubbleRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const currentPosRef = useRef({ curX: 0, curY: 0, tgX: 0, tgY: 0 });
-  const backgroundRef = useRef<HTMLDivElement>(null);
 
-  // Function to update background height
-  const updateBackgroundHeight = () => {
-    if (backgroundRef.current) {
-      const documentHeight = Math.max(
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.clientHeight,
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight
-      );
-      backgroundRef.current.style.height = `${documentHeight}px`;
-    }
-  };
-
-  useEffect(() => {
-    // Initial height update
-    updateBackgroundHeight();
-    
-    // Update height on window resize and DOM changes
-    const resizeObserver = new ResizeObserver(updateBackgroundHeight);
-    resizeObserver.observe(document.body);
-    
-    window.addEventListener('resize', updateBackgroundHeight);
-    
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', updateBackgroundHeight);
-    };
-  }, []);
+  // Removed the effect that dynamically set the height.
+  // The background is now controlled by CSS to be 100vh.
 
   useEffect(() => {
     const pos = currentPosRef.current;
@@ -146,7 +118,7 @@ const GooeyBackground: React.FC<GooeyBackgroundProps> = ({ hour }) => {
 
   const palette = useMemo(() => getPalette(hour), [hour]);
   return (
-    <div ref={backgroundRef} className="gradient-bg" style={palette as React.CSSProperties}>
+    <div className="gradient-bg" style={palette as React.CSSProperties}>
       <svg xmlns="http://www.w3.org/2000/svg" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} aria-hidden="true">
         <defs>
           <filter id="goo">
