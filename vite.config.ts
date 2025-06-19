@@ -6,5 +6,34 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    react()],
+    react()
+  ],
+  // Performance optimizations
+  build: {
+    target: 'esnext',
+    minify: 'terser',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          motion: ['framer-motion']
+        }
+      }
+    },
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
+  },
+  server: {
+    hmr: {
+      overlay: false
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'framer-motion']
+  }
 })

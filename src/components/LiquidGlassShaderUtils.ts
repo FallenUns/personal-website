@@ -18,15 +18,8 @@ export interface Vec2 {
     return t * t * (3 - 2 * t)
   }
   
-  function length(x: number, y: number): number {
-    return Math.sqrt(x * x + y * y)
-  }
-  
-  function roundedRectSDF(x: number, y: number, width: number, height: number, radius: number): number {
-    const qx = Math.abs(x) - width + radius
-    const qy = Math.abs(y) - height + radius
-    return Math.min(Math.max(qx, qy), 0) + length(Math.max(qx, 0), Math.max(qy, 0)) - radius
-  }
+  // This function was removed as it was unused.
+  // function roundedRectSDF(...) { ... }
   
   function texture(x: number, y: number): Vec2 {
     return { x, y }
@@ -34,13 +27,24 @@ export interface Vec2 {
   
   // Shader fragment functions for different effects
   export const fragmentShaders = {
+    // UPDATED: A new, simpler, and aspect-ratio-independent shader.
     liquidGlass: (uv: Vec2): Vec2 => {
-      const ix = uv.x - 0.5
-      const iy = uv.y - 0.5
-      const distanceToEdge = roundedRectSDF(ix, iy, 0.3, 0.2, 0.6)
-      const displacement = smoothStep(0.8, 0, distanceToEdge - 0.15)
-      const scaled = smoothStep(0, 1, displacement)
-      return texture(ix * scaled + 0.5, iy * scaled + 0.5)
+      const ix = uv.x - 0.5; // -0.5 to 0.5
+      const iy = uv.y - 0.5; // -0.5 to 0.5
+  
+      // Calculate distance from center to the nearest edge of the [-0.5, 0.5] box
+      const distToEdge = 0.5 - Math.max(Math.abs(ix), Math.abs(iy));
+  
+      // Normalize this distance to a 0-1 range (0 at center, 1 at edge)
+      const edgeProximity = 1.0 - distToEdge * 2.0;
+  
+      // Use smoothstep to create a soft band of displacement near the edge
+      const displacementFactor = smoothStep(0.0, 0.8, edgeProximity);
+  
+      // Apply a scaling effect that pushes pixels away from the center
+      const scale = 1.0 - displacementFactor * 0.15; // 0.15 is displacement strength
+  
+      return texture(ix * scale + 0.5, iy * scale + 0.5);
     },
   }
   

@@ -1,2 +1,48 @@
 /* src/App.css */
 @import "tailwindcss";
+
+/* Performance optimizations */
+
+/* Optimize animations and transitions */
+*,
+*::before,
+*::after {
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Improve rendering performance */
+.main-content {
+  contain: layout style paint;
+  will-change: scroll-position;
+}
+
+/* Optimize heavy backgrounds */
+.projects-background {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Smooth scrolling optimization */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Optimize text rendering */
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
