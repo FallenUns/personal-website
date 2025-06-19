@@ -1,35 +1,85 @@
 import { type CSSProperties, forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
-import { ShaderDisplacementGenerator, fragmentShaders } from "./LiquidGlassShaderUtils"
-import { displacementMap, polarDisplacementMap, prominentDisplacementMap } from "./LiquidGlassUtils"
 import { throttle } from "../utils/throttle"
 
-// Generate shader-based displacement map using shaderUtils
-const generateShaderDisplacementMap = (width: number, height: number): string => {
-  const generator = new ShaderDisplacementGenerator({
-    width,
-    height,
-    fragment: fragmentShaders.liquidGlass,
-  })
-
-  const dataUrl = generator.updateShader()
-  generator.destroy()
-
-  return dataUrl
+// Simplified displacement map generator
+const generateSimpleDisplacementMap = (width: number, height: number): string => {
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  
+  if (!ctx) return ''
+  
+  // Create a radial gradient for displacement
+  const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.min(width, height)/2)
+  gradient.addColorStop(0, 'rgb(128, 128, 128)')
+  gradient.addColorStop(0.7, 'rgb(140, 120, 128)')
+  gradient.addColorStop(1, 'rgb(128, 128, 128)')
+  
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, width, height)
+  
+  return canvas.toDataURL()
 }
 
-const getMap = (mode: "standard" | "polar" | "prominent" | "shader", shaderMapUrl?: string) => {
-  switch (mode) {
-    case "standard":
-      return displacementMap
-    case "polar":
-      return polarDisplacementMap
-    case "prominent":
-      return prominentDisplacementMap
-    case "shader":
-      return shaderMapUrl || displacementMap
-    default:
-      throw new Error(`Invalid mode: ${mode}`)
+const getMap = (mode: "standard" | "polar" | "prominent" | "shader", customMapUrl?: string) => {
+  // Return custom map if provided
+  if (customMapUrl) return customMapUrl
+  
+  // Create different patterns based on mode for visual variety
+  const patterns = {
+    standard: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
+            <stop offset="70%" style="stop-color:rgb(140,120,128);stop-opacity:1" />
+            <stop offset="100%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
+          </radialGradient>
+        </defs>
+        <rect width="100" height="100" fill="url(#grad)" />
+      </svg>
+    `,
+    polar: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="grad" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" style="stop-color:rgb(150,128,140);stop-opacity:1" />
+            <stop offset="50%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
+            <stop offset="100%" style="stop-color:rgb(120,140,128);stop-opacity:1" />
+          </radialGradient>
+        </defs>
+        <rect width="100" height="100" fill="url(#grad)" />
+      </svg>
+    `,
+    prominent: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:rgb(140,128,150);stop-opacity:1" />
+            <stop offset="50%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
+            <stop offset="100%" style="stop-color:rgb(128,150,140);stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" fill="url(#grad)" />
+      </svg>
+    `,
+    shader: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" style="stop-color:rgb(160,128,128);stop-opacity:1" />
+            <stop offset="40%" style="stop-color:rgb(128,160,128);stop-opacity:1" />
+            <stop offset="80%" style="stop-color:rgb(128,128,160);stop-opacity:1" />
+            <stop offset="100%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
+          </radialGradient>
+        </defs>
+        <rect width="100" height="100" fill="url(#grad)" />
+      </svg>
+    `
   }
+  
+  return `data:image/svg+xml;base64,${btoa(patterns[mode])}`
 }
 
 /* ---------- SVG filter (edge-only displacement) ---------- */
@@ -44,87 +94,35 @@ const GlassFilter: React.FC<{ id: string; displacementScale: number; aberrationI
 }) => (
   <svg style={{ position: "absolute", width, height }} aria-hidden="true">
     <defs>
-      <radialGradient id={`${id}-edge-mask`} cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="black" stopOpacity="0" />
-        <stop offset={`${Math.max(30, 80 - aberrationIntensity * 2)}%`} stopColor="black" stopOpacity="0" />
-        <stop offset="100%" stopColor="white" stopOpacity="1" />
-      </radialGradient>
-      <filter id={id} x="-35%" y="-35%" width="170%" height="170%" colorInterpolationFilters="sRGB">
-        <feImage id="feimage" x="0" y="0" width="100%" height="100%" result="DISPLACEMENT_MAP" href={getMap(mode, shaderMapUrl)} preserveAspectRatio="xMidYMid slice" />
-
-        {/* Create edge mask using the displacement map itself */}
-        <feColorMatrix
-          in="DISPLACEMENT_MAP"
-          type="matrix"
-          values="0.3 0.3 0.3 0 0
-                 0.3 0.3 0.3 0 0
-                 0.3 0.3 0.3 0 0
-                 0 0 0 1 0"
-          result="EDGE_INTENSITY"
-        />
-        <feComponentTransfer in="EDGE_INTENSITY" result="EDGE_MASK">
-          <feFuncA type="discrete" tableValues={`0 ${aberrationIntensity * 0.05} 1`} />
-        </feComponentTransfer>
-
-        {/* Original undisplaced image for center */}
-        <feOffset in="SourceGraphic" dx="0" dy="0" result="CENTER_ORIGINAL" />
-
-        {/* Red channel displacement with slight offset */}
-        <feDisplacementMap in="SourceGraphic" in2="DISPLACEMENT_MAP" scale={displacementScale * (mode === "shader" ? 1 : -1)} xChannelSelector="R" yChannelSelector="B" result="RED_DISPLACED" />
-        <feColorMatrix
-          in="RED_DISPLACED"
-          type="matrix"
-          values="1 0 0 0 0
-                 0 0 0 0 0
-                 0 0 0 0 0
-                 0 0 0 1 0"
-          result="RED_CHANNEL"
+      <filter id={id} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+        <feImage 
+          id="feimage" 
+          x="0" 
+          y="0" 
+          width="100%" 
+          height="100%" 
+          result="displacementMap" 
+          href={getMap(mode, shaderMapUrl)} 
+          preserveAspectRatio="xMidYMid slice" 
         />
 
-        {/* Green channel displacement */}
-        <feDisplacementMap in="SourceGraphic" in2="DISPLACEMENT_MAP" scale={displacementScale * ((mode === "shader" ? 1 : -1) - aberrationIntensity * 0.05)} xChannelSelector="R" yChannelSelector="B" result="GREEN_DISPLACED" />
-        <feColorMatrix
-          in="GREEN_DISPLACED"
-          type="matrix"
-          values="0 0 0 0 0
-                 0 1 0 0 0
-                 0 0 0 0 0
-                 0 0 0 1 0"
-          result="GREEN_CHANNEL"
+        {/* Simple displacement */}
+        <feDisplacementMap 
+          in="SourceGraphic" 
+          in2="displacementMap" 
+          scale={displacementScale} 
+          xChannelSelector="R" 
+          yChannelSelector="G" 
+          result="displaced" 
         />
-
-        {/* Blue channel displacement with slight offset */}
-        <feDisplacementMap in="SourceGraphic" in2="DISPLACEMENT_MAP" scale={displacementScale * ((mode === "shader" ? 1 : -1) - aberrationIntensity * 0.1)} xChannelSelector="R" yChannelSelector="B" result="BLUE_DISPLACED" />
-        <feColorMatrix
-          in="BLUE_DISPLACED"
-          type="matrix"
-          values="0 0 0 0 0
-                 0 0 0 0 0
-                 0 0 1 0 0
-                 0 0 0 1 0"
-          result="BLUE_CHANNEL"
+        
+        {/* Add slight blur for smoothness */}
+        <feGaussianBlur 
+          in="displaced" 
+          stdDeviation={Math.max(0.5, aberrationIntensity * 0.5)} 
+          result="final" 
         />
-
-        {/* Combine all channels with screen blend mode for chromatic aberration */}
-        <feBlend in="GREEN_CHANNEL" in2="BLUE_CHANNEL" mode="screen" result="GB_COMBINED" />
-        <feBlend in="RED_CHANNEL" in2="GB_COMBINED" mode="screen" result="RGB_COMBINED" />
-
-        {/* Add slight blur to soften the aberration effect */}
-        <feGaussianBlur in="RGB_COMBINED" stdDeviation={Math.max(0.1, 0.5 - aberrationIntensity * 0.1)} result="ABERRATED_BLURRED" />
-
-        {/* Apply edge mask to aberration effect */}
-        <feComposite in="ABERRATED_BLURRED" in2="EDGE_MASK" operator="in" result="EDGE_ABERRATION" />
-
-        {/* Create inverted mask for center */}
-        <feComponentTransfer in="EDGE_MASK" result="INVERTED_MASK">
-          <feFuncA type="table" tableValues="1 0" />
-        </feComponentTransfer>
-        <feComposite in="CENTER_ORIGINAL" in2="INVERTED_MASK" operator="in" result="CENTER_CLEAN" />
-
-        {/* Combine edge aberration with clean center */}
-        <feComposite in="EDGE_ABERRATION" in2="CENTER_CLEAN" operator="over" />
-      </filter>
-    </defs>
+      </filter>    </defs>
   </svg>
 )
 
@@ -178,12 +176,10 @@ const GlassContainer = forwardRef<
     const filterId = useId()
     const [shaderMapUrl, setShaderMapUrl] = useState<string>("")
 
-    const isFirefox = navigator.userAgent.toLowerCase().includes("firefox")
-
-    // Generate shader displacement map when in shader mode
+    const isFirefox = navigator.userAgent.toLowerCase().includes("firefox")    // Generate shader displacement map when in shader mode
     useEffect(() => {
       if (mode === "shader") {
-        const url = generateShaderDisplacementMap(glassSize.width, glassSize.height)
+        const url = generateSimpleDisplacementMap(glassSize.width, glassSize.height)
         setShaderMapUrl(url)
       }
     }, [mode, glassSize.width, glassSize.height])
