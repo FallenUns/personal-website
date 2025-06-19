@@ -3,7 +3,6 @@ import DynamicSkyBackground from './components/DynamicSkyBackground.tsx';
 import HeroSection from './components/HeroSection.tsx';
 import ProjectsSection from './components/ProjectsSection.tsx';
 import Navbar from './components/NavBar.tsx';
-
 function App() {
   // Correctly manage time, auto-sync, and day/night state
   const [isAuto, setIsAuto] = useState(true);
