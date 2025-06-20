@@ -1,3 +1,4 @@
+// src/components/SkyController.tsx
 import React from 'react';
 import LiquidGlass from './LiquidGlass';
 
@@ -19,19 +20,14 @@ const SkyController: React.FC<SkyControllerProps> = ({
   onToggleAuto
 }) => {
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm p-4">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-sm p-4">
       <LiquidGlass
-        cornerRadius={24}
-        padding="16px"
-        elasticity={0.1}
-        blurAmount={0.3}
-        saturation={120}
-        displacementScale={8}
-        aberrationIntensity={1}
-        mode="shader"
-        style={{ width: '100%', minHeight: 'auto' }}
+        width={320} // Adjusted width
+        height={200} // Adjusted height
+        positioning="relative" // It's nested in a fixed div, so this should be relative
+        blur={20}
       >
-        <div className="w-full text-white">
+        <div className="w-full text-white p-4">
           <div className="mb-4">
             <label htmlFor="time-slider" className="block text-sm font-medium mb-2">
               Manual Time Control ({String(Math.floor(time)).padStart(2, '0')}:{String(Math.round((time % 1) * 60)).padStart(2, '0')})
@@ -59,7 +55,8 @@ const SkyController: React.FC<SkyControllerProps> = ({
               </button>
             </div>
             <div className="flex items-center space-x-2">
-              <span>{isDarkMode ? 'Night' : 'Day'} Mode</span>
+              {/* Text updated from "Night/Day" to "Dark/Light" */}
+              <span>{isDarkMode ? 'Dark' : 'Light'} Mode</span>
               <button
                 onClick={onToggleDarkMode}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isDarkMode ? 'bg-purple-500' : 'bg-yellow-400'}`}

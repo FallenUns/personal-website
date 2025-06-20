@@ -17,3 +17,11 @@
 body {
   margin: 0;
 }
+
+.projects-background {
+  /* This is the missing piece. It provides the background for the cards to refract. */
+  background-image: url('https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&w=1887');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}

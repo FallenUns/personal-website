@@ -33,18 +33,18 @@ const getPalette = (hour: number): Record<string, string> => {
       '--circle-size': '80%',
       '--blending': 'soft-light',
     };
-  } else if (hour >= 8 && hour < 17) { // Day
+  } else if (hour >= 8 && hour < 17) { // Day - NEW, LESS BRIGHT PALETTE
     palette = {
-      '--color-bg1': 'rgb(0, 150, 255)',
-      '--color-bg2': 'rgb(135, 206, 250)',
-      '--color1': '135, 206, 235',
-      '--color2': '152, 251, 152',
-      '--color3': '255, 255, 224',
-      '--color4': '176, 196, 222',
-      '--color5': '240, 248, 255',
-      '--color-interactive': '30, 144, 255', // Dodger Blue
+      '--color-bg1': 'rgb(131, 179, 221)',    // Muted slate blue
+      '--color-bg2': 'rgb(145, 171, 206)',   // Soft powder blue
+      '--color1': '122, 165, 184',          // Soft teal
+      '--color2': '147, 186, 176',          // Muted seafoam
+      '--color3': '200, 191, 231',          // Soft lavender
+      '--color4': '228, 217, 201',          // Gentle sand
+      '--color5': '211, 211, 211',          // Light warm gray
+      '--color-interactive': '100, 149, 237', // Muted cornflower blue
       '--circle-size': '80%',
-      '--blending': 'overlay',
+      '--blending': 'soft-light',            // Softer blend mode
     };
   } else if (hour >= 17 && hour < 20) { // Dusk
     palette = {
@@ -61,7 +61,7 @@ const getPalette = (hour: number): Record<string, string> => {
     };
   } else { // Night
     palette = {
-      '--color-bg1': 'rgb(108, 0, 162)',
+      '--color-bg1': 'rgba(108, 0, 162, 0.49)',
       '--color-bg2': 'rgb(0, 17, 82)',
       '--color1': '18, 113, 255',
       '--color2': '221, 74, 255',
@@ -122,8 +122,8 @@ const GooeyBackground: React.FC<GooeyBackgroundProps> = ({ hour }) => {
       <svg xmlns="http://www.w3.org/2000/svg" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} aria-hidden="true">
         <defs>
           <filter id="goo">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 21 -9" result="goo" />
             <feBlend in="SourceGraphic" in2="goo" />
           </filter>
         </defs>

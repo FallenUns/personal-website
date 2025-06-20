@@ -1,603 +1,213 @@
-import { type CSSProperties, forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
-import { throttle } from "../utils/throttle"
+import React, { useState, useEffect, useRef, useId, useCallback } from 'react';
 
-// Simplified displacement map generator
-const generateSimpleDisplacementMap = (width: number, height: number): string => {
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
-  const ctx = canvas.getContext('2d')
-  
-  if (!ctx) return ''
-  
-  // Create a radial gradient for displacement
-  const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.min(width, height)/2)
-  gradient.addColorStop(0, 'rgb(128, 128, 128)')
-  gradient.addColorStop(0.7, 'rgb(140, 120, 128)')
-  gradient.addColorStop(1, 'rgb(128, 128, 128)')
-  
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, width, height)
-  
-  return canvas.toDataURL()
+// Utility functions from the vanilla JS example
+function smoothStep(a: number, b: number, t: number) {
+  t = Math.max(0, Math.min(1, (t - a) / (b - a)));
+  return t * t * (3 - 2 * t);
 }
 
-const getMap = (mode: "standard" | "polar" | "prominent" | "shader", customMapUrl?: string) => {
-  // Return custom map if provided
-  if (customMapUrl) return customMapUrl
-  
-  // Create different patterns based on mode for visual variety
-  const patterns = {
-    standard: `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <defs>
-          <radialGradient id="grad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
-            <stop offset="70%" style="stop-color:rgb(140,120,128);stop-opacity:1" />
-            <stop offset="100%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
-          </radialGradient>
-        </defs>
-        <rect width="100" height="100" fill="url(#grad)" />
-      </svg>
-    `,
-    polar: `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <defs>
-          <radialGradient id="grad" cx="30%" cy="30%" r="70%">
-            <stop offset="0%" style="stop-color:rgb(150,128,140);stop-opacity:1" />
-            <stop offset="50%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
-            <stop offset="100%" style="stop-color:rgb(120,140,128);stop-opacity:1" />
-          </radialGradient>
-        </defs>
-        <rect width="100" height="100" fill="url(#grad)" />
-      </svg>
-    `,
-    prominent: `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <defs>
-          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:rgb(140,128,150);stop-opacity:1" />
-            <stop offset="50%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
-            <stop offset="100%" style="stop-color:rgb(128,150,140);stop-opacity:1" />
-          </linearGradient>
-        </defs>
-        <rect width="100" height="100" fill="url(#grad)" />
-      </svg>
-    `,
-    shader: `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <defs>
-          <radialGradient id="grad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" style="stop-color:rgb(160,128,128);stop-opacity:1" />
-            <stop offset="40%" style="stop-color:rgb(128,160,128);stop-opacity:1" />
-            <stop offset="80%" style="stop-color:rgb(128,128,160);stop-opacity:1" />
-            <stop offset="100%" style="stop-color:rgb(128,128,128);stop-opacity:1" />
-          </radialGradient>
-        </defs>
-        <rect width="100" height="100" fill="url(#grad)" />
-      </svg>
-    `
-  }
-  
-  return `data:image/svg+xml;base64,${btoa(patterns[mode])}`
+function length(x: number, y: number) {
+  return Math.sqrt(x * x + y * y);
 }
 
-/* ---------- SVG filter (edge-only displacement) ---------- */
-const GlassFilter: React.FC<{ id: string; displacementScale: number; aberrationIntensity: number; width: number; height: number; mode: "standard" | "polar" | "prominent" | "shader"; shaderMapUrl?: string }> = ({
-  id,
-  displacementScale,
-  aberrationIntensity,
-  width,
-  height,
-  mode,
-  shaderMapUrl,
-}) => (
-  <svg style={{ position: "absolute", width, height }} aria-hidden="true">
-    <defs>
-      <filter id={id} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
-        <feImage 
-          id="feimage" 
-          x="0" 
-          y="0" 
-          width="100%" 
-          height="100%" 
-          result="displacementMap" 
-          href={getMap(mode, shaderMapUrl)} 
-          preserveAspectRatio="xMidYMid slice" 
-        />
+function roundedRectSDF(x: number, y: number, width: number, height: number, radius: number) {
+  const qx = Math.abs(x) - width + radius;
+  const qy = Math.abs(y) - height + radius;
+  return Math.min(Math.max(qx, qy), 0) + length(Math.max(qx, 0), Math.max(qy, 0)) - radius;
+}
 
-        {/* Simple displacement */}
-        <feDisplacementMap 
-          in="SourceGraphic" 
-          in2="displacementMap" 
-          scale={displacementScale} 
-          xChannelSelector="R" 
-          yChannelSelector="G" 
-          result="displaced" 
-        />
-        
-        {/* Add slight blur for smoothness */}
-        <feGaussianBlur 
-          in="displaced" 
-          stdDeviation={Math.max(0.5, aberrationIntensity * 0.5)} 
-          result="final" 
-        />
-      </filter>    </defs>
-  </svg>
-)
+function texture(x: number, y: number) {
+  return { type: 't', x, y };
+}
 
-/* ---------- container ---------- */
-const GlassContainer = forwardRef<
-  HTMLDivElement,
-  React.PropsWithChildren<{
-    className?: string
-    style?: React.CSSProperties
-    displacementScale?: number
-    blurAmount?: number
-    saturation?: number
-    aberrationIntensity?: number
-    mouseOffset?: { x: number; y: number }
-    onMouseLeave?: () => void
-    onMouseEnter?: () => void
-    onMouseDown?: () => void
-    onMouseUp?: () => void
-    active?: boolean
-    overLight?: boolean
-    cornerRadius?: number
-    padding?: string
-    glassSize?: { width: number; height: number }
-    onClick?: () => void
-    mode?: "standard" | "polar" | "prominent" | "shader"
-  }>
->(
-  (
-    {
-      children,
-      className = "",
-      style,
-      displacementScale = 25,
-      blurAmount = 12,
-      saturation = 180,
-      aberrationIntensity = 2,
-      onMouseEnter,
-      onMouseLeave,
-      onMouseDown,
-      onMouseUp,
-      active = false,
-      overLight = false,
-      cornerRadius = 999,
-      padding = "24px 32px",
-      glassSize = { width: 270, height: 69 },
-      onClick,
-      mode = "standard",
-    },
-    ref,
-  ) => {
-    const filterId = useId()
-    const [shaderMapUrl, setShaderMapUrl] = useState<string>("")
-
-    const isFirefox = navigator.userAgent.toLowerCase().includes("firefox")    // Generate shader displacement map when in shader mode
-    useEffect(() => {
-      if (mode === "shader") {
-        const url = generateSimpleDisplacementMap(glassSize.width, glassSize.height)
-        setShaderMapUrl(url)
-      }
-    }, [mode, glassSize.width, glassSize.height])
-
-    return (
-      <div 
-        ref={ref} 
-        className={`relative ${className} ${active ? "active" : ""} ${Boolean(onClick) ? "cursor-pointer" : ""}`} 
-        style={style}
-        onClick={onClick}
-      >
-        <GlassFilter mode={mode} id={filterId} displacementScale={displacementScale} aberrationIntensity={aberrationIntensity} width={glassSize.width} height={glassSize.height} shaderMapUrl={shaderMapUrl} />
-
-        <div
-          className="glass"
-          style={{
-            borderRadius: `${cornerRadius}px`,
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100%",
-            padding,
-            overflow: "hidden",
-            transition: "all 0.2s ease-in-out",
-            boxShadow: overLight ? "0px 16px 70px rgba(0, 0, 0, 0.75)" : "0px 12px 40px rgba(0, 0, 0, 0.25)",
-          }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onMouseDown={onMouseDown}
-          onMouseUp={onMouseUp}
-        >
-          {/* backdrop layer that gets both backdrop-filter AND SVG filter effects */}
-          <div
-            className="glass__warp"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: "100%",
-              height: "100%",
-              borderRadius: `${cornerRadius}px`,
-              // Apply BOTH backdrop-filter and SVG filter
-              backdropFilter: `blur(${(overLight ? 12 : 4) + blurAmount * 32}px) saturate(${saturation}%)`,
-              WebkitBackdropFilter: `blur(${(overLight ? 12 : 4) + blurAmount * 32}px) saturate(${saturation}%)`,
-              filter: isFirefox ? `blur(${blurAmount * 16}px)` : `url(#${filterId})`,
-              // Base glass appearance
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              // Force hardware acceleration and proper layering
-              transform: 'translateZ(0)',
-              willChange: 'filter, backdrop-filter',
-            } as CSSProperties}
-          />
-
-          {/* user content stays sharp */}
-          <div
-            className="transition-all duration-150 ease-in-out text-white"
-            style={{
-              position: "relative",
-              zIndex: 10,
-              width: "100%",
-              font: "500 20px/1 system-ui",
-              textShadow: overLight ? "0px 2px 12px rgba(0, 0, 0, 0)" : "0px 2px 12px rgba(0, 0, 0, 0.4)",
-            }}
-          >
-            {children}
-          </div>
-        </div>
-      </div>
-    )
-  },
-)
-
-GlassContainer.displayName = "GlassContainer"
-
-// Helper function to parse CSS size values
 interface LiquidGlassProps {
-  children: React.ReactNode
-  displacementScale?: number
-  blurAmount?: number
-  saturation?: number
-  aberrationIntensity?: number
-  elasticity?: number
-  cornerRadius?: number
-  globalMousePos?: { x: number; y: number }
-  mouseOffset?: { x: number; y: number }
-  mouseContainer?: React.RefObject<HTMLElement | null> | null
-  className?: string
-  padding?: string
-  style?: React.CSSProperties
-  overLight?: boolean
-  mode?: "standard" | "polar" | "prominent" | "shader"
-  onClick?: () => void
+  children: React.ReactNode;
+  width?: number;
+  height?: number;
+  className?: string;
+  style?: React.CSSProperties;
+  positioning?: 'fixed' | 'relative';
+  blur?: number; // Add blur prop
 }
 
-export default function LiquidGlass({
+// A 1x1 transparent pixel placeholder to avoid the empty href warning
+const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+const LiquidGlass: React.FC<LiquidGlassProps> = ({
   children,
-  displacementScale = 70,
-  blurAmount = 0.0625,
-  saturation = 140,
-  aberrationIntensity = 2,
-  elasticity = 0.15,
-  cornerRadius = 999,
-  globalMousePos: externalGlobalMousePos,
-  mouseOffset: externalMouseOffset,
-  mouseContainer = null,
-  className = "",
-  padding = "24px 32px",
-  overLight = false,
-  style = {},
-  mode = "standard",
-  onClick,
-}: LiquidGlassProps) {
-  const glassRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [isHovered, setIsHovered] = useState(false)
-  const [isActive, setIsActive] = useState(false)
-  const [glassSize, setGlassSize] = useState({ width: 320, height: 200 })
-  const [internalGlobalMousePos, setInternalGlobalMousePos] = useState({ x: 0, y: 0 })
-  const [internalMouseOffset, setInternalMouseOffset] = useState({ x: 0, y: 0 })
+  width = 300,
+  height = 200,
+  className,
+  style,
+  positioning = 'relative',
+  blur = 10, // Set a default blur value
+}) => {
+  const id = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // State for the filter attributes
+  const [filterAttrs, setFilterAttrs] = useState({ href: TRANSPARENT_PIXEL, scale: 50 });
 
-  // Use external mouse position if provided, otherwise use internal
-  const globalMousePos = externalGlobalMousePos || internalGlobalMousePos
-  const mouseOffset = externalMouseOffset || internalMouseOffset
+  const mousePos = useRef({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const initialPosition = useRef({ x: 0, y: 0 });
 
-  // Internal mouse tracking
-  const handleMouseMove = useCallback(
-    throttle((e: MouseEvent) => {
-      const container = mouseContainer?.current || glassRef.current
-      if (!container) {
-        return
-      }
+  const [position, setPosition] = useState({ x: window.innerWidth / 2 - width / 2, y: window.innerHeight / 2 - height / 2 });
 
-      const rect = container.getBoundingClientRect()
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
+  const fragmentShader = useCallback((uv: { x: number; y: number }) => {
+    const ix = uv.x - 0.5;
+    const iy = uv.y - 0.5;
+    const distanceToEdge = roundedRectSDF(ix, iy, 0.3, 0.2, 0.6);
+    const displacement = smoothStep(0.8, 0, distanceToEdge - 0.15);
+    const scaled = smoothStep(0, 1, displacement);
+    return texture(ix * scaled + 0.5, iy * scaled + 0.5);
+  }, []);
 
-      setInternalMouseOffset({
-        x: ((e.clientX - centerX) / rect.width) * 100,
-        y: ((e.clientY - centerY) / rect.height) * 100,
-      })
-
-      setInternalGlobalMousePos({
-        x: e.clientX,
-        y: e.clientY,
-      })
-    }, 16),
-    [mouseContainer]
-  )
-
-  // Set up mouse tracking if no external mouse position is provided
   useEffect(() => {
-    if (externalGlobalMousePos && externalMouseOffset) {
-      // External mouse tracking is provided, don't set up internal tracking
-      return
-    }
+    // Round dimensions to prevent ImageData errors
+    const w = Math.round(width);
+    const h = Math.round(height);
 
-    const container = mouseContainer?.current || glassRef.current
-    if (!container) {
-      return
-    }
+    if (w === 0 || h === 0) return;
 
-    container.addEventListener("mousemove", handleMouseMove)
+    // Use a temporary canvas to generate the displacement map
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const context = canvas.getContext('2d');
+    if (!context) return;
 
-    return () => {
-      container.removeEventListener("mousemove", handleMouseMove)
-    }
-  }, [handleMouseMove, mouseContainer, externalGlobalMousePos, externalMouseOffset])
+    const data = new Uint8ClampedArray(w * h * 4);
+    let maxScale = 0;
+    const rawValues: number[] = [];
 
-  // Calculate directional scaling based on mouse position
-  const calculateDirectionalScale = useCallback(() => {
-    if (!globalMousePos.x || !globalMousePos.y || !glassRef.current) {
-      return "scale(1)"
-    }
-
-    const rect = glassRef.current.getBoundingClientRect()
-    const pillCenterX = rect.left + rect.width / 2
-    const pillCenterY = rect.top + rect.height / 2
-    const pillWidth = glassSize.width
-    const pillHeight = glassSize.height
-
-    const deltaX = globalMousePos.x - pillCenterX
-    const deltaY = globalMousePos.y - pillCenterY
-
-    // Calculate distance from mouse to pill edges (not center)
-    const edgeDistanceX = Math.max(0, Math.abs(deltaX) - pillWidth / 2)
-    const edgeDistanceY = Math.max(0, Math.abs(deltaY) - pillHeight / 2)
-    const edgeDistance = Math.sqrt(edgeDistanceX * edgeDistanceX + edgeDistanceY * edgeDistanceY)
-
-    // Activation zone: 200px from edges
-    const activationZone = 200
-
-    // If outside activation zone, no effect
-    if (edgeDistance > activationZone) {
-      return "scale(1)"
-    }
-
-    // Calculate fade-in factor (1 at edge, 0 at activation zone boundary)
-    const fadeInFactor = 1 - edgeDistance / activationZone
-
-    // Normalize the deltas for direction
-    const centerDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
-    if (centerDistance === 0) {
-      return "scale(1)"
-    }
-
-    const normalizedX = deltaX / centerDistance
-    const normalizedY = deltaY / centerDistance
-
-    // Calculate stretch factors with fade-in
-    const stretchIntensity = Math.min(centerDistance / 300, 1) * elasticity * fadeInFactor
-
-    // X-axis scaling: stretch horizontally when moving left/right, compress when moving up/down
-    const scaleX = 1 + Math.abs(normalizedX) * stretchIntensity * 0.3 - Math.abs(normalizedY) * stretchIntensity * 0.15
-
-    // Y-axis scaling: stretch vertically when moving up/down, compress when moving left/right
-    const scaleY = 1 + Math.abs(normalizedY) * stretchIntensity * 0.3 - Math.abs(normalizedX) * stretchIntensity * 0.15
-
-    return `scaleX(${Math.max(0.8, scaleX)}) scaleY(${Math.max(0.8, scaleY)})`
-  }, [globalMousePos, elasticity, glassSize])
-
-  // Update glass size whenever component mounts or window resizes
-  useEffect(() => {
-    const updateGlassSize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        
-        // Use container dimensions for accurate sizing
-        const width = rect.width || 320
-        const height = rect.height || 200
-        
-        setGlassSize({ width, height })
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const pos = fragmentShader({ x: x / w, y: y / h });
+        const dx = pos.x * w - x;
+        const dy = pos.y * h - y;
+        maxScale = Math.max(maxScale, Math.abs(dx), Math.abs(dy));
+        rawValues.push(dx, dy);
       }
     }
 
-    // Initial update with a small delay to ensure rendering
-    const timeoutId = setTimeout(updateGlassSize, 100)
-    
-    window.addEventListener("resize", updateGlassSize)
-    
-    return () => {
-      clearTimeout(timeoutId)
-      window.removeEventListener("resize", updateGlassSize)
-    }
-  }, [style.width, style.height])
+    maxScale = Math.max(1, maxScale * 0.5); // Ensure maxScale is at least 1
 
-  // Watch for size changes using ResizeObserver
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect
-        if (width > 0 && height > 0) {
-          setGlassSize({ width, height })
+    let index = 0;
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const pixelIndex = (y * w + x) * 4;
+            const r = rawValues[index++] / maxScale + 0.5;
+            const g = rawValues[index++] / maxScale + 0.5;
+            data[pixelIndex] = r * 255;
+            data[pixelIndex + 1] = g * 255;
+            data[pixelIndex + 2] = 0;
+            data[pixelIndex + 3] = 255;
         }
-      }
-    })
-
-    resizeObserver.observe(containerRef.current)
-
-    return () => {
-      resizeObserver.disconnect()
     }
-  }, [])
 
-  const transformStyle = useMemo(() => {
-    return isActive && Boolean(onClick) ? "scale(0.96)" : calculateDirectionalScale();
-  }, [isActive, onClick, calculateDirectionalScale]);
+    context.putImageData(new ImageData(data, w, h), 0, 0);
+    
+    // Update state with the new data URL and scale
+    setFilterAttrs({
+        href: canvas.toDataURL(),
+        scale: maxScale,
+    });
 
-  const baseStyle = useMemo(() => ({
+  }, [width, height, fragmentShader]);
+  
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (positioning !== 'fixed') return;
+    isDragging.current = true;
+    if (containerRef.current) {
+        containerRef.current.style.cursor = 'grabbing';
+    }
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    initialPosition.current = { x: position.x, y: position.y };
+    e.preventDefault();
+  };
+  
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (positioning === 'fixed' && isDragging.current) {
+      const deltaX = e.clientX - dragStart.current.x;
+      const deltaY = e.clientY - dragStart.current.y;
+      const newX = initialPosition.current.x + deltaX;
+      const newY = initialPosition.current.y + deltaY;
+
+      const constrainedX = Math.max(10, Math.min(window.innerWidth - width - 10, newX));
+      const constrainedY = Math.max(10, Math.min(window.innerHeight - height - 10, newY));
+
+      setPosition({ x: constrainedX, y: constrainedY });
+    }
+  }, [width, height, positioning]);
+
+  const handleMouseUp = useCallback(() => {
+    if (positioning !== 'fixed') return;
+    isDragging.current = false;
+    if (containerRef.current) {
+        containerRef.current.style.cursor = 'grab';
+    }
+  }, [positioning]);
+  
+  useEffect(() => {
+    if (positioning === 'fixed') {
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        
+        return () => {
+          document.removeEventListener('mousemove', handleMouseMove);
+          document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }
+  }, [handleMouseMove, handleMouseUp, positioning]);
+
+  const containerStyle: React.CSSProperties = {
     ...style,
-    transform: transformStyle,
-    transition: "all ease-out 0.2s",
-  }) ,[style, transformStyle]);
+    position: positioning,
+    width: `${width}px`,
+    height: `${height}px`,
+    borderRadius: '32px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.25), 0 -10px 25px inset rgba(0, 0, 0, 0.15)',
+    // Use the blur prop in the backdropFilter
+    backdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(1.05) saturate(1.1)`,
+    WebkitBackdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(1.05) saturate(1)`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    transform: style?.transform
+  };
+
+  if (positioning === 'fixed') {
+    containerStyle.top = `${position.y}px`;
+    containerStyle.left = `${position.x}px`;
+    containerStyle.zIndex = 9999;
+    containerStyle.cursor = 'grab';
+    containerStyle.transform = ''; 
+  }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: "relative",
-        display: "inline-block",
-        width: style.width || 'auto',
-        height: style.height || 'auto',
-        minHeight: style.minHeight || 'auto',
-      }}
-    >
-      <GlassContainer
-        ref={glassRef}
+    <>
+      <svg width="0" height="0" style={{ position: 'fixed', top: 0, left: 0, zIndex: -1 }}>
+        <defs>
+          <filter id={id} filterUnits="objectBoundingBox" colorInterpolationFilters="sRGB">
+            <feImage href={filterAttrs.href} width="100%" height="100%" result="map" preserveAspectRatio="none"/>
+            <feDisplacementMap in="SourceGraphic" in2="map" xChannelSelector="R" yChannelSelector="G" scale={filterAttrs.scale} />
+          </filter>
+        </defs>
+      </svg>
+      {/* The temporary canvas is no longer needed in the DOM */}
+      <div
+        ref={containerRef}
         className={className}
-        style={baseStyle}
-        cornerRadius={cornerRadius}
-        displacementScale={overLight ? displacementScale * 0.5 : displacementScale}
-        blurAmount={blurAmount}
-        saturation={saturation}
-        aberrationIntensity={aberrationIntensity}
-        glassSize={glassSize}
-        padding={padding}
-        mouseOffset={mouseOffset}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onMouseDown={() => setIsActive(true)}
-        onMouseUp={() => setIsActive(false)}
-        active={isActive}
-        overLight={overLight}
-        onClick={onClick}
-        mode={mode}
+        onMouseDown={handleMouseDown}
+        style={containerStyle}
       >
         {children}
-      </GlassContainer>
+      </div>
+    </>
+  );
+};
 
-      {/* Over light effect */}
-      <div
-        className={`bg-black transition-all duration-150 ease-in-out pointer-events-none absolute inset-0 ${overLight ? "opacity-20" : "opacity-0"}`}
-        style={{
-          borderRadius: `${cornerRadius}px`,
-          transform: baseStyle.transform,
-          transition: baseStyle.transition,
-        }}
-      />
-      <div
-        className={`bg-black transition-all duration-150 ease-in-out pointer-events-none mix-blend-overlay absolute inset-0 ${overLight ? "opacity-100" : "opacity-0"}`}
-        style={{
-          borderRadius: `${cornerRadius}px`,
-          transform: baseStyle.transform,
-          transition: baseStyle.transition,
-        }}
-      />
-
-      {/* Border layer 1 */}
-      <span
-        className="pointer-events-none absolute inset-0"
-        style={{
-          borderRadius: `${cornerRadius}px`,
-          transform: baseStyle.transform,
-          transition: baseStyle.transition,
-          mixBlendMode: "screen",
-          opacity: 0.2,
-          padding: "1.5px",
-          WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-          WebkitMaskComposite: "xor",
-          maskComposite: "exclude",
-          boxShadow: "0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(255, 255, 255, 0.25) inset, 0 1px 4px rgba(0, 0, 0, 0.35)",
-          background: `linear-gradient(
-          ${135 + mouseOffset.x * 1.2}deg,
-          rgba(255, 255, 255, 0.0) 0%,
-          rgba(255, 255, 255, ${0.12 + Math.abs(mouseOffset.x) * 0.008}) ${Math.max(10, 33 + mouseOffset.y * 0.3)}%,
-          rgba(255, 255, 255, ${0.4 + Math.abs(mouseOffset.x) * 0.012}) ${Math.min(90, 66 + mouseOffset.y * 0.4)}%,
-          rgba(255, 255, 255, 0.0) 100%
-        )`,
-        }}
-      />
-
-      {/* Border layer 2 */}
-      <span
-        className="pointer-events-none absolute inset-0"
-        style={{
-          borderRadius: `${cornerRadius}px`,
-          transform: baseStyle.transform,
-          transition: baseStyle.transition,
-          mixBlendMode: "overlay",
-          padding: "1.5px",
-          WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-          WebkitMaskComposite: "xor",
-          maskComposite: "exclude",
-          boxShadow: "0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(255, 255, 255, 0.25) inset, 0 1px 4px rgba(0, 0, 0, 0.35)",
-          background: `linear-gradient(
-          ${135 + mouseOffset.x * 1.2}deg,
-          rgba(255, 255, 255, 0.0) 0%,
-          rgba(255, 255, 255, ${0.32 + Math.abs(mouseOffset.x) * 0.008}) ${Math.max(10, 33 + mouseOffset.y * 0.3)}%,
-          rgba(255, 255, 255, ${0.6 + Math.abs(mouseOffset.x) * 0.012}) ${Math.min(90, 66 + mouseOffset.y * 0.4)}%,
-          rgba(255, 255, 255, 0.0) 100%
-        )`,
-        }}
-      />
-
-      {/* Hover effects */}
-      {Boolean(onClick) && (
-        <>
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              borderRadius: `${cornerRadius}px`,
-              transform: baseStyle.transform,
-              transition: "all 0.2s ease-out",
-              opacity: isHovered || isActive ? 0.5 : 0,
-              backgroundImage: "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 50%)",
-              mixBlendMode: "overlay",
-            }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              borderRadius: `${cornerRadius}px`,
-              transform: baseStyle.transform,
-              transition: "all 0.2s ease-out",
-              opacity: isActive ? 0.5 : 0,
-              backgroundImage: "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 80%)",
-              mixBlendMode: "overlay",
-            }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              borderRadius: `${cornerRadius}px`,
-              transform: baseStyle.transform,
-              transition: "all 0.2s ease-out",
-              opacity: isHovered ? 0.4 : isActive ? 0.8 : 0,
-              backgroundImage: "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%)",
-              mixBlendMode: "overlay",
-            }}
-          />
-        </>
-      )}
-    </div>
-  )
-}
+export default LiquidGlass;

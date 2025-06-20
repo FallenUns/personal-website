@@ -1,65 +1,75 @@
-import React, { useState, useEffect } from 'react';
-import GooeyBackground from './components/GooeyBackground.tsx';
-import HeroSection from './components/HeroSection.tsx';
-import ProjectsSection from './components/ProjectsSection.tsx';
-import Navbar from './components/NavBar.tsx';
+import React, { useState, useEffect, useCallback } from 'react';
+import GooeyBackground from './components/GooeyBackground';
+import HeroSection from './components/HeroSection';
+import ProjectsSection from './components/ProjectsSection';
+import Navbar from './components/NavBar';
+
 function App() {
-  // Correctly manage time, auto-sync, and day/night state
+  // State management updated to use isDarkMode and initialize correctly
   const [isAuto, setIsAuto] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => {
     const now = new Date();
     return now.getHours() + now.getMinutes() / 60;
   });
-  const [isNight, setIsNight] = useState(currentTime >= 18 || currentTime < 6);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const now = new Date();
+    const time = now.getHours() + now.getMinutes() / 60;
+    return time >= 18 || time < 6;
+  });
 
-  // Effect to update time automatically if isAuto is true
+  // Effect to update time automatically, now updates isDarkMode
   useEffect(() => {
     if (isAuto) {
       const timer = setInterval(() => {
         const now = new Date();
         const newTime = now.getHours() + now.getMinutes() / 60;
         setCurrentTime(newTime);
-        setIsNight(newTime >= 18 || newTime < 6);
+        setIsDarkMode(newTime >= 18 || newTime < 6);
       }, 60000);
       return () => clearInterval(timer);
     }
   }, [isAuto]);
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handlers updated to use isDarkMode
+  const handleTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (isAuto) setIsAuto(false);
     const newTime = parseFloat(e.target.value);
     setCurrentTime(newTime);
-    setIsNight(newTime >= 18 || newTime < 6);
-  };
+    setIsDarkMode(newTime >= 18 || newTime < 6);
+  }, [isAuto]);
 
-  const handleToggleAuto = () => {
-    const newIsAuto = !isAuto;
-    setIsAuto(newIsAuto);
-    if (newIsAuto) {
-      const now = new Date();
-      const newTime = now.getHours() + now.getMinutes() / 60;
-      setCurrentTime(newTime);
-      setIsNight(newTime >= 18 || newTime < 6);
-    }
-  };
+  const handleToggleAuto = useCallback(() => {
+    setIsAuto(prev => {
+        const newIsAuto = !prev;
+        if (newIsAuto) {
+            const now = new Date();
+            const newTime = now.getHours() + now.getMinutes() / 60;
+            setCurrentTime(newTime);
+            setIsDarkMode(newTime >= 18 || newTime < 6);
+        }
+        return newIsAuto;
+    });
+  }, []);
 
-  // Fixed handler for the Day/Night toggle
-  const handleToggleDayNight = () => {
+  // Handler renamed and updated for dark mode
+  const handleToggleDarkMode = useCallback(() => {
     setIsAuto(false); // Manual override
-    const newIsNight = !isNight;
-    setIsNight(newIsNight);
-    setCurrentTime(newIsNight ? 20 : 8); // 8 PM for Night, 8 AM for Day
-  };
+    setIsDarkMode(prev => {
+        const newIsDarkMode = !prev;
+        setCurrentTime(newIsDarkMode ? 20 : 11); // 8 PM for Dark, 11 AM for Light
+        return newIsDarkMode;
+    });
+  }, []);
 
   return (
     <>
       <GooeyBackground hour={currentTime} />
-      {/* The Navbar is outside the main scrollable area to remain fixed */}
+      {/* Navbar now receives the correct props for dark mode */}
       <Navbar
         time={currentTime}
         onTimeChange={handleTimeChange}
-        isNight={isNight}
-        onToggleDayNight={handleToggleDayNight}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={handleToggleDarkMode}
         isAuto={isAuto}
         onToggleAuto={handleToggleAuto}
       />
