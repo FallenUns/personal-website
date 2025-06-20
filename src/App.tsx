@@ -1,82 +1,60 @@
-import React, { useState, useEffect, lazy, Suspense, useCallback, useRef } from 'react';
-import './App.css';
-
-// Lazy load components for better initial bundle size
-const GooeyBackground = lazy(() => import('./components/GooeyBackground'));
-const HeroSection = lazy(() => import('./components/HeroSection'));
-const ProjectsSection = lazy(() => import('./components/ProjectsSection'));
-const Navbar = lazy(() => import('./components/NavBar'));
-
-// Loading component for suspense
-const LoadingSpinner = () => (
-  <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 to-blue-900">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
-  </div>
-);
-
+import React, { useState, useEffect } from 'react';
+import GooeyBackground from './components/GooeyBackground.tsx';
+import HeroSection from './components/HeroSection.tsx';
+import ProjectsSection from './components/ProjectsSection.tsx';
+import Navbar from './components/NavBar.tsx';
 function App() {
-  const mainScrollRef = useRef<HTMLDivElement>(null);
-  
-  // Optimize initial time calculation
+  // Correctly manage time, auto-sync, and day/night state
   const [isAuto, setIsAuto] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => {
     const now = new Date();
     return now.getHours() + now.getMinutes() / 60;
   });
-  const [isNight, setIsNight] = useState(() => {
-    const now = new Date();
-    const time = now.getHours() + now.getMinutes() / 60;
-    return time >= 18 || time < 6;
-  });
+  const [isNight, setIsNight] = useState(currentTime >= 18 || currentTime < 6);
 
   // Effect to update time automatically if isAuto is true
   useEffect(() => {
-    if (!isAuto) return;
-    
-    const timer = setInterval(() => {
-      const now = new Date();
-      const newTime = now.getHours() + now.getMinutes() / 60;
-      setCurrentTime(newTime);
-      setIsNight(newTime >= 18 || newTime < 6);
-    }, 60000); // Update every minute
-    
-    return () => clearInterval(timer);
-  }, [isAuto]);
-
-  // Memoized handlers to prevent unnecessary re-renders
-  const handleTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isAuto) setIsAuto(false);
-    const newTime = parseFloat(e.target.value);
-    setCurrentTime(newTime);
-    setIsNight(newTime >= 18 || newTime < 6);
-  }, [isAuto]);
-
-  const handleToggleAuto = useCallback(() => {
-    setIsAuto(prev => {
-      const newIsAuto = !prev;
-      if (newIsAuto) {
+    if (isAuto) {
+      const timer = setInterval(() => {
         const now = new Date();
         const newTime = now.getHours() + now.getMinutes() / 60;
         setCurrentTime(newTime);
         setIsNight(newTime >= 18 || newTime < 6);
-      }
-      return newIsAuto;
-    });
-  }, []);
+      }, 60000);
+      return () => clearInterval(timer);
+    }
+  }, [isAuto]);
 
-  const handleToggleDayNight = useCallback(() => {
-    setIsAuto(false);
-    setIsNight(prev => {
-      const newIsNight = !prev;
-      setCurrentTime(newIsNight ? 20 : 8); // 8 PM for Night, 8 AM for Day
-      return newIsNight;
-    });
-  }, []);
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isAuto) setIsAuto(false);
+    const newTime = parseFloat(e.target.value);
+    setCurrentTime(newTime);
+    setIsNight(newTime >= 18 || newTime < 6);
+  };
+
+  const handleToggleAuto = () => {
+    const newIsAuto = !isAuto;
+    setIsAuto(newIsAuto);
+    if (newIsAuto) {
+      const now = new Date();
+      const newTime = now.getHours() + now.getMinutes() / 60;
+      setCurrentTime(newTime);
+      setIsNight(newTime >= 18 || newTime < 6);
+    }
+  };
+
+  // Fixed handler for the Day/Night toggle
+  const handleToggleDayNight = () => {
+    setIsAuto(false); // Manual override
+    const newIsNight = !isNight;
+    setIsNight(newIsNight);
+    setCurrentTime(newIsNight ? 20 : 8); // 8 PM for Night, 8 AM for Day
+  };
 
   return (
-    <Suspense fallback={<LoadingSpinner />}>
+    <>
       <GooeyBackground hour={currentTime} />
-      
+      {/* The Navbar is outside the main scrollable area to remain fixed */}
       <Navbar
         time={currentTime}
         onTimeChange={handleTimeChange}
@@ -85,14 +63,11 @@ function App() {
         isAuto={isAuto}
         onToggleAuto={handleToggleAuto}
       />
-      {/* Main scrollable container */}
-      <main 
-        ref={mainScrollRef} 
-        className={`relative z-10 h-screen overflow-y-auto hide-scrollbar`}
-      >
+      {/* This main element will contain all scrollable content */}
+      <main className="relative z-10">
         <HeroSection />
         <ProjectsSection />
-        {/* Add more content to ensure scrollability */}
+        {/* Add a footer or contact section here if you like */}
         <div className="h-screen bg-gradient-to-b from-transparent to-black/20 flex items-center justify-center">
           <div className="text-white text-center">
             <h2 className="text-3xl font-bold mb-4">More Content</h2>
@@ -106,7 +81,7 @@ function App() {
           </div>
         </div>
       </main>
-    </Suspense>
+    </>
   );
 }
 
