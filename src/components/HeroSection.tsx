@@ -1,6 +1,7 @@
 // src/components/HeroSection.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
+import LiquidGlass from './LiquidGlass'; // Import the LiquidGlass component
 
 const HeroSection: React.FC = () => {
   return (
@@ -24,11 +25,34 @@ const HeroSection: React.FC = () => {
             Recently Graduated Student with excelency in Python, ML, AI.
           </p>
           <div className="flex space-x-4">
-            <button className="px-6 py-2 border border-white/70 rounded-full hover:bg-white/10 transition-all duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
-              View My Work
+            {/* The buttons are now wrapped in LiquidGlass */}
+            <button className="focus:outline-none">
+                <LiquidGlass
+                    width={180}
+                    height={44}
+                    blur={4}
+                    positioning="relative"
+                    style={{ borderRadius: '9999px' }}
+                    className="border border-white/70 hover:bg-white/20 transition-colors duration-300"
+                >
+                    <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+                        View My Work
+                    </span>
+                </LiquidGlass>
             </button>
-            <button className="px-6 py-2 border border-white/70 rounded-full hover:bg-white/10 transition-all duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
-              Get In Touch
+            <button className="focus:outline-none">
+                <LiquidGlass
+                    width={180}
+                    height={44}
+                    blur={4}
+                    positioning="relative"
+                    style={{ borderRadius: '9999px' }}
+                    className="border border-white/70 hover:bg-white/20 transition-colors duration-300"
+                >
+                    <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+                        Get In Touch
+                    </span>
+                </LiquidGlass>
             </button>
           </div>
         </div>

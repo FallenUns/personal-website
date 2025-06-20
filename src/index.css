@@ -16,12 +16,30 @@
 
 body {
   margin: 0;
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  /* Improve scroll performance */
+  overscroll-behavior: contain;
+  /* Hardware acceleration for smoother animations */
+  backface-visibility: hidden;
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Enable smooth scroll snapping */
+  scroll-snap-type: y mandatory; /* Mandatory snapping */
 }
 
-.projects-background {
-  /* This is the missing piece. It provides the background for the cards to refract. */
-  background-image: url('https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&w=1887');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+/* Optimize for mobile devices */
+@media (max-width: 768px) {
+  :root {
+    /* Reduce visual complexity on mobile */
+    --blur-amount: 20px;
+  }
+  
+  .gradient-bg .gradients-container {
+    filter: url(#goo) blur(20px);
+  }
 }

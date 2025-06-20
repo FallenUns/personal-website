@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useId, useCallback } from 'react';
+import { motion } from 'framer-motion'; // Import framer-motion
 
-// Utility functions from the vanilla JS example
+// Utility functions (no changes)
 function smoothStep(a: number, b: number, t: number) {
   t = Math.max(0, Math.min(1, (t - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -27,10 +28,10 @@ interface LiquidGlassProps {
   className?: string;
   style?: React.CSSProperties;
   positioning?: 'fixed' | 'relative';
-  blur?: number; // Add blur prop
+  blur?: number;
+  isElastic?: boolean;
 }
 
-// A 1x1 transparent pixel placeholder to avoid the empty href warning
 const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 const LiquidGlass: React.FC<LiquidGlassProps> = ({
@@ -40,19 +41,22 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   className,
   style,
   positioning = 'relative',
-  blur = 10, // Set a default blur value
+  blur = 10,
+  isElastic = true,
 }) => {
   const id = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // State for the filter attributes
   const [filterAttrs, setFilterAttrs] = useState({ href: TRANSPARENT_PIXEL, scale: 50 });
 
-  const mousePos = useRef({ x: 0, y: 0 });
+  // State for the new shine effect
+  const [isHovering, setIsHovering] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  // Draggability logic (no changes)
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const initialPosition = useRef({ x: 0, y: 0 });
-
   const [position, setPosition] = useState({ x: window.innerWidth / 2 - width / 2, y: window.innerHeight / 2 - height / 2 });
 
   const fragmentShader = useCallback((uv: { x: number; y: number }) => {
@@ -65,23 +69,18 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   }, []);
 
   useEffect(() => {
-    // Round dimensions to prevent ImageData errors
+    // ... (shader generation logic remains the same)
     const w = Math.round(width);
     const h = Math.round(height);
-
     if (w === 0 || h === 0) return;
-
-    // Use a temporary canvas to generate the displacement map
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
     const context = canvas.getContext('2d');
     if (!context) return;
-
     const data = new Uint8ClampedArray(w * h * 4);
     let maxScale = 0;
     const rawValues: number[] = [];
-
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const pos = fragmentShader({ x: x / w, y: y / h });
@@ -91,9 +90,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         rawValues.push(dx, dy);
       }
     }
-
-    maxScale = Math.max(1, maxScale * 0.5); // Ensure maxScale is at least 1
-
+    maxScale = Math.max(1, maxScale * 0.5);
     let index = 0;
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -106,17 +103,14 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
             data[pixelIndex + 3] = 255;
         }
     }
-
     context.putImageData(new ImageData(data, w, h), 0, 0);
-    
-    // Update state with the new data URL and scale
     setFilterAttrs({
         href: canvas.toDataURL(),
         scale: maxScale,
     });
-
   }, [width, height, fragmentShader]);
   
+  // Handlers for dragging (no changes)
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (positioning !== 'fixed') return;
     isDragging.current = true;
@@ -127,21 +121,17 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     initialPosition.current = { x: position.x, y: position.y };
     e.preventDefault();
   };
-  
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handleMouseMoveDraggable = useCallback((e: MouseEvent) => {
     if (positioning === 'fixed' && isDragging.current) {
       const deltaX = e.clientX - dragStart.current.x;
       const deltaY = e.clientY - dragStart.current.y;
       const newX = initialPosition.current.x + deltaX;
       const newY = initialPosition.current.y + deltaY;
-
       const constrainedX = Math.max(10, Math.min(window.innerWidth - width - 10, newX));
       const constrainedY = Math.max(10, Math.min(window.innerHeight - height - 10, newY));
-
       setPosition({ x: constrainedX, y: constrainedY });
     }
   }, [width, height, positioning]);
-
   const handleMouseUp = useCallback(() => {
     if (positioning !== 'fixed') return;
     isDragging.current = false;
@@ -149,34 +139,35 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         containerRef.current.style.cursor = 'grab';
     }
   }, [positioning]);
-  
   useEffect(() => {
     if (positioning === 'fixed') {
-        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mousemove', handleMouseMoveDraggable);
         document.addEventListener('mouseup', handleMouseUp);
         
         return () => {
-          document.removeEventListener('mousemove', handleMouseMove);
+          document.removeEventListener('mousemove', handleMouseMoveDraggable);
           document.removeEventListener('mouseup', handleMouseUp);
         };
     }
-  }, [handleMouseMove, handleMouseUp, positioning]);
+  }, [handleMouseMoveDraggable, handleMouseUp, positioning]);
+  
+  // Handler for the new shine effect
+  const handleMouseMoveShine = (e: React.MouseEvent<HTMLDivElement>) => {
+    setMousePos({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
+  };
 
   const containerStyle: React.CSSProperties = {
     ...style,
     position: positioning,
     width: `${width}px`,
     height: `${height}px`,
-    borderRadius: '32px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.25), 0 -10px 25px inset rgba(0, 0, 0, 0.15)',
-    // Use the blur prop in the backdropFilter
     backdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(1.05) saturate(1.1)`,
     WebkitBackdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(1.05) saturate(1)`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    transform: style?.transform
   };
 
   if (positioning === 'fixed') {
@@ -184,8 +175,29 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     containerStyle.left = `${position.x}px`;
     containerStyle.zIndex = 9999;
     containerStyle.cursor = 'grab';
-    containerStyle.transform = ''; 
   }
+
+  // Style for the shine overlay
+  const shineStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 'inherit',
+    background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%)`,
+    opacity: isHovering ? 1 : 0,
+    transition: 'opacity 0.15s ease-out',
+    pointerEvents: 'none',
+  };
+
+  const motionProps = isElastic
+    ? {
+        whileHover: { scale: 1.05 },
+        whileTap: { scale: 0.95 },
+        transition: { type: "spring" as const, stiffness: 300, damping: 20 },
+      }
+    : {};
 
   return (
     <>
@@ -197,15 +209,20 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
           </filter>
         </defs>
       </svg>
-      {/* The temporary canvas is no longer needed in the DOM */}
-      <div
+      <motion.div
         ref={containerRef}
         className={className}
         onMouseDown={handleMouseDown}
         style={containerStyle}
+        // Handlers for shine effect
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+        onMouseMove={handleMouseMoveShine}
+        {...motionProps}
       >
         {children}
-      </div>
+        <div style={shineStyle} />
+      </motion.div>
     </>
   );
 };

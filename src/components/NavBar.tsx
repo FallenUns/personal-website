@@ -76,7 +76,7 @@ const SkyControllerModal = memo<SkyControllerModalProps>(({ onClose, ...props })
 
   return (
     <motion.div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" 
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0 }}
@@ -90,9 +90,9 @@ const SkyControllerModal = memo<SkyControllerModalProps>(({ onClose, ...props })
         onClick={handleContentClick}
       >
         <LiquidGlass
-          width={350}
+          width={370}
           height={230}
-          blur={20}
+          blur={15}
           positioning="relative"
           style={{ borderRadius: '24px' }}
         >
@@ -193,7 +193,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
     top: isScrolled ? '20px' : '0px',
     width: isScrolled ? '90vw' : '100%',
     left: isScrolled ? '5vw' : '0',
-    maxWidth: isScrolled ? '1800px' : 'none',
+    maxWidth: isScrolled ? '5000px' : 'none',
     marginLeft: 'auto',
     marginRight: 'auto',
     height: isScrolled ? '54px' : '68px',
@@ -215,6 +215,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
             positioning="relative"
             style={liquidGlassStyle}
             blur={8}
+            isElastic={isScrolled}
           >
             <div className="flex items-center justify-between font-sans w-full h-full mx-auto px-6">
               <div className="text-lg font-bold text-white tracking-wider [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">

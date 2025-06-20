@@ -1,6 +1,5 @@
 // src/components/SkyController.tsx
 import React from 'react';
-import LiquidGlass from './LiquidGlass';
 
 interface SkyControllerProps {
   time: number;
@@ -21,12 +20,6 @@ const SkyController: React.FC<SkyControllerProps> = ({
 }) => {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-sm p-4">
-      <LiquidGlass
-        width={320} // Adjusted width
-        height={200} // Adjusted height
-        positioning="relative" // It's nested in a fixed div, so this should be relative
-        blur={20}
-      >
         <div className="w-full text-white p-4">
           <div className="mb-4">
             <label htmlFor="time-slider" className="block text-sm font-medium mb-2">
@@ -66,7 +59,6 @@ const SkyController: React.FC<SkyControllerProps> = ({
             </div>
           </div>
         </div>
-      </LiquidGlass>
     </div>
   );
 };
