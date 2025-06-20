@@ -22,30 +22,29 @@ const getPalette = (hour: number): Record<string, string> => {
   
   if (hour >= 5 && hour < 8) { // Dawn
     palette = {
-      '--color-bg1': 'rgb(255, 237, 226)',   // soft blush
-      '--color-bg2': 'rgb(212, 228, 255)',   // very light blue
-      '--color1': '254, 220, 183',           // pastel peach
-      '--color2': '207, 198, 255',           // pale lavender
-      '--color3': '255, 186, 213',           // soft pink
-      '--color4': '186, 225, 255',           // icy blue
-      '--color5': '240, 246, 255',           // near white blue
-      '--color-interactive': '242, 179, 231',// pastel pink/mauve
+      '--color-bg1': 'rgb(247, 170, 107)',
+      '--color-bg2': 'rgb(255, 128, 87)',
+      '--color1': '255, 182, 193',
+      '--color2': '255, 218, 185',
+      '--color3': '173, 216, 230',
+      '--color4': '221, 160, 221',
+      '--color5': '255, 228, 196',
+      '--color-interactive': '255, 105, 180', // Hot Pink
       '--circle-size': '80%',
       '--blending': 'soft-light',
     };
   } else if (hour >= 8 && hour < 17) { // Day - NEW, LESS BRIGHT PALETTE
-    // Day (8am-5pm)
     palette = {
-      '--color-bg1': 'rgb(225, 239, 255)',   // very light blue
-      '--color-bg2': 'rgb(200, 232, 247)',   // powder blue
-      '--color1': '164, 222, 255',           // sky blue
-      '--color2': '182, 251, 238',           // mint teal
-      '--color3': '255, 255, 194',           // very pale yellow
-      '--color4': '235, 255, 246',           // soft white green
-      '--color5': '224, 244, 255',           // pastel blue
-      '--color-interactive': '128, 216, 255',// aqua blue
+      '--color-bg1': 'rgb(74, 158, 231)',    // Muted slate blue
+      '--color-bg2': 'rgb(64, 121, 196)',   // Soft powder blue
+      '--color1': '223, 172, 130',          
+      '--color2': '252, 160, 85',          
+      '--color3': '200, 191, 231',          
+      '--color4': '228, 217, 201',          
+      '--color5': '211, 211, 211',          
+      '--color-interactive': '204, 183, 64', 
       '--circle-size': '80%',
-      '--blending': 'soft-light',
+      '--blending': 'soft-light',            // Softer blend mode
     };
   } else if (hour >= 17 && hour < 20) { // Dusk
     palette = {

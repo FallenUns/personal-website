@@ -40,3 +40,44 @@ body {
     filter: url(#goo) blur(var(--blur-amount));
   }
 }
+
+/* For the new dynamic border effect */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes animated-border {
+  0% {
+    --angle: 0deg;
+  }
+  100% {
+    --angle: 360deg;
+  }
+}
+
+.dynamic-border {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit; /* Inherit the border-radius from the parent */
+  border: 1px solid transparent; /* The width can be overridden by inline styles */
+
+  /* A rotating conic gradient creates the moving light effect */
+  background: conic-gradient(from var(--angle), 
+    rgba(255, 255, 255, 0.1), 
+    rgba(255, 255, 255, 0.6), 
+    rgba(255, 255, 255, 0.1)
+  );
+  
+  /* Apply the rotation animation */
+  animation: animated-border 4s linear infinite;
+
+  /* Use a mask to cut out the center, leaving only the border visible */
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  
+  pointer-events: none; /* Ensure the border doesn't block mouse interactions */
+}

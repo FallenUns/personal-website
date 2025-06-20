@@ -52,6 +52,9 @@ const ProjectCard = memo(({ project }: { project: typeof projects[0] }) => {
           positioning="relative"
           style={{ borderRadius: '32px' }}
           elasticity={0.08}
+          edgeRefraction={0.2}
+          borderType='dynamic'
+          borderWidth={2}
         >
           <div className="w-full p-8 text-center">
             <h2 className="relative text-xl font-bold mb-2 text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">{project.title}</h2>
@@ -67,7 +70,7 @@ ProjectCard.displayName = 'ProjectCard';
 
 const ProjectsSection: React.FC = () => {
   return (
-    <section id="projects" className="py-16 px-4 w-full">
+    <section id="projects" className="py-16 px-4 w-full pt-24">
       <div className="max-w-7xl mx-auto w-full">
         <h2 className="text-4xl font-bold text-center text-white mb-10">My Work</h2>
         {/* The grid layout now correctly places the responsive cards */}

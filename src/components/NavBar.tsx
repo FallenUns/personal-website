@@ -96,6 +96,8 @@ const SkyControllerModal = memo<SkyControllerModalProps>(({ onClose, ...props })
           positioning="relative"
           style={{ borderRadius: '24px' }}
           isElastic={false}
+          edgeRefraction={0.1}
+          aberrationIntensity={1}
         >
           <div className="p-6 w-full text-white">
             <h3 className="text-lg font-bold text-center mb-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Sky Controls</h3>
@@ -151,6 +153,21 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const [navDimensions, setNavDimensions] = useState({ width: 0, height: 0 });
+
+  // Smooth scroll function with navbar offset
+  const scrollToSection = useCallback((sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const navHeight = 100; // Account for navbar height and padding
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -215,19 +232,36 @@ const Navbar: React.FC<NavbarProps> = (props) => {
             height={navDimensions.height}
             positioning="relative"
             style={liquidGlassStyle}
+            edgeRefraction={0.07}
             blur={8}
             isElastic={isScrolled}
-            elasticity={0.05}
-            aberrationIntensity={20}
+            elasticity={0.03}
+            aberrationIntensity={1}
+            borderType='dynamic'
+            borderWidth={1}
           >
             <div className="flex items-center justify-between font-sans w-full h-full mx-auto px-6">
               <div className="text-lg font-bold text-white tracking-wider [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
               </div>
-              <div className="flex items-center space-x-4 text-sm text-white/80">
-                <div className="hidden md:flex items-center space-x-8">
-                  <a href="#about" className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] font-medium">About</a>
-                  <a href="#projects" className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] font-medium">Projects</a>
-                  <a href="#contact" className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] font-medium">Contact</a>
+              <div className="flex items-center space-x-4 text-sm text-white/80">                <div className="hidden md:flex items-center space-x-8">
+                  <button 
+                    onClick={() => scrollToSection('about')} 
+                    className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] font-medium cursor-pointer bg-transparent border-none"
+                  >
+                    About
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('projects')} 
+                    className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] font-medium cursor-pointer bg-transparent border-none"
+                  >
+                    Projects
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('contact')} 
+                    className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] font-medium cursor-pointer bg-transparent border-none"
+                  >
+                    Contact
+                  </button>
                 </div>
                 <DarkModeToggle isDarkMode={isDarkMode} onToggleDarkMode={onToggleDarkMode} />
                 <button 

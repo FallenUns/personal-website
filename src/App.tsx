@@ -5,17 +5,12 @@ import ProjectsSection from './components/ProjectsSection';
 import Navbar from './components/NavBar';
 
 function App() {
-  // State management updated to use isDarkMode and initialize correctly
-  const [isAuto, setIsAuto] = useState(true);
-  const [currentTime, setCurrentTime] = useState(() => {
+  // Correctly manage time, auto-sync, and day/night state
+  const [isAuto, setIsAuto] = useState(true);  const [currentTime, setCurrentTime] = useState(() => {
     const now = new Date();
     return now.getHours() + now.getMinutes() / 60;
   });
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const now = new Date();
-    const time = now.getHours() + now.getMinutes() / 60;
-    return time >= 18 || time < 6;
-  });
+  const [isDarkMode, setIsDarkMode] = useState(currentTime >= 18 || currentTime < 6);
 
   // Effect to update time automatically, now updates isDarkMode
   useEffect(() => {
@@ -50,22 +45,15 @@ function App() {
         return newIsAuto;
     });
   }, []);
-
-  // Handler renamed and updated for dark mode
-  const handleToggleDarkMode = useCallback(() => {
-    setIsAuto(false); // Manual override
-    setIsDarkMode(prev => {
-        const newIsDarkMode = !prev;
-        setCurrentTime(newIsDarkMode ? 20 : 11); // 8 PM for Dark, 11 AM for Light
-        return newIsDarkMode;
-    });
-  }, []);
+  // Handler for dark mode toggle
+  const handleToggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
   return (
     <>
       <GooeyBackground hour={currentTime} />
-      {/* Navbar now receives the correct props for dark mode */}
-      <Navbar
+      {/* Navbar now receives the correct props for dark mode */}      <Navbar
         time={currentTime}
         onTimeChange={handleTimeChange}
         isDarkMode={isDarkMode}
@@ -73,21 +61,29 @@ function App() {
         isAuto={isAuto}
         onToggleAuto={handleToggleAuto}
       />
-      {/* This main element will contain all scrollable content */}
-      <main className="relative z-10">
+      {/* This main element will contain all scrollable content */}      <main className="relative z-10">
         <HeroSection />
         <ProjectsSection />
-        {/* Add a footer or contact section here if you like */}
+        {/* Contact Section */}
+        <section id="contact" className="h-screen flex items-center justify-center pt-20">
+          <div className="text-white text-center">
+            <h2 className="text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">Get In Touch</h2>
+            <p className="text-lg mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Let's work together on your next project.</p>
+            <div className="flex justify-center space-x-4">
+              <button className="px-6 py-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+                Email Me
+              </button>
+              <button className="px-6 py-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+                LinkedIn
+              </button>
+            </div>
+          </div>
+        </section>
+        {/* Additional content section */}
         <div className="h-screen flex items-center justify-center">
           <div className="text-white text-center">
             <h2 className="text-3xl font-bold mb-4">More Content</h2>
             <p className="text-lg">This is additional content to ensure the page is scrollable.</p>
-          </div>
-        </div>
-        <div className="h-screen flex items-center justify-center">
-          <div className="text-white text-center">
-            <h2 className="text-3xl font-bold mb-4">Even More Content</h2>
-            <p className="text-lg">More content to test scrolling behavior.</p>
           </div>
         </div>
       </main>

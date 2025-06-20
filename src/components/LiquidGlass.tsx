@@ -1,25 +1,18 @@
-import React, { useState, useEffect, useRef, useId, useCallback } from 'react';
-import { motion, useSpring } from 'framer-motion'; // Import framer-motion
+// src/components/LiquidGlass.tsx
 
-// Utility functions (no changes)
+import React, { useState, useEffect, useRef, useId, useCallback, useMemo } from 'react';
+import { motion, useSpring } from 'framer-motion';
+
+// ... (utility functions `smoothStep`, `texture` remain the same)
 function smoothStep(a: number, b: number, t: number) {
   t = Math.max(0, Math.min(1, (t - a) / (b - a)));
   return t * t * (3 - 2 * t);
 }
 
-function length(x: number, y: number) {
-  return Math.sqrt(x * x + y * y);
-}
-
-function roundedRectSDF(x: number, y: number, width: number, height: number, radius: number) {
-  const qx = Math.abs(x) - width + radius;
-  const qy = Math.abs(y) - height + radius;
-  return Math.min(Math.max(qx, qy), 0) + length(Math.max(qx, 0), Math.max(qy, 0)) - radius;
-}
-
 function texture(x: number, y: number) {
   return { type: 't', x, y };
 }
+
 
 interface LiquidGlassProps {
   children: React.ReactNode;
@@ -32,11 +25,11 @@ interface LiquidGlassProps {
   isElastic?: boolean;
   elasticity?: number;
   aberrationIntensity?: number;
-  // --- NEW PROPS ---
-  hasBorder?: boolean;
+  borderType?: 'none' | 'glow' | 'dynamic';
   borderWidth?: number;
   borderColor?: string;
   edgeRefraction?: number;
+  onClick?: () => void;
 }
 
 const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -52,61 +45,39 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   isElastic = true,
   elasticity = 0.15,
   aberrationIntensity = 0.75,
-  // --- NEW PROPS DEFAULTS ---
-  hasBorder = false,
+  borderType = 'none',
   borderWidth = 1,
   borderColor = 'rgba(255, 255, 255, 0.5)',
-  edgeRefraction = 0.3,
+  edgeRefraction = 0.1,
+  onClick,
 }) => {
   const id = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const [filterAttrs, setFilterAttrs] = useState({ href: TRANSPARENT_PIXEL, scale: 50 });
 
-  // State for the shine & border effect
   const [isHovering, setIsHovering] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // Draggability logic
+  // ... (dragging logic remains the same)
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const initialPosition = useRef({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: window.innerWidth / 2 - width / 2, y: window.innerHeight / 2 - height / 2 });
 
   const fragmentShader = useCallback((uv: { x: number; y: number }) => {
-    const ix = uv.x - 0.5;
+    const aspect = width / height;
+    const ix = (uv.x - 0.5) * aspect;
     const iy = uv.y - 0.5;
+    const distToEdge = 0.5 - Math.max(Math.abs(uv.x - 0.5), Math.abs(uv.y - 0.5));
+    const edgeFactor = smoothStep(0.0, 0.4, 1.0 - distToEdge / 0.5);
+    const displacement = edgeFactor * edgeRefraction;
+    const scale = 1.0 - displacement;
+    return texture((ix * scale) / aspect + 0.5, iy * scale + 0.5);
+  }, [edgeRefraction, width, height]);
     
-    // Calculate distance to edges for refraction
-    const edgeDistX = Math.min(uv.x, 1.0 - uv.x);
-    const edgeDistY = Math.min(uv.y, 1.0 - uv.y);
-    const edgeDistMin = Math.min(edgeDistX, edgeDistY);
-    
-    // MODIFIED: Edge refraction - stronger near edges, now controlled by prop
-    const refractionStrength = smoothStep(0.2, 0.0, edgeDistMin) * edgeRefraction;
-    
-    // Calculate normal-like direction for refraction
-    const normalX = edgeDistX < edgeDistY ? (uv.x < 0.5 ? -1 : 1) : 0;
-    const normalY = edgeDistY < edgeDistX ? (uv.y < 0.5 ? -1 : 1) : 0;
-    
-    // Apply edge refraction
-    const refractedX = ix + normalX * refractionStrength;
-    const refractedY = iy + normalY * refractionStrength;
-    
-    // Original rounded rect distortion
-    const distanceToEdge = roundedRectSDF(refractedX, refractedY, 0.3, 0.2, 0.6);
-    const displacement = smoothStep(0.8, 0, distanceToEdge - 0.15);
-    const scaled = smoothStep(0, 1, displacement);
-    
-    // Combine refraction with original distortion
-    const finalX = refractedX * scaled + 0.5;
-    const finalY = refractedY * scaled + 0.5;
-    
-    return texture(finalX, finalY);
-  }, [edgeRefraction]);
-    
-    // --- ELASTICITY LOGIC ---
-    const [globalMousePos, setGlobalMousePos] = useState({ x: -1, y: -1 });
+  // ... (elasticity logic remains the same)
+  const [globalMousePos, setGlobalMousePos] = useState({ x: -1, y: -1 });
 
     const smoothTx = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
     const smoothTy = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
@@ -178,7 +149,6 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
 
 
   useEffect(() => {
-    // ... (shader generation logic remains the same)
     const w = Math.round(width);
     const h = Math.round(height);
     if (w === 0 || h === 0) return;
@@ -199,7 +169,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         rawValues.push(dx, dy);
       }
     }
-    maxScale = Math.max(1, maxScale * 0.5);
+    maxScale = Math.max(1, maxScale);
     let index = 0;
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -219,7 +189,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     });
   }, [width, height, fragmentShader]);
   
-  // Handlers for dragging
+  // ... (drag handlers remain the same)
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (positioning !== 'fixed') return;
     isDragging.current = true;
@@ -260,6 +230,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     }
   }, [handleMouseMoveDraggable, handleMouseUp, positioning]);
   
+
   const handleMouseLeaveCombined = useCallback(() => {
       setIsHovering(false);
       if (isElastic) {
@@ -267,7 +238,6 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       }
   }, [isElastic]);
   
-  // Handler for the shine and border effects
   const handleMouseMoveCombined = (e: React.MouseEvent<HTMLDivElement>) => {
     setMousePos({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
   };
@@ -293,7 +263,6 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     containerStyle.cursor = 'grab';
   }
 
-  // Style for the shine overlay
   const shineStyle: React.CSSProperties = {
     position: 'absolute',
     top: 0,
@@ -307,26 +276,27 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     pointerEvents: 'none',
   };
 
-  // --- NEW BORDER STYLE ---
-  const borderGlowStyle: React.CSSProperties = {
-    position: 'absolute',
-    inset: 0,
-    borderRadius: 'inherit',
-    pointerEvents: 'none',
-    border: `${borderWidth}px solid transparent`,
-    backgroundImage: isHovering
-        ? `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, ${borderColor} 0%, transparent 35%)`
-        : undefined,
-    backgroundClip: 'border-box',
-    backgroundOrigin: 'border-box',
-    // This creates a border mask. It's well-supported in modern browsers.
-    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-    maskComposite: 'exclude',
-    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-    WebkitMaskComposite: 'xor',
-    opacity: isHovering ? 1 : 0,
-    transition: 'opacity 0.2s ease-out',
-  };
+  // MODIFICATION: Logic to choose the correct border element
+  const borderElement = useMemo(() => {
+    if (borderType === 'glow') {
+      const borderGlowStyle: React.CSSProperties = {
+        position: 'absolute', inset: 0, borderRadius: 'inherit', pointerEvents: 'none',
+        border: `${borderWidth}px solid transparent`,
+        backgroundImage: isHovering
+            ? `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, ${borderColor} 0%, transparent 35%)`
+            : undefined,
+        backgroundClip: 'border-box', backgroundOrigin: 'border-box',
+        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+        maskComposite: 'exclude', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+        WebkitMaskComposite: 'xor', opacity: isHovering ? 1 : 0, transition: 'opacity 0.2s ease-out',
+      };
+      return <div style={borderGlowStyle} />;
+    }
+    if (borderType === 'dynamic') {
+      return <div className="dynamic-border" style={{ borderWidth: `${borderWidth}px` }} />;
+    }
+    return null;
+  }, [borderType, borderWidth, borderColor, isHovering, mousePos.x, mousePos.y]);
 
   const motionProps = {};
 
@@ -348,6 +318,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         ref={containerRef}
         className={className}
         onMouseDown={handleMouseDown}
+        onClick={onClick}
         style={{
             ...containerStyle,
             translateX: smoothTx,
@@ -362,8 +333,8 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       >
         {children}
         <div style={shineStyle} />
-        {/* --- NEW BORDER ELEMENT --- */}
-        {hasBorder && <div style={borderGlowStyle} />}
+        {/* MODIFICATION: Render the chosen border element */}
+        {borderElement}
       </motion.div>
     </>
   );
