@@ -50,10 +50,12 @@ const ProjectCard = memo(({ project }: { project: typeof projects[0] }) => {
           height={dimensions.height}
           blur={12}
           positioning="relative"
+          style={{ borderRadius: '32px' }}
+          elasticity={0.08}
         >
           <div className="w-full p-8 text-center">
-            <h2 className="relative text-xl font-bold mb-2 text-white">{project.title}</h2>
-            <p className="relative text-sm text-white/90 leading-relaxed">{project.content}</p>
+            <h2 className="relative text-xl font-bold mb-2 text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">{project.title}</h2>
+            <p className="relative text-sm text-white/90 leading-relaxed [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">{project.content}</p>
           </div>
         </LiquidGlass>
       )}

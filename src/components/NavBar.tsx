@@ -95,6 +95,7 @@ const SkyControllerModal = memo<SkyControllerModalProps>(({ onClose, ...props })
           blur={15}
           positioning="relative"
           style={{ borderRadius: '24px' }}
+          isElastic={false}
         >
           <div className="p-6 w-full text-white">
             <h3 className="text-lg font-bold text-center mb-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Sky Controls</h3>
@@ -216,6 +217,8 @@ const Navbar: React.FC<NavbarProps> = (props) => {
             style={liquidGlassStyle}
             blur={8}
             isElastic={isScrolled}
+            elasticity={0.05}
+            aberrationIntensity={20}
           >
             <div className="flex items-center justify-between font-sans w-full h-full mx-auto px-6">
               <div className="text-lg font-bold text-white tracking-wider [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">

@@ -78,13 +78,13 @@ function App() {
         <HeroSection />
         <ProjectsSection />
         {/* Add a footer or contact section here if you like */}
-        <div className="h-screen bg-gradient-to-b from-transparent to-black/20 flex items-center justify-center">
+        <div className="h-screen flex items-center justify-center">
           <div className="text-white text-center">
             <h2 className="text-3xl font-bold mb-4">More Content</h2>
             <p className="text-lg">This is additional content to ensure the page is scrollable.</p>
           </div>
         </div>
-        <div className="h-screen bg-gradient-to-b from-black/20 to-transparent flex items-center justify-center">
+        <div className="h-screen flex items-center justify-center">
           <div className="text-white text-center">
             <h2 className="text-3xl font-bold mb-4">Even More Content</h2>
             <p className="text-lg">More content to test scrolling behavior.</p>

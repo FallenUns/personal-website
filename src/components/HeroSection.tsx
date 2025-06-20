@@ -25,7 +25,7 @@ const HeroSection: React.FC = () => {
             Recently Graduated Student with excelency in Python, ML, AI.
           </p>
           <div className="flex space-x-4">
-            {/* The buttons are now wrapped in LiquidGlass */}
+            {/* The buttons are now wrapped in LiquidGlass with the new border effect */}
             <button className="focus:outline-none">
                 <LiquidGlass
                     width={180}
@@ -33,7 +33,12 @@ const HeroSection: React.FC = () => {
                     blur={4}
                     positioning="relative"
                     style={{ borderRadius: '9999px' }}
-                    className="border border-white/70 hover:bg-white/20 transition-colors duration-300"
+                    className="border border-white/70 hover:bg-white/20 transition-all duration-300"
+                    aberrationIntensity={1}
+                    hasBorder={true}
+                    borderWidth={1}
+                    borderColor="rgba(255, 255, 255, 0.7)"
+                    edgeRefraction={0.5}
                 >
                     <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                         View My Work
@@ -47,7 +52,12 @@ const HeroSection: React.FC = () => {
                     blur={4}
                     positioning="relative"
                     style={{ borderRadius: '9999px' }}
-                    className="border border-white/70 hover:bg-white/20 transition-colors duration-300"
+                    className="border border-white/70 hover:bg-white/20 transition-all duration-300"
+                    aberrationIntensity={1}
+                    hasBorder={true}
+                    borderWidth={1}
+                    borderColor="rgba(255, 255, 255, 0.7)"
+                    edgeRefraction={0.5}
                 >
                     <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                         Get In Touch
