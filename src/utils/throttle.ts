@@ -10,6 +10,10 @@ export function throttle<T extends (...args: any[]) => any>(
     const currentTime = performance.now(); // More precise than Date.now()
     
     if (currentTime - lastExecTime > delay) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       func(...args);
       lastExecTime = currentTime;
     } else {
