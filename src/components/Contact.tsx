@@ -19,9 +19,9 @@ const Contact: React.FC = () => {
                 borderWidth={1}
                 edgeRefraction={0.5}
                 isElastic={true}
-                elasticity={0.4}
+                elasticity={0.2}
                 onClick={() => {
-                  window.location.href = 'mailto:your-email@example.com';
+                  window.location.href = 'mailto:patrickadrianus04@gmail.com';
                 }}
               >
                 <span className="px-6 py-3 text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center justify-center h-full">
@@ -41,9 +41,9 @@ const Contact: React.FC = () => {
                 borderWidth={1}
                 edgeRefraction={0.5}
                 isElastic={true}
-                elasticity={0.4}
+                elasticity={0.2}
                 onClick={() => {
-                  window.open('https://linkedin.com/in/your-profile', '_blank');
+                  window.open('https://linkedin.com/in/patrick-adrianus', '_blank');
                 }}
               >
                 <span className="px-6 py-3 text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center justify-center h-full">

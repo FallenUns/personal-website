@@ -36,7 +36,7 @@ const HeroSection: React.FC = () => {
                 borderWidth={1}
                 edgeRefraction={0.5}
                 isElastic={true}
-                elasticity={0.4}                onClick={() => {
+                elasticity={0.2}                onClick={() => {
                   const projectsSection = document.getElementById('projects');
                   if (projectsSection) {
                     const navHeight = 100; // Account for navbar height and padding
@@ -66,11 +66,19 @@ const HeroSection: React.FC = () => {
                 borderWidth={1}
                 edgeRefraction={0.5}
                 isElastic={true}
-                elasticity={0.4}
-                onClick={() => {
-                  // Add your contact logic here
-                  console.log('Get In Touch clicked');
-                }}
+                elasticity={0.2}                onClick={() => {
+                    const contactSection = document.getElementById('contact');
+                    if (contactSection) {
+                      const navHeight = 100; // Account for navbar height and padding
+                      const elementPosition = contactSection.getBoundingClientRect().top + window.pageYOffset;
+                      const offsetPosition = elementPosition - navHeight;
+
+                      window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                      });
+                    }
+                  }}
             >
                 <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                     Get In Touch

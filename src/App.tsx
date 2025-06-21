@@ -7,7 +7,8 @@ import Contact from './components/Contact';
 
 function App() {
   // Correctly manage time, auto-sync, and day/night state
-  const [isAuto, setIsAuto] = useState(true);  const [currentTime, setCurrentTime] = useState(() => {
+  const [isAuto, setIsAuto] = useState(true);
+  const [currentTime, setCurrentTime] = useState(() => {
     const now = new Date();
     return now.getHours() + now.getMinutes() / 60;
   });
@@ -46,15 +47,30 @@ function App() {
         return newIsAuto;
     });
   }, []);
+
   // Handler for dark mode toggle
   const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+    // When manually toggling dark mode, we should disable auto-sync
+    if (isAuto) {
+      setIsAuto(false);
+    }
+    // Set the time to a representative value for the new mode
+    setIsDarkMode(prev => {
+      const newIsDarkMode = !prev;
+      if (newIsDarkMode) {
+        setCurrentTime(20); // A time when it's dark
+      } else {
+        setCurrentTime(8); // A time when it's light
+      }
+      return newIsDarkMode;
+    });
   };
 
   return (
     <>
       <GooeyBackground hour={currentTime} />
-      {/* Navbar now receives the correct props for dark mode */}      <Navbar
+      {/* Navbar now receives the correct props for dark mode */}
+      <Navbar
         time={currentTime}
         onTimeChange={handleTimeChange}
         isDarkMode={isDarkMode}
@@ -62,7 +78,8 @@ function App() {
         isAuto={isAuto}
         onToggleAuto={handleToggleAuto}
       />
-      {/* This main element will contain all scrollable content */}      <main className="relative z-10">
+      {/* This main element will contain all scrollable content */}
+      <main className="relative z-10">
         <HeroSection />
         <ProjectsSection />
         <Contact />
