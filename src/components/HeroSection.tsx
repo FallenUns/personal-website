@@ -14,13 +14,13 @@ const HeroSection: React.FC = () => {
         className="text-left"
       >
         <div className="text-white">
-          <h1 className="text-6xl md:text-7xl font-bold mb-4 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
-            Patrick Adrianus
+          <h1 className="text-6xl md:text-6xl font-bold [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
+            PATRICK ADRIANUS
           </h1>
-          <h2 className="text-2xl md:text-3xl mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
+          <h2 className="text-2xl md:text-3xl mb-6 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
             Data Scientist
           </h2>
-          <p className="text-base text-white/90 max-w-xl mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+          <p className="text-base text-white/90 max-w-xl mb-8 [text-shadow:0_1px_4px_rgba(0,0,0,1)]">
             Recently Graduated Student with excelency in Python, ML, AI.
           </p>
           <div className="flex space-x-4">
@@ -30,16 +30,16 @@ const HeroSection: React.FC = () => {
                 blur={4}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="border border-white/70 hover:bg-white/20 transition-all duration-300"
+                className="hover:bg-white/20 transition-all duration-300"
                 aberrationIntensity={1}
                 borderType='dynamic'
-                borderWidth={1}
+                borderWidth={1.5}
                 edgeRefraction={0.5}
                 isElastic={true}
                 elasticity={0.2}                onClick={() => {
                   const projectsSection = document.getElementById('projects');
                   if (projectsSection) {
-                    const navHeight = 100; // Account for navbar height and padding
+                    const navHeight = 0; // Account for navbar height and padding
                     const elementPosition = projectsSection.getBoundingClientRect().top + window.pageYOffset;
                     const offsetPosition = elementPosition - navHeight;
 
@@ -60,16 +60,16 @@ const HeroSection: React.FC = () => {
                 blur={4}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="border border-white/70 hover:bg-white/20 transition-all duration-300"
+                className="hover:bg-white/20 transition-all duration-300"
                 aberrationIntensity={1}
                 borderType='dynamic'
-                borderWidth={1}
+                borderWidth={1.5}
                 edgeRefraction={0.5}
                 isElastic={true}
                 elasticity={0.2}                onClick={() => {
                     const contactSection = document.getElementById('contact');
                     if (contactSection) {
-                      const navHeight = 100; // Account for navbar height and padding
+                      const navHeight = 0; // Account for navbar height and padding
                       const elementPosition = contactSection.getBoundingClientRect().top + window.pageYOffset;
                       const offsetPosition = elementPosition - navHeight;
 

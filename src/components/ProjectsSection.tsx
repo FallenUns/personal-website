@@ -57,8 +57,8 @@ const ProjectCard = memo(({ project }: { project: typeof projects[0] }) => {
           borderWidth={2}
         >
           <div className="w-full p-8 text-center">
-            <h2 className="relative text-xl font-bold mb-2 text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">{project.title}</h2>
-            <p className="relative text-sm text-white/90 leading-relaxed [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">{project.content}</p>
+            <h2 className="relative text-xl font-bold mb-2 text-white [text-shadow:0_2px_5px_rgba(0,0,0,1)]">{project.title}</h2>
+            <p className="relative text-sm text-white/90 leading-relaxed [text-shadow:0_2px_5px_rgba(0,0,0,1)]">{project.content}</p>
           </div>
         </LiquidGlass>
       )}
@@ -73,7 +73,6 @@ const ProjectsSection: React.FC = () => {
     <section id="projects" className="py-16 px-4 w-full pt-24">
       <div className="max-w-7xl mx-auto w-full">
         <h2 className="text-4xl font-bold text-center text-white mb-10">My Work</h2>
-        {/* The grid layout now correctly places the responsive cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 place-items-center">
           {projects.map((project) => (
             <ProjectCard key={project.id} project={project} />

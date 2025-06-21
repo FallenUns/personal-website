@@ -3,7 +3,7 @@ import LiquidGlass from "./LiquidGlass";
 
 const Contact: React.FC = () => {
     return (
-        <section id="contact" className="h-screen flex items-center justify-center pt-20">
+        <section id="contact" className="h-screen flex items-center justify-center py-16 px-4 w-full pt-24">
           <div className="text-white text-center">
             <h2 className="text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">Get In Touch</h2>
             <p className="text-lg mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Let's work together on your next project.</p>            <div className="flex justify-center space-x-4">

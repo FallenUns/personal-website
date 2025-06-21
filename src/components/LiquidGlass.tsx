@@ -13,14 +13,81 @@ function texture(x: number, y: number) {
   return { type: 't', x, y };
 }
 
+// Cache for the expensive filter calculation to improve performance
+const filterCache = new Map<string, { href: string; scale: number }>();
+
+// Pre-generate filter for common sizes to avoid render delays
+const preGenerateFilter = (width: number, height: number, edgeRefraction: number = 0.1) => {
+  const w = Math.round(width);
+  const h = Math.round(height);
+  if (w === 0 || h === 0) return;
+  
+  const cacheKey = `${w}_${h}_${edgeRefraction}`;
+  if (filterCache.has(cacheKey)) return;
+
+  const fragmentShader = (uv: { x: number; y: number }) => {
+    const aspect = w / h;
+    const ix = (uv.x - 0.5) * aspect;
+    const iy = uv.y - 0.5;
+    const distToEdge = 0.5 - Math.max(Math.abs(uv.x - 0.5), Math.abs(uv.y - 0.5));
+    const edgeFactor = smoothStep(0.0, 0.4, 1.0 - distToEdge / 0.5);
+    const displacement = edgeFactor * edgeRefraction;
+    const scale = 1.0 - displacement;
+    return texture((ix * scale) / aspect + 0.5, iy * scale + 0.5);
+  };
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const context = canvas.getContext('2d');
+  if (!context) return;
+
+  const data = new Uint8ClampedArray(w * h * 4);
+  let maxScale = 0;
+  const rawValues: number[] = [];
+  
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const pos = fragmentShader({ x: x / w, y: y / h });
+      const dx = pos.x * w - x;
+      const dy = pos.y * h - y;
+      maxScale = Math.max(maxScale, Math.abs(dx), Math.abs(dy));
+      rawValues.push(dx, dy);
+    }
+  }
+  
+  maxScale = Math.max(1, maxScale);
+  let index = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const pixelIndex = (y * w + x) * 4;
+      const r = rawValues[index++] / maxScale + 0.5;
+      const g = rawValues[index++] / maxScale + 0.5;
+      data[pixelIndex] = r * 255;
+      data[pixelIndex + 1] = g * 255;
+      data[pixelIndex + 2] = 0;
+      data[pixelIndex + 3] = 255;
+    }
+  }
+  
+  context.putImageData(new ImageData(data, w, h), 0, 0);
+  
+  const filterAttrs = {
+    href: canvas.toDataURL(),
+    scale: maxScale,
+  };
+  
+  filterCache.set(cacheKey, filterAttrs);
+  return filterAttrs;
+};
 
 interface LiquidGlassProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   width?: number;
   height?: number;
   className?: string;
   style?: React.CSSProperties;
-  positioning?: 'fixed' | 'relative';
+  positioning?: 'fixed' | 'relative' | 'absolute';
   blur?: number;
   isElastic?: boolean;
   elasticity?: number;
@@ -29,6 +96,7 @@ interface LiquidGlassProps {
   borderWidth?: number;
   borderColor?: string;
   edgeRefraction?: number;
+  disableShine?: boolean;
   onClick?: () => void;
 }
 
@@ -49,34 +117,36 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   borderWidth = 1,
   borderColor = 'rgba(255, 255, 255, 0.5)',
   edgeRefraction = 0.1,
+  disableShine = false,
   onClick,
 }) => {
   const id = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   
-  const [filterAttrs, setFilterAttrs] = useState({ href: TRANSPARENT_PIXEL, scale: 50 });
+  // Generate filter synchronously to avoid render delays
+  const filterAttrs = useMemo(() => {
+    const w = Math.round(width ?? 0);
+    const h = Math.round(height ?? 0);
+    if (w === 0 || h === 0) return { href: TRANSPARENT_PIXEL, scale: 50 };
+    
+    const cacheKey = `${w}_${h}_${edgeRefraction}`;
+    let cachedFilter = filterCache.get(cacheKey);
+    
+    if (!cachedFilter) {
+      // Generate immediately if not cached
+      cachedFilter = preGenerateFilter(w, h, edgeRefraction);
+    }
+    
+    return cachedFilter || { href: TRANSPARENT_PIXEL, scale: 50 };
+  }, [width, height, edgeRefraction]);
 
   const [isHovering, setIsHovering] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  // ... (dragging logic remains the same)
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const initialPosition = useRef({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: window.innerWidth / 2 - width / 2, y: window.innerHeight / 2 - height / 2 });
-
-  const fragmentShader = useCallback((uv: { x: number; y: number }) => {
-    const aspect = width / height;
-    const ix = (uv.x - 0.5) * aspect;
-    const iy = uv.y - 0.5;
-    const distToEdge = 0.5 - Math.max(Math.abs(uv.x - 0.5), Math.abs(uv.y - 0.5));
-    const edgeFactor = smoothStep(0.0, 0.4, 1.0 - distToEdge / 0.5);
-    const displacement = edgeFactor * edgeRefraction;
-    const scale = 1.0 - displacement;
-    return texture((ix * scale) / aspect + 0.5, iy * scale + 0.5);
-  }, [edgeRefraction, width, height]);
     
-  // ... (elasticity logic remains the same)
   const [globalMousePos, setGlobalMousePos] = useState({ x: -1, y: -1 });
 
     const smoothTx = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
@@ -146,50 +216,6 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         smoothScaleY.set(scaleY);
 
     }, [globalMousePos, isElastic, elasticity, smoothTx, smoothTy, smoothScaleX, smoothScaleY]);
-
-
-  useEffect(() => {
-    const w = Math.round(width);
-    const h = Math.round(height);
-    if (w === 0 || h === 0) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const context = canvas.getContext('2d');
-    if (!context) return;
-    const data = new Uint8ClampedArray(w * h * 4);
-    let maxScale = 0;
-    const rawValues: number[] = [];
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const pos = fragmentShader({ x: x / w, y: y / h });
-        const dx = pos.x * w - x;
-        const dy = pos.y * h - y;
-        maxScale = Math.max(maxScale, Math.abs(dx), Math.abs(dy));
-        rawValues.push(dx, dy);
-      }
-    }
-    maxScale = Math.max(1, maxScale);
-    let index = 0;
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            const pixelIndex = (y * w + x) * 4;
-            const r = rawValues[index++] / maxScale + 0.5;
-            const g = rawValues[index++] / maxScale + 0.5;
-            data[pixelIndex] = r * 255;
-            data[pixelIndex + 1] = g * 255;
-            data[pixelIndex + 2] = 0;
-            data[pixelIndex + 3] = 255;
-        }
-    }
-    context.putImageData(new ImageData(data, w, h), 0, 0);
-    setFilterAttrs({
-        href: canvas.toDataURL(),
-        scale: maxScale,
-    });
-  }, [width, height, fragmentShader]);
-  
-  // ... (drag handlers remain the same)
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (positioning !== 'fixed') return;
     isDragging.current = true;
@@ -206,8 +232,8 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       const deltaY = e.clientY - dragStart.current.y;
       const newX = initialPosition.current.x + deltaX;
       const newY = initialPosition.current.y + deltaY;
-      const constrainedX = Math.max(10, Math.min(window.innerWidth - width - 10, newX));
-      const constrainedY = Math.max(10, Math.min(window.innerHeight - height - 10, newY));
+      const constrainedX = Math.max(10, Math.min(window.innerWidth - (width ?? 0) - 10, newX));
+      const constrainedY = Math.max(10, Math.min(window.innerHeight - (height ?? 0) - 10, newY));
       setPosition({ x: constrainedX, y: constrainedY });
     }
   }, [width, height, positioning]);
@@ -240,16 +266,14 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   
   const handleMouseMoveCombined = (e: React.MouseEvent<HTMLDivElement>) => {
     setMousePos({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-  };
-
-  const containerStyle: React.CSSProperties = {
+  };  const containerStyle: React.CSSProperties = {
     ...style,
     position: positioning,
     width: `${width}px`,
     height: `${height}px`,
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.25), 0 -10px 25px inset rgba(0, 0, 0, 0.15)',
-    backdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(1.05) saturate(1.1)`,
-    WebkitBackdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(1.05) saturate(1)`,
+    backdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(0.87) saturate(1.4)`,
+    WebkitBackdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(0.87) saturate(1.4)`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -276,7 +300,6 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     pointerEvents: 'none',
   };
 
-  // MODIFICATION: Logic to choose the correct border element
   const borderElement = useMemo(() => {
     if (borderType === 'glow') {
       const borderGlowStyle: React.CSSProperties = {
@@ -297,8 +320,18 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     }
     return null;
   }, [borderType, borderWidth, borderColor, isHovering, mousePos.x, mousePos.y]);
-
-  const motionProps = {};
+  
+  const motionStyle: React.CSSProperties = { ...containerStyle };
+  if (isElastic) {
+    // @ts-ignore
+    motionStyle.translateX = smoothTx;
+    // @ts-ignore
+    motionStyle.translateY = smoothTy;
+    // @ts-ignore
+    motionStyle.scaleX = smoothScaleX;
+    // @ts-ignore
+    motionStyle.scaleY = smoothScaleY;
+  }
 
   return (
     <>
@@ -319,21 +352,13 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         className={className}
         onMouseDown={handleMouseDown}
         onClick={onClick}
-        style={{
-            ...containerStyle,
-            translateX: smoothTx,
-            translateY: smoothTy,
-            scaleX: smoothScaleX,
-            scaleY: smoothScaleY,
-        }}
+        style={motionStyle}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeaveCombined}
         onMouseMove={handleMouseMoveCombined}
-        {...motionProps}
       >
         {children}
-        <div style={shineStyle} />
-        {/* MODIFICATION: Render the chosen border element */}
+        {!disableShine && <div style={shineStyle} />}
         {borderElement}
       </motion.div>
     </>
@@ -341,3 +366,4 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
 };
 
 export default LiquidGlass;
+export { preGenerateFilter };
