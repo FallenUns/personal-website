@@ -3,6 +3,7 @@ import GooeyBackground from './components/GooeyBackground';
 import HeroSection from './components/HeroSection';
 import ProjectsSection from './components/ProjectsSection';
 import Navbar from './components/NavBar';
+import Contact from './components/Contact';
 
 function App() {
   // Correctly manage time, auto-sync, and day/night state
@@ -64,21 +65,7 @@ function App() {
       {/* This main element will contain all scrollable content */}      <main className="relative z-10">
         <HeroSection />
         <ProjectsSection />
-        {/* Contact Section */}
-        <section id="contact" className="h-screen flex items-center justify-center pt-20">
-          <div className="text-white text-center">
-            <h2 className="text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">Get In Touch</h2>
-            <p className="text-lg mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Let's work together on your next project.</p>
-            <div className="flex justify-center space-x-4">
-              <button className="px-6 py-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
-                Email Me
-              </button>
-              <button className="px-6 py-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
-                LinkedIn
-              </button>
-            </div>
-          </div>
-        </section>
+        <Contact />
         {/* Additional content section */}
         <div className="h-screen flex items-center justify-center">
           <div className="text-white text-center">
