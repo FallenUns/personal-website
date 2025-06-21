@@ -1,12 +1,68 @@
 import React from "react";
+import { motion } from 'framer-motion';
 import LiquidGlass from "./LiquidGlass";
+import { useSimpleLoading } from '../contexts/SimpleLoadingContext';
 
 const Contact: React.FC = () => {
-    return (
-        <section id="contact" className="h-screen flex items-center justify-center py-16 px-4 w-full pt-24">
+    const { isLoading } = useSimpleLoading();
+
+    return (        <motion.section 
+            id="contact" 
+            className="h-screen flex items-center justify-center py-16 px-4 w-full pt-24"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ 
+                opacity: isLoading ? 0 : 1, 
+                y: isLoading ? 30 : 0 
+            }}
+            transition={{ 
+                duration: 0.8, 
+                ease: 'easeOut',
+                delay: isLoading ? 0 : 1.0
+            }}
+        >
           <div className="text-white text-center">
-            <h2 className="text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">Get In Touch</h2>
-            <p className="text-lg mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Let's work together on your next project.</p>            <div className="flex justify-center space-x-4">
+            <motion.h2 
+                className="text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                    opacity: isLoading ? 0 : 1, 
+                    y: isLoading ? 20 : 0 
+                }}
+                transition={{ 
+                    duration: 0.6, 
+                    ease: 'easeOut',
+                    delay: isLoading ? 0 : 1.2
+                }}
+            >
+                Get In Touch
+            </motion.h2>
+            <motion.p 
+                className="text-lg mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                    opacity: isLoading ? 0 : 1, 
+                    y: isLoading ? 20 : 0 
+                }}
+                transition={{ 
+                    duration: 0.6, 
+                    ease: 'easeOut',
+                    delay: isLoading ? 0 : 1.4
+                }}
+            >
+                Let's work together on your next project.
+            </motion.p>            <motion.div 
+                className="flex justify-center space-x-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                    opacity: isLoading ? 0 : 1, 
+                    y: isLoading ? 20 : 0 
+                }}
+                transition={{ 
+                    duration: 0.6, 
+                    ease: 'easeOut',
+                    delay: isLoading ? 0 : 1.6
+                }}
+            >
               <LiquidGlass
                 width={180}
                 height={44}
@@ -50,9 +106,9 @@ const Contact: React.FC = () => {
                   LinkedIn
                 </span>
               </LiquidGlass>
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
     );
 }
 

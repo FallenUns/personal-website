@@ -4,10 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 const Logo: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
-    <a
-      href="/"
-      className="relative w-12 h-12 flex items-center justify-center cursor-pointer"
+    <motion.button
+      onClick={scrollToTop}
+      className="relative w-12 h-12 flex items-center justify-center cursor-pointer bg-transparent border-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -19,7 +26,11 @@ const Logo: React.FC = () => {
         height: '40px',
         textShadow: '0 1px 3px rgba(0,0,0,0.5)'
       }}
-    >      {/* P */}
+      // --- Use simple on-load animation ---
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >{/* P */}
       <motion.span
         className="left-0 right-0"
         animate={{
@@ -55,10 +66,8 @@ const Logo: React.FC = () => {
             animate={{ opacity: 1, rotate: 25 }}
             exit={{ opacity: 0, rotate: -25, scale: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-          />
-        )}
-      </AnimatePresence>
-    </a>
+          />        )}      </AnimatePresence>
+    </motion.button>
   );
 };
 

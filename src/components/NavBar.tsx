@@ -1,7 +1,7 @@
 import React, { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
-import Logo from './Logo'; // Import the new Logo component
+import Logo from './Logo';
 
 // Interfaces for component props
 interface NavbarProps {
@@ -109,12 +109,15 @@ SkyControllerDropdown.displayName = 'SkyControllerDropdown';
 const Navbar: React.FC<NavbarProps> = (props) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const rightContentRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const [rightContentDimensions, setRightContentDimensions] = useState({ width: 0, height: 0 });
 
+  // Simple scroll function
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const navHeight = 140;
+      const navHeight = 0;
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - navHeight;
 
@@ -124,6 +127,31 @@ const Navbar: React.FC<NavbarProps> = (props) => {
       });
     }
   }, []);
+
+  // Close dropdown when clicking outside (but not on the settings button)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      
+      // Don't close if clicking on the settings button or inside the dropdown
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(target) &&
+        settingsButtonRef.current &&
+        !settingsButtonRef.current.contains(target)
+      ) {
+        setIsDropdownVisible(false);
+      }
+    };
+
+    if (isDropdownVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownVisible]);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(entries => {
@@ -145,34 +173,45 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   }, []);
 
   const navContentHeight = '54px';
-
   return (
     <>
       {/* Left Navigation Section - Logo */}
-      <nav style={{
-        position: 'fixed',
-        zIndex: 50,
-        top: '20px',
-        left: '3rem',
-      }}>
+      <motion.nav 
+        initial={{ opacity: 0, y: -20 }}
+        // --- Animate on load, no dependency on `isLoading` ---
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        style={{
+          position: 'fixed',
+          zIndex: 50,
+          top: '20px',
+          left: '3rem',
+        }}
+      >
         <div
-          className="flex items-center justify-center font-sans h-full"
+          className="flex items-center justify-center font-sans h-full relative"
           style={{ height: navContentHeight }}
         >
           <Logo />
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Right Navigation Section - Menu Items */}
-      <nav style={{
-        position: 'fixed',
-        zIndex: 50,
-        top: '20px',
-        right: '3rem',
-        width: `${rightContentDimensions.width}px`,
-        height: `${rightContentDimensions.height}px`,
-        visibility: rightContentDimensions.width > 0 ? 'visible' : 'hidden',
-      }}>
+      <motion.nav 
+        initial={{ opacity: 0, y: -20 }}
+        // --- Animate on load, no dependency on `isLoading` ---
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        style={{
+          position: 'fixed',
+          zIndex: 50,
+          top: '20px',
+          right: '3rem',
+          width: `${rightContentDimensions.width}px`,
+          height: `${rightContentDimensions.height}px`,
+          visibility: rightContentDimensions.width > 0 ? 'visible' : 'hidden',
+        }}
+      >
         <LiquidGlass
           width={rightContentDimensions.width}
           height={rightContentDimensions.height}
@@ -187,10 +226,11 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           aberrationIntensity={1}
           borderType='dynamic'
           borderWidth={1}
-        />
+        />        
         <div ref={rightContentRef} style={{ position: 'absolute', top: 0, left: 0 }}>
-            <div className="flex items-center justify-end font-sans h-full mx-auto px-6" style={{height: navContentHeight}}>
-              <div className="flex items-center space-x-4 text-sm text-white/80">                <div className="hidden md:flex items-center space-x-8">
+            <div className="flex items-center justify-end font-sans h-full mx-auto px-6 relative" style={{height: navContentHeight}}>
+              <div className="flex items-center space-x-4 text-sm text-white/80">
+                <div className="hidden md:flex items-center space-x-8">
                   <button
                     onClick={() => scrollToSection('about')}
                     className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none"
@@ -217,7 +257,8 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                   aria-label="Toggle dark mode"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                >                  <motion.div
+                >                  {/* ...existing dark mode icon code... */}
+                  <motion.div
                     className="relative w-5 h-5 flex items-center justify-center"
                     animate={{ 
                       rotate: props.isDarkMode ? 180 : 0,
@@ -267,23 +308,26 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                     >
                       <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
                     </motion.svg>
-                  </motion.div>
-                </motion.button>
+                  </motion.div>                </motion.button>
                 <button
+                  ref={settingsButtonRef}
                   onClick={handleToggleDropdown}
                   className="p-2 rounded-full hover:bg-white/20 transition-colors"
                   aria-label="Toggle sky controls"
                 >
                   <SettingsIcon isActive={isDropdownVisible} />
-                </button>
-              </div>
+                </button>              </div>
             </div>
         </div>
-
+        
         <AnimatePresence>
-            {isDropdownVisible && <SkyControllerDropdown {...props} />}
+            {isDropdownVisible && (
+              <div ref={dropdownRef}>
+                <SkyControllerDropdown {...props} />
+              </div>
+            )}
         </AnimatePresence>
-      </nav>
+      </motion.nav>
     </>
   );
 };

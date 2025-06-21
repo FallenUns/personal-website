@@ -3,14 +3,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
+import { useSimpleLoading } from '../contexts/SimpleLoadingContext';
 
 const HeroSection: React.FC = () => {
-  return (
-    <section id="about" className="h-screen flex items-center px-12 md:px-20 lg:px-32 pt-20">
+  const { isLoading } = useSimpleLoading();
+
+  return (    <section id="about" className="h-screen flex items-center px-12 md:px-20 lg:px-32 pt-20">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ 
+          opacity: isLoading ? 0 : 1, 
+          y: isLoading ? 30 : 0 
+        }}
+        transition={{ 
+          duration: 0.8, 
+          ease: 'easeOut',
+          delay: isLoading ? 0 : 0.5
+        }}
         className="text-left"
       >
         <div className="text-white">
