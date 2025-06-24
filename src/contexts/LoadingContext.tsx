@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 
 interface LoadingContextType {
@@ -18,7 +18,7 @@ interface LoadingProviderProps {
 
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ 
   children, 
-  minimumLoadTime = 2000 // 2 seconds minimum
+  minimumLoadTime = 200 // 200 ms minimum
 }) => {
   const [loaders, setLoaders] = useState<Set<string>>(new Set());
   const [loadedItems, setLoadedItems] = useState<Set<string>>(new Set());
@@ -26,88 +26,70 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
   const [progress, setProgress] = useState(0);
   const [startTime] = useState(Date.now());
 
-  const registerLoader = (id: string) => {
+  const registerLoader = useCallback((id: string) => {
     setLoaders(prev => new Set(prev).add(id));
-  };
+  }, []);
 
-  const markLoaded = (id: string) => {
+  const markLoaded = useCallback((id: string) => {
     setLoadedItems(prev => new Set(prev).add(id));
-  };
+  }, []);
 
-  const setCustomProgress = (customProgress: number) => {
-    setProgress(Math.min(100, Math.max(0, customProgress)));
-  };
+  const setCustomProgress = useCallback((customProgress: number) => {
+    setProgress(p => Math.min(100, Math.max(p, customProgress)));
+  }, []);
 
   // Safety timeout to ensure loading never gets stuck
   useEffect(() => {
     const safetyTimer = setTimeout(() => {
-      console.log('Safety timeout triggered - forcing loading completion');
-      setProgress(100);
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 300);
-    }, minimumLoadTime + 2000); // Safety net after minimum time + 2 seconds
+      if (isLoading) {
+        console.log('Safety timeout triggered - forcing loading completion');
+        setProgress(100);
+        setTimeout(() => setIsLoading(false), 300);
+      }
+    }, minimumLoadTime);
 
     return () => clearTimeout(safetyTimer);
-  }, [minimumLoadTime]);
+  }, [minimumLoadTime, isLoading]);
 
   // Calculate progress and manage loading state
   useEffect(() => {
     const totalLoaders = loaders.size;
     const loadedCount = loadedItems.size;
-    
-    // Debug logging
-    console.log('Loading Debug:', {
-      totalLoaders,
-      loadedCount,
-      loaders: Array.from(loaders),
-      loadedItems: Array.from(loadedItems)
-    });
-    
+    const elapsedTime = Date.now() - startTime;
+
+    // If no loaders have registered, progress is 0.
     if (totalLoaders === 0) {
-      // If no loaders registered yet, show initial progress and wait a bit
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime > 1000) { // After 1 second, start increasing progress even without loaders
-        const timeProgress = Math.min(90, ((elapsedTime - 1000) / minimumLoadTime) * 90);
-        setProgress(10 + timeProgress);
-        
-        // If minimum time passed and still no loaders, complete loading
+        setProgress(0);
+        // If minimum time passes and still no loaders, finish.
         if (elapsedTime >= minimumLoadTime) {
-          setProgress(100);
-          const hideTimer = setTimeout(() => {
-            setIsLoading(false);
-          }, 300);
-          return () => clearTimeout(hideTimer);
+            setProgress(100);
+            const hideTimer = setTimeout(() => setIsLoading(false), 300);
+            return () => clearTimeout(hideTimer);
         }
-      } else {
-        setProgress(10);
-      }
-      return;
+        return;
     }
 
-    // Calculate base progress from loaded components
-    const baseProgress = totalLoaders > 0 ? (loadedCount / totalLoaders) * 90 : 0;
-    
-    // Add time-based progress for smooth animation
-    const elapsedTime = Date.now() - startTime;
-    const timeProgress = Math.min(10, (elapsedTime / minimumLoadTime) * 10);
-    
-    const newProgress = Math.min(100, baseProgress + timeProgress);
+    // Calculate progress based purely on loaded components.
+    const newProgress = Math.floor((loadedCount / totalLoaders) * 100);
     setProgress(newProgress);
 
-    // Check if everything is loaded and minimum time has passed
-    const allLoaded = totalLoaders > 0 && loadedCount >= totalLoaders;
+    // Check for completion
+    const allLoaded = loadedCount >= totalLoaders;
     const minimumTimePassed = elapsedTime >= minimumLoadTime;
-    
-    if (allLoaded && minimumTimePassed && newProgress >= 100) {
-      // Add a small delay before hiding loading
-      const hideTimer = setTimeout(() => {
-        setIsLoading(false);
-      }, 300);
+
+    if (allLoaded && minimumTimePassed) {
+        // Ensure progress hits 100 before hiding.
+        if (progress < 100) {
+            setProgress(100);
+        }
       
-      return () => clearTimeout(hideTimer);
+        const hideTimer = setTimeout(() => {
+            setIsLoading(false);
+        }, 300); // Small delay to show 100%
+      
+        return () => clearTimeout(hideTimer);
     }
-  }, [loaders, loadedItems, startTime, minimumLoadTime]);
+  }, [loaders, loadedItems, startTime, minimumLoadTime, progress]);
 
   return (
     <LoadingContext.Provider value={{
@@ -142,7 +124,7 @@ export const useComponentLoader = (componentId: string) => {
     const loadTimer = setTimeout(() => {
       console.log(`Marking component loaded: ${componentId}`);
       markLoaded(componentId);
-    }, 100 + Math.random() * 400); // Random delay between 100-500ms for realistic loading
+    }, 500 + Math.random() * 1000); // Increased random delay for a more visible progress
     
     return () => clearTimeout(loadTimer);
   }, [componentId, registerLoader, markLoaded]);

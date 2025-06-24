@@ -1,12 +1,14 @@
 import React from "react";
 import { motion } from 'framer-motion';
 import LiquidGlass from "./LiquidGlass";
-import { useSimpleLoading } from '../contexts/SimpleLoadingContext';
+import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 
 const Contact: React.FC = () => {
-    const { isLoading } = useSimpleLoading();
+    useComponentLoader('ContactSection'); // Register component for loading
+    const { isLoading } = useLoading();
 
-    return (        <motion.section 
+    return (
+        <motion.section 
             id="contact" 
             className="h-screen flex items-center justify-center py-16 px-4 w-full pt-24"
             initial={{ opacity: 0, y: 30 }}
@@ -50,7 +52,8 @@ const Contact: React.FC = () => {
                 }}
             >
                 Let's work together on your next project.
-            </motion.p>            <motion.div 
+            </motion.p>
+            <motion.div 
                 className="flex justify-center space-x-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ 

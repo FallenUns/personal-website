@@ -1,14 +1,14 @@
-// src/components/HeroSection.tsx
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
-import { useSimpleLoading } from '../contexts/SimpleLoadingContext';
+import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 
 const HeroSection: React.FC = () => {
-  const { isLoading } = useSimpleLoading();
+  useComponentLoader('HeroSection'); // Register component for loading
+  const { isLoading } = useLoading();
 
-  return (    <section id="about" className="h-screen flex items-center px-12 md:px-20 lg:px-32 pt-20">
+  return (
+    <section id="about" className="h-screen flex items-center px-12 md:px-20 lg:px-32 pt-20">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ 
@@ -45,7 +45,8 @@ const HeroSection: React.FC = () => {
                 borderWidth={1.5}
                 edgeRefraction={0.5}
                 isElastic={true}
-                elasticity={0.2}                onClick={() => {
+                elasticity={0.2}
+                onClick={() => {
                   const projectsSection = document.getElementById('projects');
                   if (projectsSection) {
                     const navHeight = 0; // Account for navbar height and padding
@@ -75,7 +76,8 @@ const HeroSection: React.FC = () => {
                 borderWidth={1.5}
                 edgeRefraction={0.5}
                 isElastic={true}
-                elasticity={0.2}                onClick={() => {
+                elasticity={0.2}
+                onClick={() => {
                     const contactSection = document.getElementById('contact');
                     if (contactSection) {
                       const navHeight = 0; // Account for navbar height and padding

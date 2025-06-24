@@ -1,11 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useSimpleLoading } from '../contexts/SimpleLoadingContext';
+import { useLoading } from '../contexts/LoadingContext';
 
 const CircularLoader: React.FC = () => {
-  const { isLoading, progress } = useSimpleLoading();
-  
-  if (!isLoading) return null;
+  const { progress } = useLoading();
   
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
