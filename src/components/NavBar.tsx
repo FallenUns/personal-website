@@ -2,6 +2,7 @@ import React, { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import Logo from './Logo';
+import { useScrollSpy } from '../hooks/useScrollSpy'; 
 
 // Interfaces for component props
 interface NavbarProps {
@@ -64,7 +65,7 @@ const SkyControllerDropdown: React.FC<SkyControllerDropdownProps> = memo((props)
                 style={{ borderRadius: '24px' }}
                 isElastic={true}
                 elasticity={0.1}
-                blurAmount={0}
+                blurAmount={15}
                 mode='shader'
                 aberrationIntensity={1}
                 saturation={160}
@@ -112,12 +113,16 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const [rightContentDimensions, setRightContentDimensions] = useState({ width: 0, height: 0 });
 
-  // Simple scroll function
+  // -- NEW: Scroll spy setup --
+  const sectionIds = ['about', 'projects', 'contact'];
+  const activeSection = useScrollSpy(sectionIds, { offset: 100 });
+
+  // Scroll function
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const navHeight = 0;
-      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const navHeight = 0; // Adjusted for better positioning
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
       const offsetPosition = elementPosition - navHeight;
 
       window.scrollTo({
@@ -127,12 +132,10 @@ const Navbar: React.FC<NavbarProps> = (props) => {
     }
   }, []);
 
-  // Close dropdown when clicking outside (but not on the settings button)
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      
-      // Don't close if clicking on the settings button or inside the dropdown
       if (
         dropdownRef.current && 
         !dropdownRef.current.contains(target) &&
@@ -142,11 +145,9 @@ const Navbar: React.FC<NavbarProps> = (props) => {
         setIsDropdownVisible(false);
       }
     };
-
     if (isDropdownVisible) {
       document.addEventListener('mousedown', handleClickOutside);
     }
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -159,11 +160,9 @@ const Navbar: React.FC<NavbarProps> = (props) => {
         setRightContentDimensions({ width, height });
       }
     });
-
     if (rightContentRef.current) {
       resizeObserver.observe(rightContentRef.current);
     }
-
     return () => resizeObserver.disconnect();
   }, []);
 
@@ -172,12 +171,17 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   }, []);
 
   const navContentHeight = '54px';
+  const navLinks = [
+    { id: 'about', label: 'About' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'contact', label: 'Contact' }
+  ];
+
   return (
     <>
       {/* Left Navigation Section - Logo */}
       <motion.nav 
         initial={{ opacity: 0, y: -20 }}
-        // --- Animate on load, no dependency on `isLoading` ---
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
         style={{
@@ -198,7 +202,6 @@ const Navbar: React.FC<NavbarProps> = (props) => {
       {/* Right Navigation Section - Menu Items */}
       <motion.nav 
         initial={{ opacity: 0, y: -20 }}
-        // --- Animate on load, no dependency on `isLoading` ---
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
         style={{
@@ -223,32 +226,39 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           aberrationIntensity={1}
           displacementScale={15}
           overLight={true}
-          blurAmount={0}
-          mode='shader'
+          blurAmount={8}
+          mode='standard'
           isElastic={true}
         />        
         <div ref={rightContentRef} style={{ position: 'absolute', top: 0, left: 0 }}>
             <div className="flex items-center justify-end font-sans h-full mx-auto px-6 relative" style={{height: navContentHeight}}>
-              <div className="flex items-center space-x-4 text-sm text-white/80">
+              <div className="flex items-center space-x-4 text-sm">
                 <div className="hidden md:flex items-center space-x-8">
-                  <button
-                    onClick={() => scrollToSection('about')}
-                    className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none"
-                  >
-                    About
-                  </button>
-                  <button
-                    onClick={() => scrollToSection('projects')}
-                    className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none"
-                  >
-                    Projects
-                  </button>
-                  <button
-                    onClick={() => scrollToSection('contact')}
-                    className="hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none"
-                  >
-                    Contact
-                  </button>
+                  {/* -- MODIFIED: Dynamic nav buttons with active indicator -- */}
+                  {navLinks.map((link) => (
+                    <button
+                      key={link.id}
+                      onClick={() => scrollToSection(link.id)}
+                      className={`relative hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none py-2
+                        ${activeSection === link.id
+                          ? 'text-white'
+                          : 'text-white/70'
+                        }`
+                      }
+                    >
+                      {link.label}
+                      {activeSection === link.id && (
+                        <motion.div
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
+                          layoutId="active-nav-link-indicator"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          style={{ borderRadius: '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
+                        />
+                      )}
+                    </button>
+                  ))}
                 </div>
                   {/* Dark Mode Toggle Icon */}
                 <motion.button
@@ -257,7 +267,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                   aria-label="Toggle dark mode"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                >                  {/* ...existing dark mode icon code... */}
+                >
                   <motion.div
                     className="relative w-5 h-5 flex items-center justify-center"
                     animate={{ 
@@ -271,7 +281,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                       duration: 0.4
                     }}
                   >
-                    {/* Moon Icon - Shows in Light Mode */}
+                    {/* Moon Icon */}
                     <motion.svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="absolute w-5 h-5 text-blue-200"
@@ -290,7 +300,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                       <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
                     </motion.svg>
                     
-                    {/* Sun Icon - Shows in Dark Mode */}
+                    {/* Sun Icon */}
                     <motion.svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="absolute w-5 h-5 text-yellow-300"
@@ -308,7 +318,8 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                     >
                       <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
                     </motion.svg>
-                  </motion.div>                </motion.button>
+                  </motion.div>
+                </motion.button>
                 <button
                   ref={settingsButtonRef}
                   onClick={handleToggleDropdown}
@@ -316,7 +327,8 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                   aria-label="Toggle sky controls"
                 >
                   <SettingsIcon isActive={isDropdownVisible} />
-                </button>              </div>
+                </button>
+              </div>
             </div>
         </div>
         

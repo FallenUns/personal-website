@@ -67,8 +67,9 @@ const ProjectCard = memo(({ project }: { project: typeof projects[0] }) => {
         saturation={150}
         aberrationIntensity={1}
         displacementScale={15}
-        overLight={true}
-        blurAmount={0}
+        overLight={false}
+        blurAmount={12}
+        mode='standard'
       >
         <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
           <h2 className="relative text-xl font-bold mb-2 text-white [text-shadow:0_2px_5px_rgba(0,0,0,1)]">{project.title}</h2>

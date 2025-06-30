@@ -40,8 +40,12 @@ const HeroSection: React.FC = () => {
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
                 className="hover:bg-white/20 transition-all duration-300"
                 aberrationIntensity={1}
-                isElastic={true}
-                elasticity={0.2}
+                elasticity={0.1}
+                blurAmount={12}
+                saturation={150}
+                displacementScale={15}
+                overLight={false}
+                mode='standard'
                 onClick={() => {
                   const projectsSection = document.getElementById('projects');
                   if (projectsSection) {
@@ -67,8 +71,12 @@ const HeroSection: React.FC = () => {
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
                 className="hover:bg-white/20 transition-all duration-300"
                 aberrationIntensity={1}
-                isElastic={true}
-                elasticity={0.2}
+                elasticity={0.1}
+                blurAmount={12}
+                saturation={150}
+                displacementScale={15}
+                overLight={false}
+                mode='standard'
                 onClick={() => {
                     const contactSection = document.getElementById('contact');
                     if (contactSection) {

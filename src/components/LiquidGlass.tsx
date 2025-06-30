@@ -46,8 +46,6 @@ const GlassFilter: React.FC<GlassFilterProps> = ({
   id,
   displacementScale,
   aberrationIntensity,
-  width,
-  height,
   mode,
   shaderMapUrl,
 }) => (
@@ -383,12 +381,8 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     boxShadow: overLight
       ? "0px 16px 70px rgba(0, 0, 0, 0.75)"
       : "0 8px 32px rgba(0, 0, 0, 0.3), 0 -10px 25px inset rgba(0, 0, 0, 0.15)",
-    backdropFilter: `url(#${id}) blur(${
-      (overLight ? 12 : 4) + blurAmount * 2
-    }px) saturate(${saturation}%)`,
-    WebkitBackdropFilter: `url(#${id}) blur(${
-      (overLight ? 12 : 4) + blurAmount * 2
-    }px) saturate(${saturation}%)`,
+    backdropFilter: `url(#${id}) blur(${blurAmount}px) saturate(${saturation}%)`,
+    WebkitBackdropFilter: `url(#${id}) blur(${blurAmount}px) saturate(${saturation}%)`,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
