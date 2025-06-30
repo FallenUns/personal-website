@@ -20,6 +20,36 @@ const projects = [
     title: 'Project Three',
     content: 'A brief and engaging description of what this project is about, its purpose, and the technologies used.',
   },
+  // {
+  //   id: 4,
+  //   title: 'Project One',
+  //   content: 'A brief and engaging description of what this project is about, its purpose, and the technologies used.',
+  // },
+  // {
+  //   id: 5,
+  //   title: 'Project Two',
+  //   content: 'A brief and engaging description of what this project is about, its purpose, and the technologies used.',
+  // },
+  // {
+  //   id: 6,
+  //   title: 'Project Three',
+  //   content: 'A brief and engaging description of what this project is about, its purpose, and the technologies used.',
+  // },
+  //   {
+  //   id: 7,
+  //   title: 'Project One',
+  //   content: 'A brief and engaging description of what this project is about, its purpose, and the technologies used.',
+  // },
+  // {
+  //   id: 8,
+  //   title: 'Project Two',
+  //   content: 'A brief and engaging description of what this project is about, its purpose, and the technologies used.',
+  // },
+  // {
+  //   id: 9,
+  //   title: 'Project Three',
+  //   content: 'A brief and engaging description of what this project is about, its purpose, and the technologies used.',
+  // },
 ];
 
 const ProjectCard = memo(({ project }: { project: typeof projects[0] }) => {
@@ -31,13 +61,14 @@ const ProjectCard = memo(({ project }: { project: typeof projects[0] }) => {
       <LiquidGlass
         width={cardWidth}
         height={cardHeight}
-        blur={12}
         positioning="relative"
         style={{ borderRadius: '32px' }}
-        elasticity={0.08}
-        edgeRefraction={0.2}
-        borderType='dynamic'
-        borderWidth={2}
+        elasticity={0.1}
+        saturation={150}
+        aberrationIntensity={1}
+        displacementScale={15}
+        overLight={true}
+        blurAmount={0}
       >
         <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
           <h2 className="relative text-xl font-bold mb-2 text-white [text-shadow:0_2px_5px_rgba(0,0,0,1)]">{project.title}</h2>

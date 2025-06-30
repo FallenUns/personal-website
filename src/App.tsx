@@ -9,6 +9,20 @@ import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
 
+// Function to get the background color based on the hour
+const getLoaderBackgroundColor = (hour: number) => {
+  if (hour >= 5 && hour < 8) { // Dawn
+    return 'rgb(247, 170, 107)';
+  } else if (hour >= 8 && hour < 17) { // Day
+    return 'rgb(64, 121, 196)';
+  } else if (hour >= 17 && hour < 20) { // Dusk
+    return 'rgb(62, 29, 93)';
+  } else { // Night
+    return 'rgb(0, 17, 82)';
+  }
+};
+
+
 // App content component that uses the loading hooks
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();
@@ -89,16 +103,18 @@ const AppContent: React.FC = () => {
     });
   };
 
+  const loaderBackgroundColor = getLoaderBackgroundColor(currentTime);
+
   return (
     <>
       {/* The circular loader will appear in the center during loading */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
-            className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm flex items-center justify-center"
+            className="fixed inset-0 z-[9999] flex items-center justify-center"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            animate={{ opacity: 1, backgroundColor: loaderBackgroundColor }}
+            exit={{ opacity: 0, backgroundColor: loaderBackgroundColor }}
             transition={{ duration: 0.3 }}
           >
             <CircularLoader />

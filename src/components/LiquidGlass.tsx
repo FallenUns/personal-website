@@ -1,106 +1,203 @@
-// src/components/LiquidGlass.tsx
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useId,
+  useCallback,
+} from "react";
+import { motion, useSpring } from "framer-motion";
+import {
+  displacementMap,
+  polarDisplacementMap,
+  prominentDisplacementMap,
+} from "../utils/utils";
 
-import React, { useState, useEffect, useRef, useId, useCallback, useMemo } from 'react';
-import { motion, useSpring } from 'framer-motion';
-
-// ... (utility functions `smoothStep`, `texture` remain the same)
-function smoothStep(a: number, b: number, t: number) {
-  t = Math.max(0, Math.min(1, (t - a) / (b - a)));
-  return t * t * (3 - 2 * t);
-}
-
-function texture(x: number, y: number) {
-  return { type: 't', x, y };
-}
-
-// Cache for the expensive filter calculation to improve performance
-const filterCache = new Map<string, { href: string; scale: number }>();
-
-// Pre-generate filter for common sizes to avoid render delays
-const preGenerateFilter = (width: number, height: number, edgeRefraction: number = 0.1) => {
-  const w = Math.round(width);
-  const h = Math.round(height);
-  if (w === 0 || h === 0) return;
-  
-  const cacheKey = `${w}_${h}_${edgeRefraction}`;
-  if (filterCache.has(cacheKey)) return;
-
-  const fragmentShader = (uv: { x: number; y: number }) => {
-    const aspect = w / h;
-    const ix = (uv.x - 0.5) * aspect;
-    const iy = uv.y - 0.5;
-    const distToEdge = 0.5 - Math.max(Math.abs(uv.x - 0.5), Math.abs(uv.y - 0.5));
-    const edgeFactor = smoothStep(0.0, 0.4, 1.0 - distToEdge / 0.5);
-    const displacement = edgeFactor * edgeRefraction;
-    const scale = 1.0 - displacement;
-    return texture((ix * scale) / aspect + 0.5, iy * scale + 0.5);
-  };
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const context = canvas.getContext('2d');
-  if (!context) return;
-
-  const data = new Uint8ClampedArray(w * h * 4);
-  let maxScale = 0;
-  const rawValues: number[] = [];
-  
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const pos = fragmentShader({ x: x / w, y: y / h });
-      const dx = pos.x * w - x;
-      const dy = pos.y * h - y;
-      maxScale = Math.max(maxScale, Math.abs(dx), Math.abs(dy));
-      rawValues.push(dx, dy);
-    }
+// Helper to get the correct displacement map based on the mode
+const getMap = (
+  mode: "standard" | "polar" | "prominent" | "shader",
+  shaderMapUrl?: string
+) => {
+  switch (mode) {
+    case "standard":
+      return displacementMap;
+    case "polar":
+      return polarDisplacementMap;
+    case "prominent":
+      return prominentDisplacementMap;
+    case "shader":
+      return shaderMapUrl || displacementMap;
+    default:
+      return displacementMap;
   }
-  
-  maxScale = Math.max(1, maxScale);
-  let index = 0;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const pixelIndex = (y * w + x) * 4;
-      const r = rawValues[index++] / maxScale + 0.5;
-      const g = rawValues[index++] / maxScale + 0.5;
-      data[pixelIndex] = r * 255;
-      data[pixelIndex + 1] = g * 255;
-      data[pixelIndex + 2] = 0;
-      data[pixelIndex + 3] = 255;
-    }
-  }
-  
-  context.putImageData(new ImageData(data, w, h), 0, 0);
-  
-  const filterAttrs = {
-    href: canvas.toDataURL(),
-    scale: maxScale,
-  };
-  
-  filterCache.set(cacheKey, filterAttrs);
-  return filterAttrs;
 };
 
+// --- ADVANCED SVG FILTER COMPONENT (from your reference) ---
+interface GlassFilterProps {
+  id: string;
+  displacementScale: number;
+  aberrationIntensity: number;
+  width: number;
+  height: number;
+  mode: "standard" | "polar" | "prominent" | "shader";
+  shaderMapUrl?: string;
+}
+
+const GlassFilter: React.FC<GlassFilterProps> = ({
+  id,
+  displacementScale,
+  aberrationIntensity,
+  width,
+  height,
+  mode,
+  shaderMapUrl,
+}) => (
+  <svg
+    style={{ position: "absolute", width: 0, height: 0 }}
+    aria-hidden="true"
+  >
+    <defs>
+      <filter
+        id={id}
+        x="-35%"
+        y="-35%"
+        width="170%"
+        height="170%"
+        colorInterpolationFilters="sRGB"
+      >
+        <feImage
+          id="feimage"
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          result="DISPLACEMENT_MAP"
+          href={getMap(mode, shaderMapUrl)}
+          preserveAspectRatio="xMidYMid slice"
+        />
+
+        {/* Create edge mask */}
+        <feColorMatrix
+          in="DISPLACEMENT_MAP"
+          type="matrix"
+          values="0.3 0.3 0.3 0 0 0.3 0.3 0.3 0 0 0.3 0.3 0.3 0 0 0 0 0 1 0"
+          result="EDGE_INTENSITY"
+        />
+        <feComponentTransfer in="EDGE_INTENSITY" result="EDGE_MASK">
+          <feFuncA
+            type="discrete"
+            tableValues={`0 ${aberrationIntensity * 0.05} 1`}
+          />
+        </feComponentTransfer>
+        <feOffset in="SourceGraphic" dx="0" dy="0" result="CENTER_ORIGINAL" />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="DISPLACEMENT_MAP"
+          scale={displacementScale * (mode === "shader" ? 1 : -1)}
+          xChannelSelector="R"
+          yChannelSelector="B"
+          result="RED_DISPLACED"
+        />
+        <feColorMatrix
+          in="RED_DISPLACED"
+          type="matrix"
+          values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"
+          result="RED_CHANNEL"
+        />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="DISPLACEMENT_MAP"
+          scale={
+            displacementScale *
+            ((mode === "shader" ? 1 : -1) - aberrationIntensity * 0.05)
+          }
+          xChannelSelector="R"
+          yChannelSelector="B"
+          result="GREEN_DISPLACED"
+        />
+        <feColorMatrix
+          in="GREEN_DISPLACED"
+          type="matrix"
+          values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0"
+          result="GREEN_CHANNEL"
+        />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="DISPLACEMENT_MAP"
+          scale={
+            displacementScale *
+            ((mode === "shader" ? 1 : -1) - aberrationIntensity * 0.1)
+          }
+          xChannelSelector="R"
+          yChannelSelector="B"
+          result="BLUE_DISPLACED"
+        />
+        <feColorMatrix
+          in="BLUE_DISPLACED"
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0"
+          result="BLUE_CHANNEL"
+        />
+        <feBlend
+          in="GREEN_CHANNEL"
+          in2="BLUE_CHANNEL"
+          mode="screen"
+          result="GB_COMBINED"
+        />
+        <feBlend
+          in="RED_CHANNEL"
+          in2="GB_COMBINED"
+          mode="screen"
+          result="RGB_COMBINED"
+        />
+        <feGaussianBlur
+          in="RGB_COMBINED"
+          stdDeviation={Math.max(0.1, 0.5 - aberrationIntensity * 0.1)}
+          result="ABERRATED_BLURRED"
+        />
+        <feComposite
+          in="ABERRATED_BLURRED"
+          in2="EDGE_MASK"
+          operator="in"
+          result="EDGE_ABERRATION"
+        />
+        <feComponentTransfer in="EDGE_MASK" result="INVERTED_MASK">
+          <feFuncA type="table" tableValues="1 0" />
+        </feComponentTransfer>
+        <feComposite
+          in="CENTER_ORIGINAL"
+          in2="INVERTED_MASK"
+          operator="in"
+          result="CENTER_CLEAN"
+        />
+        <feComposite
+          in="EDGE_ABERRATION"
+          in2="CENTER_CLEAN"
+          operator="over"
+        />
+      </filter>
+    </defs>
+  </svg>
+);
+
+// --- MAIN LIQUID GLASS COMPONENT (MERGED AND REFACTORED) ---
 interface LiquidGlassProps {
   children?: React.ReactNode;
   width?: number;
   height?: number;
   className?: string;
   style?: React.CSSProperties;
-  positioning?: 'fixed' | 'relative' | 'absolute';
-  blur?: number;
+  positioning?: "fixed" | "relative" | "absolute";
+  blurAmount?: number;
+  saturation?: number;
   isElastic?: boolean;
   elasticity?: number;
   aberrationIntensity?: number;
-  borderType?: 'none' | 'glow' | 'dynamic';
-  borderWidth?: number;
-  borderColor?: string;
-  edgeRefraction?: number;
-  disableShine?: boolean;
-  onClick?: () => void;
+  displacementScale?: number;
+  cornerRadius?: number;
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  overLight?: boolean;
+  mode?: "standard" | "polar" | "prominent" | "shader";
 }
-
-const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 const LiquidGlass: React.FC<LiquidGlassProps> = ({
   children,
@@ -108,262 +205,309 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   height = 200,
   className,
   style,
-  positioning = 'relative',
-  blur = 10,
+  positioning = "relative",
+  blurAmount = 10,
+  saturation = 120,
   isElastic = true,
   elasticity = 0.15,
-  aberrationIntensity = 0.75,
-  borderType = 'none',
-  borderWidth = 1,
-  borderColor = 'rgba(255, 255, 255, 0.5)',
-  edgeRefraction = 0.1,
-  disableShine = false,
+  aberrationIntensity = 1,
+  displacementScale = 50,
+  cornerRadius = 24,
+  overLight = false,
+  mode = "standard",
   onClick,
 }) => {
   const id = useId();
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Generate filter synchronously to avoid render delays
-  const filterAttrs = useMemo(() => {
-    const w = Math.round(width ?? 0);
-    const h = Math.round(height ?? 0);
-    if (w === 0 || h === 0) return { href: TRANSPARENT_PIXEL, scale: 50 };
-    
-    const cacheKey = `${w}_${h}_${edgeRefraction}`;
-    let cachedFilter = filterCache.get(cacheKey);
-    
-    if (!cachedFilter) {
-      // Generate immediately if not cached
-      cachedFilter = preGenerateFilter(w, h, edgeRefraction);
-    }
-    
-    return cachedFilter || { href: TRANSPARENT_PIXEL, scale: 50 };
-  }, [width, height, edgeRefraction]);
 
   const [isHovering, setIsHovering] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isActive, setIsActive] = useState(false);
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [globalMousePos, setGlobalMousePos] = useState({ x: -1, y: -1 });
+
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const initialPosition = useRef({ x: 0, y: 0 });
-  const [position, setPosition] = useState({ x: window.innerWidth / 2 - width / 2, y: window.innerHeight / 2 - height / 2 });
-    
-  const [globalMousePos, setGlobalMousePos] = useState({ x: -1, y: -1 });
+  const [position, setPosition] = useState({
+    x: window.innerWidth / 2 - width / 2,
+    y: window.innerHeight / 2 - height / 2,
+  });
 
-    const smoothTx = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
-    const smoothTy = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
-    const smoothScaleX = useSpring(1, { stiffness: 500, damping: 40, mass: 1 });
-    const smoothScaleY = useSpring(1, { stiffness: 500, damping: 40, mass: 1 });
+  const smoothTx = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
+  const smoothTy = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
+  const smoothScaleX = useSpring(1, { stiffness: 500, damping: 40, mass: 1 });
+  const smoothScaleY = useSpring(1, { stiffness: 500, damping: 40, mass: 1 });
 
-    const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
-        setGlobalMousePos({ x: e.clientX, y: e.clientY });
-    }, []);
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
+    setGlobalMousePos({ x: e.clientX, y: e.clientY });
+  }, []);
 
-    useEffect(() => {
-        if (isElastic) {
-            window.addEventListener('mousemove', handleGlobalMouseMove);
-            return () => window.removeEventListener('mousemove', handleGlobalMouseMove);
-        }
-    }, [isElastic, handleGlobalMouseMove]);
-
-    useEffect(() => {
-        if (!isElastic || !containerRef.current) {
-            smoothTx.set(0);
-            smoothTy.set(0);
-            smoothScaleX.set(1);
-            smoothScaleY.set(1);
-            return;
-        }
-
-        const isMouseUninitialized = globalMousePos.x === -1;
-        const rect = containerRef.current.getBoundingClientRect();
-        
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        
-        const deltaX = globalMousePos.x - centerX;
-        const deltaY = globalMousePos.y - centerY;
-        
-        const edgeDistanceX = Math.max(0, Math.abs(deltaX) - rect.width / 2);
-        const edgeDistanceY = Math.max(0, Math.abs(deltaY) - rect.height / 2);
-        const edgeDistance = Math.sqrt(edgeDistanceX * edgeDistanceX + edgeDistanceY * edgeDistanceY);
-        
-        const activationZone = 200;
-        
-        if (edgeDistance > activationZone || isMouseUninitialized) {
-            smoothTx.set(0);
-            smoothTy.set(0);
-            smoothScaleX.set(1);
-            smoothScaleY.set(1);
-            return;
-        }
-        
-        const fadeInFactor = 1 - edgeDistance / activationZone;
-        const centerDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        
-        const tx = deltaX * elasticity * 0.4 * fadeInFactor;
-        const ty = deltaY * elasticity * 0.4 * fadeInFactor;
-        smoothTx.set(tx);
-        smoothTy.set(ty);
-        
-        const normalizedX = centerDistance === 0 ? 0 : deltaX / centerDistance;
-        const normalizedY = centerDistance === 0 ? 0 : deltaY / centerDistance;
-        const stretchIntensity = Math.min(centerDistance / 300, 1) * elasticity * fadeInFactor;
-        
-        const scaleX = 1 + Math.abs(normalizedX) * stretchIntensity * 0.6 - Math.abs(normalizedY) * stretchIntensity * 0.3;
-        const scaleY = 1 + Math.abs(normalizedY) * stretchIntensity * 0.6 - Math.abs(normalizedX) * stretchIntensity * 0.3;
-        
-        smoothScaleX.set(scaleX);
-        smoothScaleY.set(scaleY);
-
-    }, [globalMousePos, isElastic, elasticity, smoothTx, smoothTy, smoothScaleX, smoothScaleY]);
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (positioning !== 'fixed') return;
-    isDragging.current = true;
-    if (containerRef.current) {
-        containerRef.current.style.cursor = 'grabbing';
+  useEffect(() => {
+    if (isElastic) {
+      window.addEventListener("mousemove", handleGlobalMouseMove);
+      return () => window.removeEventListener("mousemove", handleGlobalMouseMove);
     }
+  }, [isElastic, handleGlobalMouseMove]);
+
+  useEffect(() => {
+    if (!isElastic || !containerRef.current) {
+      smoothTx.set(0);
+      smoothTy.set(0);
+      smoothScaleX.set(1);
+      smoothScaleY.set(1);
+      return;
+    }
+    const isMouseUninitialized = globalMousePos.x === -1;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const deltaX = globalMousePos.x - centerX;
+    const deltaY = globalMousePos.y - centerY;
+    const edgeDistanceX = Math.max(0, Math.abs(deltaX) - rect.width / 2);
+    const edgeDistanceY = Math.max(0, Math.abs(deltaY) - rect.height / 2);
+    const edgeDistance = Math.sqrt(
+      edgeDistanceX * edgeDistanceX + edgeDistanceY * edgeDistanceY
+    );
+    const activationZone = 200;
+
+    if (edgeDistance > activationZone || isMouseUninitialized) {
+      smoothTx.set(0);
+      smoothTy.set(0);
+      smoothScaleX.set(1);
+      smoothScaleY.set(1);
+      return;
+    }
+
+    const fadeInFactor = 1 - edgeDistance / activationZone;
+    const centerDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const tx = deltaX * elasticity * 0.4 * fadeInFactor;
+    const ty = deltaY * elasticity * 0.4 * fadeInFactor;
+    smoothTx.set(tx);
+    smoothTy.set(ty);
+
+    const normalizedX = centerDistance === 0 ? 0 : deltaX / centerDistance;
+    const normalizedY = centerDistance === 0 ? 0 : deltaY / centerDistance;
+    const stretchIntensity =
+      (Math.min(centerDistance / 300, 1) * elasticity * fadeInFactor);
+    const scaleX =
+      1 +
+      Math.abs(normalizedX) * stretchIntensity * 0.6 -
+      Math.abs(normalizedY) * stretchIntensity * 0.3;
+    const scaleY =
+      1 +
+      Math.abs(normalizedY) * stretchIntensity * 0.6 -
+      Math.abs(normalizedX) * stretchIntensity * 0.3;
+    smoothScaleX.set(scaleX);
+    smoothScaleY.set(scaleY);
+  }, [
+    globalMousePos,
+    isElastic,
+    elasticity,
+    smoothTx,
+    smoothTy,
+    smoothScaleX,
+    smoothScaleY,
+  ]);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsActive(true);
+    if (positioning !== "fixed") return;
+    isDragging.current = true;
+    if (containerRef.current) containerRef.current.style.cursor = "grabbing";
     dragStart.current = { x: e.clientX, y: e.clientY };
     initialPosition.current = { x: position.x, y: position.y };
     e.preventDefault();
   };
-  const handleMouseMoveDraggable = useCallback((e: MouseEvent) => {
-    if (positioning === 'fixed' && isDragging.current) {
-      const deltaX = e.clientX - dragStart.current.x;
-      const deltaY = e.clientY - dragStart.current.y;
-      const newX = initialPosition.current.x + deltaX;
-      const newY = initialPosition.current.y + deltaY;
-      const constrainedX = Math.max(10, Math.min(window.innerWidth - (width ?? 0) - 10, newX));
-      const constrainedY = Math.max(10, Math.min(window.innerHeight - (height ?? 0) - 10, newY));
-      setPosition({ x: constrainedX, y: constrainedY });
-    }
-  }, [width, height, positioning]);
+
   const handleMouseUp = useCallback(() => {
-    if (positioning !== 'fixed') return;
+    setIsActive(false);
+    if (positioning !== "fixed") return;
     isDragging.current = false;
-    if (containerRef.current) {
-        containerRef.current.style.cursor = 'grab';
-    }
+    if (containerRef.current) containerRef.current.style.cursor = "grab";
   }, [positioning]);
+
+  const handleMouseMoveDraggable = useCallback(
+    (e: MouseEvent) => {
+      if (positioning === "fixed" && isDragging.current) {
+        const deltaX = e.clientX - dragStart.current.x;
+        const deltaY = e.clientY - dragStart.current.y;
+        const newX = initialPosition.current.x + deltaX;
+        const newY = initialPosition.current.y + deltaY;
+        const constrainedX = Math.max(
+          10,
+          Math.min(window.innerWidth - (width ?? 0) - 10, newX)
+        );
+        const constrainedY = Math.max(
+          10,
+          Math.min(window.innerHeight - (height ?? 0) - 10, newY)
+        );
+        setPosition({ x: constrainedX, y: constrainedY });
+      }
+    },
+    [width, height, positioning]
+  );
+
   useEffect(() => {
-    if (positioning === 'fixed') {
-        document.addEventListener('mousemove', handleMouseMoveDraggable);
-        document.addEventListener('mouseup', handleMouseUp);
-        
-        return () => {
-          document.removeEventListener('mousemove', handleMouseMoveDraggable);
-          document.removeEventListener('mouseup', handleMouseUp);
-        };
+    document.addEventListener("mouseup", handleMouseUp);
+    if (positioning === "fixed") {
+      document.addEventListener("mousemove", handleMouseMoveDraggable);
     }
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMoveDraggable);
+    };
   }, [handleMouseMoveDraggable, handleMouseUp, positioning]);
-  
 
   const handleMouseLeaveCombined = useCallback(() => {
-      setIsHovering(false);
-      if (isElastic) {
-          setGlobalMousePos({ x: -1, y: -1 });
-      }
+    setIsHovering(false);
+    if (isElastic) {
+      setGlobalMousePos({ x: -1, y: -1 });
+    }
   }, [isElastic]);
-  
+
   const handleMouseMoveCombined = (e: React.MouseEvent<HTMLDivElement>) => {
-    setMousePos({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-  };  const containerStyle: React.CSSProperties = {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMouseOffset({
+      x: ((e.clientX - rect.left - rect.width / 2) / rect.width) * 100,
+      y: ((e.clientY - rect.top - rect.height / 2) / rect.height) * 100,
+    });
+  };
+
+  const containerStyle: React.CSSProperties = {
     ...style,
     position: positioning,
     width: `${width}px`,
     height: `${height}px`,
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.25), 0 -10px 25px inset rgba(0, 0, 0, 0.15)',
-    backdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(0.87) saturate(1.4)`,
-    WebkitBackdropFilter: `url(#${id}) blur(${blur}px) contrast(1.2) brightness(0.87) saturate(1.4)`,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    borderRadius: `${cornerRadius}px`,
+    boxShadow: overLight
+      ? "0px 16px 70px rgba(0, 0, 0, 0.75)"
+      : "0 8px 32px rgba(0, 0, 0, 0.3), 0 -10px 25px inset rgba(0, 0, 0, 0.15)",
+    backdropFilter: `url(#${id}) blur(${
+      (overLight ? 12 : 4) + blurAmount * 2
+    }px) saturate(${saturation}%)`,
+    WebkitBackdropFilter: `url(#${id}) blur(${
+      (overLight ? 12 : 4) + blurAmount * 2
+    }px) saturate(${saturation}%)`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    transition: "box-shadow 0.3s ease",
   };
 
-  if (positioning === 'fixed') {
+  if (positioning === "fixed") {
     containerStyle.top = `${position.y}px`;
     containerStyle.left = `${position.x}px`;
     containerStyle.zIndex = 9999;
-    containerStyle.cursor = 'grab';
+    containerStyle.cursor = "grab";
   }
 
-  const shineStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 'inherit',
-    background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%)`,
-    opacity: isHovering ? 1 : 0,
-    transition: 'opacity 0.15s ease-out',
-    pointerEvents: 'none',
+  const borderBaseStyle: React.CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    height,
+    width,
+    borderRadius: `${cornerRadius}px`,
+    pointerEvents: "none",
+    transition: "all 0.2s ease-out",
+    padding: "1.5px",
+    WebkitMask:
+      "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    maskComposite: "exclude",
   };
 
-  const borderElement = useMemo(() => {
-    if (borderType === 'glow') {
-      const borderGlowStyle: React.CSSProperties = {
-        position: 'absolute', inset: 0, borderRadius: 'inherit', pointerEvents: 'none',
-        border: `${borderWidth}px solid transparent`,
-        backgroundImage: isHovering
-            ? `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, ${borderColor} 0%, transparent 35%)`
-            : undefined,
-        backgroundClip: 'border-box', backgroundOrigin: 'border-box',
-        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-        maskComposite: 'exclude', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-        WebkitMaskComposite: 'xor', opacity: isHovering ? 1 : 0, transition: 'opacity 0.2s ease-out',
-      };
-      return <div style={borderGlowStyle} />;
-    }
-    if (borderType === 'dynamic') {
-      return <div className="dynamic-border" style={{ borderWidth: `${borderWidth}px` }} />;
-    }
-    return null;
-  }, [borderType, borderWidth, borderColor, isHovering, mousePos.x, mousePos.y]);
-  
-  const motionStyle: React.CSSProperties = { ...containerStyle };
-  if (isElastic) {
-    // @ts-ignore
-    motionStyle.translateX = smoothTx;
-    // @ts-ignore
-    motionStyle.translateY = smoothTy;
-    // @ts-ignore
-    motionStyle.scaleX = smoothScaleX;
-    // @ts-ignore
-    motionStyle.scaleY = smoothScaleY;
-  }
+  const borderStyle1: React.CSSProperties = {
+    ...borderBaseStyle,
+    mixBlendMode: "screen",
+    opacity: 0.25,
+    background: `linear-gradient(${
+      135 + mouseOffset.x * 1.2
+    }deg, rgba(255, 255, 255, 0.0) 0%, rgba(255, 255, 255, ${
+      0.12 + Math.abs(mouseOffset.x) * 0.008
+    }) ${Math.max(
+      10,
+      33 + mouseOffset.y * 0.3
+    )}%, rgba(255, 255, 255, ${
+      0.4 + Math.abs(mouseOffset.x) * 0.012
+    }) ${Math.min(90, 66 + mouseOffset.y * 0.4)}%, rgba(255, 255, 255, 0.0) 100%)`,
+  };
+
+  const borderStyle2: React.CSSProperties = {
+    ...borderBaseStyle,
+    mixBlendMode: "overlay",
+    opacity: isHovering ? 0.8 : 0.4,
+    background: `linear-gradient(${
+      135 + mouseOffset.x * 1.2
+    }deg, rgba(255, 255, 255, 0.0) 0%, rgba(255, 255, 255, ${
+      0.32 + Math.abs(mouseOffset.x) * 0.008
+    }) ${Math.max(
+      10,
+      33 + mouseOffset.y * 0.3
+    )}%, rgba(255, 255, 255, ${
+      0.6 + Math.abs(mouseOffset.x) * 0.012
+    }) ${Math.min(90, 66 + mouseOffset.y * 0.4)}%, rgba(255, 255, 255, 0.0) 100%)`,
+  };
+
+  const shineStyle: React.CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    height,
+    width,
+    borderRadius: `${cornerRadius}px`,
+    pointerEvents: "none",
+    transition: "opacity 0.2s ease-out",
+    opacity: isHovering || isActive ? 0.6 : 0,
+    backgroundImage:
+      "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 50%)",
+    mixBlendMode: "overlay",
+  };
 
   return (
     <>
-      <svg width="0" height="0" style={{ position: 'fixed', top: 0, left: 0, zIndex: -1 }}>
-        <defs>
-        <filter id={id} x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" colorInterpolationFilters="sRGB">
-            <feImage href={filterAttrs.href} width="100%" height="100%" result="map" preserveAspectRatio="none"/>
-            <feDisplacementMap in="SourceGraphic" in2="map" scale={filterAttrs.scale} xChannelSelector="R" yChannelSelector="G" result="displaced"/>
-            <feOffset in="displaced" dx={aberrationIntensity * 0.5} dy="0" result="redOffset"/>
-            <feOffset in="displaced" dx={-aberrationIntensity * 0.5} dy="0" result="blueOffset"/>
-            <feComposite in="displaced" in2="redOffset" operator="over" result="withRed"/>
-            <feComposite in="withRed" in2="blueOffset" operator="over"/>
-          </filter>
-        </defs>
-      </svg>
+      <GlassFilter
+        id={id}
+        width={width}
+        height={height}
+        displacementScale={displacementScale}
+        aberrationIntensity={aberrationIntensity}
+        mode={mode}
+      />
       <motion.div
         ref={containerRef}
         className={className}
-        onMouseDown={handleMouseDown}
+        style={{
+          ...containerStyle,
+          ...(isElastic && {
+            translateX: smoothTx,
+            translateY: smoothTy,
+            scaleX: smoothScaleX,
+            scaleY: smoothScaleY,
+          }),
+        }}
         onClick={onClick}
-        style={motionStyle}
+        onMouseDown={handleMouseDown}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeaveCombined}
         onMouseMove={handleMouseMoveCombined}
       >
-        {children}
-        {!disableShine && <div style={shineStyle} />}
-        {borderElement}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            color: "white",
+            textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+          }}
+        >
+          {children}
+        </div>
+        <div style={shineStyle} />
+        <span style={borderStyle1} />
+        <span style={borderStyle2} />
       </motion.div>
     </>
   );
 };
 
 export default LiquidGlass;
-export { preGenerateFilter };

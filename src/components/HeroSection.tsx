@@ -36,14 +36,10 @@ const HeroSection: React.FC = () => {
             <LiquidGlass
                 width={180}
                 height={44}
-                blur={4}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
                 className="hover:bg-white/20 transition-all duration-300"
                 aberrationIntensity={1}
-                borderType='dynamic'
-                borderWidth={1.5}
-                edgeRefraction={0.5}
                 isElastic={true}
                 elasticity={0.2}
                 onClick={() => {
@@ -67,14 +63,10 @@ const HeroSection: React.FC = () => {
             <LiquidGlass
                 width={180}
                 height={44}
-                blur={4}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
                 className="hover:bg-white/20 transition-all duration-300"
                 aberrationIntensity={1}
-                borderType='dynamic'
-                borderWidth={1.5}
-                edgeRefraction={0.5}
                 isElastic={true}
                 elasticity={0.2}
                 onClick={() => {

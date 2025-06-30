@@ -60,15 +60,14 @@ const SkyControllerDropdown: React.FC<SkyControllerDropdownProps> = memo((props)
         >            <LiquidGlass
                 width={300}
                 height={180}
-                blur={15}
                 positioning="relative"
                 style={{ borderRadius: '24px' }}
-                isElastic={false}
-                edgeRefraction={0.1}
+                isElastic={true}
+                elasticity={0.1}
+                blurAmount={0}
+                mode='shader'
                 aberrationIntensity={1}
-                disableShine={true}
-                borderType='dynamic'
-                borderWidth={1}
+                saturation={160}
             >
                 <div className="p-6 w-full text-white">
                     <h3 className="text-lg font-bold text-center mb-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Background Controls</h3>
@@ -219,13 +218,14 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           style={{
             borderRadius: '9999px',
           }}
-          edgeRefraction={0.07}
-          blur={8}
-          isElastic={true}
-          elasticity={0.03}
+          elasticity={0.1}
+          saturation={150}
           aberrationIntensity={1}
-          borderType='dynamic'
-          borderWidth={1}
+          displacementScale={15}
+          overLight={true}
+          blurAmount={0}
+          mode='shader'
+          isElastic={true}
         />        
         <div ref={rightContentRef} style={{ position: 'absolute', top: 0, left: 0 }}>
             <div className="flex items-center justify-end font-sans h-full mx-auto px-6 relative" style={{height: navContentHeight}}>
