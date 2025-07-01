@@ -43,7 +43,7 @@ const HeroSection: React.FC = () => {
                 elasticity={0.1}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={100}
+                displacementScale={50}
                 overLight={false}
                 mode='shader'
                 onClick={() => {
@@ -74,7 +74,7 @@ const HeroSection: React.FC = () => {
                 elasticity={0.1}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={100}
+                displacementScale={50}
                 overLight={false}
                 mode='shader'
                 onClick={() => {

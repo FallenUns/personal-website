@@ -74,9 +74,9 @@ const Contact: React.FC = () => {
                 className="hover:bg-white/20 transition-all duration-300"
                 aberrationIntensity={2}
                 elasticity={0.1}
-                blurAmount={12}
+                blurAmount={8}
                 saturation={150}
-                displacementScale={150}
+                displacementScale={50}
                 overLight={false}
                 mode='shader'
                 onClick={() => {

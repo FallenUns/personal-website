@@ -88,19 +88,21 @@ const useResponsiveCards = () => {
       
       if (screenWidth < 768) { // Mobile
         setVisibleCards(1);
-        setCardWidth(Math.min(340, screenWidth - 48)); // Full width minus padding
+        // Account for arrows (64px) + section padding (32px) + some margin (32px)
+        setCardWidth(Math.min(320, screenWidth - 128)); 
       } else if (screenWidth < 1024) { // Tablet
         setVisibleCards(1);
-        setCardWidth(Math.min(420, screenWidth - 64));
+        // Account for arrows (80px) + section padding (48px) + margin (32px)
+        setCardWidth(Math.min(450, screenWidth - 160)); 
       } else if (screenWidth < 1280) { // Small desktop
         setVisibleCards(2);
-        setCardWidth(380);
-      } else if (screenWidth < 1536) { // Medium desktop
+        setCardWidth(Math.min(450, (screenWidth - 200) / 2)); // Account for arrows + padding
+      } else if (screenWidth < 1600) { // Large Desktop (2 columns)
         setVisibleCards(2);
-        setCardWidth(450);
-      } else { // Large desktop
-        setVisibleCards(2);
-        setCardWidth(500);
+        setCardWidth(Math.min(520, (screenWidth - 240) / 2)); // Account for arrows + padding
+      } else { // XL Desktop (3 columns)
+        setVisibleCards(3);
+        setCardWidth(Math.min(420, (screenWidth - 280) / 3)); // Account for arrows + padding
       }
     };
 
@@ -169,8 +171,8 @@ const ProjectCard = memo(({ project, index, cardWidth }: {
     height: cardHeight,
     positioning: "relative" as const,
     style: { borderRadius: '24px' },
-    elasticity: 0.05,
-    saturation: 120,
+    elasticity: 1,
+    saturation: 150,
     aberrationIntensity: 0,
     displacementScale: 50,
     overLight: false,
@@ -276,7 +278,7 @@ const ProjectsSection: React.FC = () => {
     setCurrentIndex(newIndex);
     
     if (scrollContainerRef.current) {
-      const gap = window.innerWidth < 640 ? 24 : 32; // Responsive gap
+      const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32; // Fixed gap calculation
       const cardWidthWithGap = cardWidth + gap;
       const scrollPosition = newIndex * cardWidthWithGap;
       scrollContainerRef.current.scrollTo({
@@ -309,91 +311,102 @@ const ProjectsSection: React.FC = () => {
   return (
     <motion.section 
       id="projects" 
-      className="py-16 px-4 sm:px-6 lg:px-8 w-full pt-24"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-20%" }}
-      transition={{ 
-        duration: 0.8, 
-        ease: 'easeOut'
-      }}
+      className="py-16 px-2 sm:px-6 lg:px-8 w-full pt-24 overflow-visible" // Added overflow-visible
+      // ...existing motion props...
     >
-      <div className="max-w-7xl mx-auto w-full flex flex-col items-center">
+      <div className="max-w-none mx-auto w-full flex flex-col items-center">
         <motion.h2 
           className="text-3xl sm:text-4xl font-bold text-center text-white mb-8 sm:mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
+          // ...existing motion props
         >
           My Work
         </motion.h2>
 
-        {/* Navigation and Scrollable Container */}
-        <div className="relative w-full">
-          {/* Navigation Buttons */}
-          <div className="flex justify-between items-center mb-6 px-4 sm:px-0">
+        <div className="w-full overflow-visible"> {/* Added overflow-visible */}
+          {/* Container with proper spacing for arrows */}
+          <div className="relative flex items-center justify-center mx-auto px-8 sm:px-16 lg:px-20 overflow-visible"> {/* Added overflow-visible */}
+            {/* Left Arrow - positioned outside the cards */}
             <button
               onClick={handlePrevious}
               disabled={currentIndex === 0}
-              className="p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
+              className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5">
-                <path d="M15 18L9 12L15 6" />
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5"><path d="M15 18L9 12L15 6" /></svg>
             </button>
-            
-            <div className="flex space-x-2">
-              {Array.from({ length: Math.ceil(totalCards / (visibleCards === 1 ? 1 : visibleCards)) }).map((_, index) => {
-                const isActive = visibleCards === 1 
-                  ? currentIndex === index
-                  : Math.floor(currentIndex / visibleCards) === index;
-                
-                return (
-                  <button
-                    key={index}
-                    onClick={() => scrollToIndex(index * (visibleCards === 1 ? 1 : visibleCards))}
-                    className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                      isActive ? 'bg-orange-500' : 'bg-white/30'
-                    }`}
-                  />
-                );
-              })}
-            </div>
 
+            {/* Scrollable Cards Container */}
+            <motion.div
+              ref={scrollContainerRef}
+              className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scrollbar-hide horizontal-scroll snap-x snap-mandatory overflow-y-visible" // Added overflow-y-visible
+              style={{ 
+                width: visibleCards === 1 
+                  ? `${cardWidth}px` 
+                  : `calc(${visibleCards} * ${cardWidth}px + ${(visibleCards - 1) * (window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32)}px)`,
+                height: '380px', // Fixed height to prevent clipping
+                paddingTop: '20px', // Add top padding to prevent clipping
+                paddingBottom: '20px' // Add bottom padding for balance
+              }}
+              onScroll={handleScroll}
+              // ...existing motion props...
+            >
+              {projects.map((project, index) => (
+                <div key={project.id} className="flex-shrink-0 snap-start">
+                  <ProjectCard project={project} index={index} cardWidth={cardWidth} />
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Right Arrow - positioned outside the cards */}
             <button
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
-              className="p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
+              className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5">
-                <path d="M9 18L15 12L9 6" />
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5"><path d="M9 18L15 12L9 6" /></svg>
             </button>
           </div>
 
-          {/* Scrollable Cards Container */}
-          <motion.div
-            ref={scrollContainerRef}
-            className="flex gap-6 sm:gap-8 overflow-x-auto scrollbar-hide horizontal-scroll snap-x snap-mandatory pb-4 mx-auto px-4 sm:px-0"
-            style={{ 
-              maxWidth: visibleCards === 1 
-                ? `${cardWidth + 32}px` // Add padding for mobile
-                : `calc(${visibleCards} * ${cardWidth}px + ${(visibleCards - 1) * 32}px)`,
-              width: '100%'
-            }}
-            onScroll={handleScroll}
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-20%" }}
-            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-          >
-            {projects.map((project, index) => (
-              <div key={project.id} className="flex-shrink-0 snap-start">
-                <ProjectCard project={project} index={index} cardWidth={cardWidth} />
-              </div>
-            ))}
-          </motion.div>
+          {/* Navigation Dots Container */}
+          <div className="flex justify-center space-x-2 mt-8">
+            {/* The dot logic from the previous step goes here */}
+            {(() => {
+              if (visibleCards > 1) {
+                const pages = [[0, 1], [2, 3], [4]];
+                return pages.map((page, index) => {
+                  let activeDotIndex = 0;
+                  for (let i = 0; i < pages.length; i++) {
+                    if (pages[i].includes(currentIndex)) {
+                      activeDotIndex = i;
+                      break;
+                    }
+                  }
+                  if (currentIndex >= maxIndex) {
+                    activeDotIndex = pages.length - 1;
+                  }
+                  const isActive = activeDotIndex === index;
+                  return (
+                    <button
+                      key={`page-${index}`}
+                      onClick={() => scrollToIndex(page[0])}
+                      className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                        isActive ? 'bg-orange-500' : 'bg-white/30'
+                      }`}
+                    />
+                  );
+                });
+              } else {
+                return Array.from({ length: totalCards }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollToIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                      currentIndex === index ? 'bg-orange-500' : 'bg-white/30'
+                    }`}
+                  />
+                ));
+              }
+            })()}
+          </div>
         </div>
       </div>
     </motion.section>

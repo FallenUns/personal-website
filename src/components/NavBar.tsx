@@ -67,8 +67,8 @@ const SkyControllerDropdown: React.FC<SkyControllerDropdownProps> = memo((props)
                 elasticity={0.1}
                 saturation={150}
                 aberrationIntensity={1}
-                displacementScale={100}
-                overLight={true}
+                displacementScale={130}
+                overLight={false}
                 blurAmount={3}
                 mode='shader'
               >
@@ -257,8 +257,8 @@ const Navbar: React.FC<NavbarProps> = (props) => {
             }}
             elasticity={0.1}
             saturation={150}
-            aberrationIntensity={2}
-            displacementScale={150}
+            aberrationIntensity={1}
+            displacementScale={50}
             overLight={false}
             blurAmount={5}
             mode='shader'
