@@ -43,9 +43,9 @@ const HeroSection: React.FC = () => {
                 elasticity={0.1}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={15}
+                displacementScale={100}
                 overLight={false}
-                mode='standard'
+                mode='shader'
                 onClick={() => {
                   const projectsSection = document.getElementById('projects');
                   if (projectsSection) {
@@ -74,9 +74,9 @@ const HeroSection: React.FC = () => {
                 elasticity={0.1}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={15}
+                displacementScale={100}
                 overLight={false}
-                mode='standard'
+                mode='shader'
                 onClick={() => {
                     const contactSection = document.getElementById('contact');
                     if (contactSection) {

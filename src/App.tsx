@@ -8,6 +8,7 @@ import ProjectsSection from './components/ProjectsSection';
 import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
+import './components/performance.css';
 
 // Function to get the background color based on the hour
 const getLoaderBackgroundColor = (hour: number) => {

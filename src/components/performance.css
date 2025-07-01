@@ -1,0 +1,63 @@
+/* Performance optimizations for smooth scrolling */
+
+/* Enable hardware acceleration for frequently animated elements */
+.motion-element {
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Create a new layer */
+  backface-visibility: hidden;
+}
+
+/* Optimize project cards for smooth scrolling */
+.project-card {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  contain: layout style paint;
+  -webkit-transform: translateZ(0);
+}
+
+/* Optimize liquid glass elements */
+.liquid-glass {
+  will-change: filter, transform;
+  transform: translateZ(0);
+  contain: layout style paint;
+  -webkit-transform: translateZ(0);
+}
+
+/* Reduce repaints during scroll */
+.scroll-optimized {
+  will-change: scroll-position;
+  contain: layout;
+}
+
+/* Optimize background elements */
+.background-element {
+  will-change: auto;
+  transform: translateZ(0);
+  contain: strict;
+}
+
+/* Text rendering optimization */
+.optimized-text {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Disable animations on slower devices */
+@media (prefers-reduced-motion: reduce) {
+  .motion-element,
+  .project-card,
+  .liquid-glass {
+    animation: none !important;
+    transition: none !important;
+    will-change: auto;
+  }
+}
+
+/* Performance improvements for high refresh rate displays */
+@media (min-resolution: 120dpi) {
+  .liquid-glass {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+}

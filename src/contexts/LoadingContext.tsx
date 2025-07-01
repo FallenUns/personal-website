@@ -42,7 +42,6 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
   useEffect(() => {
     const safetyTimer = setTimeout(() => {
       if (isLoading) {
-        console.log('Safety timeout triggered - forcing loading completion');
         setProgress(100);
         setTimeout(() => setIsLoading(false), 300);
       }
@@ -117,14 +116,12 @@ export const useComponentLoader = (componentId: string) => {
   const { registerLoader, markLoaded } = useLoading();
   
   useEffect(() => {
-    console.log(`Registering component: ${componentId}`);
     registerLoader(componentId);
     
-    // Simulate component load time or mark as loaded immediately
+    // Reduced loading simulation time for better performance
     const loadTimer = setTimeout(() => {
-      console.log(`Marking component loaded: ${componentId}`);
       markLoaded(componentId);
-    }, 500 + Math.random() * 1000); // Increased random delay for a more visible progress
+    }, 100 + Math.random() * 200); // Reduced from 500-1500ms to 100-300ms
     
     return () => clearTimeout(loadTimer);
   }, [componentId, registerLoader, markLoaded]);

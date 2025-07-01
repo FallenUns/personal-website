@@ -92,12 +92,10 @@ export const useCriticalResourceLoader = () => {
   const { registerLoader, markLoaded } = useLoading();
 
   useEffect(() => {
-    console.log('Critical resources loader starting');
     registerLoader('critical-resources');
 
     // Simulate critical resource loading (fonts, initial CSS, etc.)
     const criticalLoadTimer = setTimeout(() => {
-      console.log('Critical resources loaded');
       markLoaded('critical-resources');
     }, 800); // Simulate 800ms for critical resources
 

@@ -71,13 +71,14 @@ const Contact: React.FC = () => {
                 height={44}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="border border-white/70 hover:bg-white/20 transition-all duration-300"
-                aberrationIntensity={1}
+                className="hover:bg-white/20 transition-all duration-300"
+                aberrationIntensity={2}
                 elasticity={0.1}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={15}
+                displacementScale={150}
                 overLight={false}
+                mode='shader'
                 onClick={() => {
                   window.location.href = 'mailto:patrickadrianus04@gmail.com';
                 }}
@@ -92,14 +93,14 @@ const Contact: React.FC = () => {
                 height={44}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="border border-white/70 hover:bg-white/20 transition-all duration-300"
-                aberrationIntensity={1}
+                className="hover:bg-white/20 transition-all duration-300"
+                aberrationIntensity={2}
                 elasticity={0.1}
                 blurAmount={12}
                 saturation={150}
                 displacementScale={15}
                 overLight={false}
-                mode='standard'
+                mode='shader'
                 onClick={() => {
                   window.open('https://linkedin.com/in/patrick-adrianus', '_blank');
                 }}

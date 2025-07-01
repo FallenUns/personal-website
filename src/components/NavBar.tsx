@@ -2,7 +2,7 @@ import React, { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import Logo from './Logo';
-import { useScrollSpy } from '../hooks/useScrollSpy'; 
+import { useScrollSpy } from '../hooks/useScrollSpy';
 
 // Interfaces for component props
 interface NavbarProps {
@@ -58,18 +58,20 @@ const SkyControllerDropdown: React.FC<SkyControllerDropdownProps> = memo((props)
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
             className="absolute top-full right-0 mt-2 z-50"
-        >            <LiquidGlass
+        >
+              <LiquidGlass
                 width={300}
                 height={180}
                 positioning="relative"
-                style={{ borderRadius: '24px' }}
-                isElastic={true}
+                style={{ borderRadius: '32px' }}
                 elasticity={0.1}
-                blurAmount={15}
-                mode='shader'
+                saturation={150}
                 aberrationIntensity={1}
-                saturation={160}
-            >
+                displacementScale={100}
+                overLight={true}
+                blurAmount={3}
+                mode='shader'
+              >
                 <div className="p-6 w-full text-white">
                     <h3 className="text-lg font-bold text-center mb-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Background Controls</h3>
                     <div className="mb-4">
@@ -111,7 +113,12 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   const rightContentRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
-  const [rightContentDimensions, setRightContentDimensions] = useState({ width: 0, height: 0 });
+  const [rightContentDimensions, setRightContentDimensions] = useState({
+    width: 0, // Start with 0 to measure actual content
+    height: 54  // A fixed height
+  });
+  const [contentDimensions, setContentDimensions] = useState({ width: 0, height: 0 });
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // -- NEW: Scroll spy setup --
   const sectionIds = ['about', 'projects', 'contact'];
@@ -137,7 +144,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(target) &&
         settingsButtonRef.current &&
         !settingsButtonRef.current.contains(target)
@@ -153,18 +160,44 @@ const Navbar: React.FC<NavbarProps> = (props) => {
     };
   }, [isDropdownVisible]);
 
+  // Measure the right content dimensions
   useEffect(() => {
-    const resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setRightContentDimensions({ width, height });
+    const measureContent = () => {
+      if (rightContentRef.current) {
+        const rect = rightContentRef.current.getBoundingClientRect();
+        const newWidth = Math.ceil(rect.width) + 48; // Add 24px padding on each side
+        const newHeight = 54;
+
+        setRightContentDimensions(prev => {
+          if (prev.width !== newWidth || prev.height !== newHeight) {
+            return { width: newWidth, height: newHeight };
+          }
+          return prev;
+        });
       }
+    };
+
+
+    // Initial measurement
+    measureContent();
+
+    // Create ResizeObserver for dynamic updates
+    const observer = new ResizeObserver(() => {
+      measureContent();
     });
+
     if (rightContentRef.current) {
-      resizeObserver.observe(rightContentRef.current);
+      observer.observe(rightContentRef.current);
     }
-    return () => resizeObserver.disconnect();
-  }, []);
+
+    // Also measure on window resize
+    window.addEventListener('resize', measureContent);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measureContent);
+    };
+  }, [activeSection]); // Re-measure when active section changes
 
   const handleToggleDropdown = useCallback(() => {
     setIsDropdownVisible(prev => !prev);
@@ -180,7 +213,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   return (
     <>
       {/* Left Navigation Section - Logo */}
-      <motion.nav 
+      <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
@@ -188,7 +221,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           position: 'fixed',
           zIndex: 50,
           top: '20px',
-          left: '3rem',
+          left: '48px', // Using consistent pixel values
         }}
       >
         <div
@@ -200,7 +233,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
       </motion.nav>
 
       {/* Right Navigation Section - Menu Items */}
-      <motion.nav 
+      <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
@@ -208,38 +241,52 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           position: 'fixed',
           zIndex: 50,
           top: '20px',
-          right: '3rem',
+          right: '48px', // Using consistent pixel values
           width: `${rightContentDimensions.width}px`,
           height: `${rightContentDimensions.height}px`,
           visibility: rightContentDimensions.width > 0 ? 'visible' : 'hidden',
         }}
       >
-        <LiquidGlass
-          width={rightContentDimensions.width}
-          height={rightContentDimensions.height}
-          positioning="absolute"
+        {rightContentDimensions.width > 0 && (
+          <LiquidGlass
+            width={rightContentDimensions.width}
+            height={rightContentDimensions.height}
+            positioning="relative"
+            style={{
+              borderRadius: '9999px', cursor: 'pointer',
+            }}
+            elasticity={0.1}
+            saturation={150}
+            aberrationIntensity={2}
+            displacementScale={150}
+            overLight={false}
+            blurAmount={5}
+            mode='shader'
+          />
+        )}
+        <div
           style={{
-            borderRadius: '9999px',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-          elasticity={0.1}
-          saturation={150}
-          aberrationIntensity={1}
-          displacementScale={15}
-          overLight={true}
-          blurAmount={8}
-          mode='standard'
-          isElastic={true}
-        />        
-        <div ref={rightContentRef} style={{ position: 'absolute', top: 0, left: 0 }}>
-            <div className="flex items-center justify-end font-sans h-full mx-auto px-6 relative" style={{height: navContentHeight}}>
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="hidden md:flex items-center space-x-8">
+        >
+            <div
+              ref={rightContentRef}
+              className="flex items-center justify-center font-sans h-full relative" style={{height: navContentHeight}}>
+              <div className="flex items-center space-x-3 text-sm">
+                <div className="hidden md:flex items-center space-x-6">
                   {/* -- MODIFIED: Dynamic nav buttons with active indicator -- */}
                   {navLinks.map((link) => (
                     <button
                       key={link.id}
                       onClick={() => scrollToSection(link.id)}
-                      className={`relative hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none py-2
+                      className={`relative hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none py-2 whitespace-nowrap
                         ${activeSection === link.id
                           ? 'text-white'
                           : 'text-white/70'
@@ -263,20 +310,20 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                   {/* Dark Mode Toggle Icon */}
                 <motion.button
                   onClick={props.onToggleDarkMode}
-                  className="p-2 rounded-full hover:bg-white/20 transition-colors duration-300"
+                  className="p-1.5 rounded-full hover:bg-white/20 transition-colors duration-300 flex-shrink-0"
                   aria-label="Toggle dark mode"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   <motion.div
                     className="relative w-5 h-5 flex items-center justify-center"
-                    animate={{ 
+                    animate={{
                       rotate: props.isDarkMode ? 180 : 0,
                       scale: props.isDarkMode ? 1 : 1
                     }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 400, 
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
                       damping: 25,
                       duration: 0.4
                     }}
@@ -287,31 +334,31 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                       className="absolute w-5 h-5 text-blue-200"
                       fill="currentColor"
                       viewBox="0 0 24 24"
-                      animate={{ 
+                      animate={{
                         opacity: props.isDarkMode ? 0 : 1,
                         scale: props.isDarkMode ? 0.5 : 1,
                         rotate: props.isDarkMode ? -90 : 0
                       }}
-                      transition={{ 
+                      transition={{
                         duration: 0.3,
                         ease: "easeInOut"
                       }}
                     >
                       <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
                     </motion.svg>
-                    
+
                     {/* Sun Icon */}
                     <motion.svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="absolute w-5 h-5 text-yellow-300"
                       fill="currentColor"
                       viewBox="0 0 24 24"
-                      animate={{ 
+                      animate={{
                         opacity: props.isDarkMode ? 1 : 0,
                         scale: props.isDarkMode ? 1 : 0.5,
                         rotate: props.isDarkMode ? 0 : 90
                       }}
-                      transition={{ 
+                      transition={{
                         duration: 0.3,
                         ease: "easeInOut"
                       }}
@@ -323,7 +370,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                 <button
                   ref={settingsButtonRef}
                   onClick={handleToggleDropdown}
-                  className="p-2 rounded-full hover:bg-white/20 transition-colors"
+                  className="p-1.5 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
                   aria-label="Toggle sky controls"
                 >
                   <SettingsIcon isActive={isDropdownVisible} />
@@ -331,7 +378,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
               </div>
             </div>
         </div>
-        
+
         <AnimatePresence>
             {isDropdownVisible && (
               <div ref={dropdownRef}>

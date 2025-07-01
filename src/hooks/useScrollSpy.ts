@@ -15,7 +15,7 @@ export const useScrollSpy = (
   }
 ): string | null => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
-  const { offset = 100, throttleMs = 100 } = options || {};
+  const { offset = 100, throttleMs = 50 } = options || {}; // Reduced throttle for better responsiveness
 
   const sectionElementsRef = useRef<{ [id: string]: { top: number; bottom: number } }>({});
 
@@ -44,38 +44,47 @@ export const useScrollSpy = (
 
 
   useEffect(() => {
-    const handleScroll = throttle(() => {
-      const scrollY = window.scrollY;
-      const sectionPositions = sectionElementsRef.current;
-      
-      let currentSection: string | null = null;
-      for (const id of sectionIds) {
-        const section = sectionPositions[id];
-        if (section && scrollY >= section.top && scrollY < section.bottom) {
-          currentSection = id;
-          break;
-        }
-      }
-      
-      if (currentSection === null) {
-        let lastVisibleSection: string | null = null;
-        for (const id of sectionIds) {
+    let ticking = false;
+    
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          const sectionPositions = sectionElementsRef.current;
+          
+          let currentSection: string | null = null;
+          for (const id of sectionIds) {
             const section = sectionPositions[id];
-            if (section && scrollY >= section.top) {
-                lastVisibleSection = id;
+            if (section && scrollY >= section.top && scrollY < section.bottom) {
+              currentSection = id;
+              break;
             }
-        }
-        currentSection = lastVisibleSection;
+          }
+          
+          if (currentSection === null) {
+            let lastVisibleSection: string | null = null;
+            for (const id of sectionIds) {
+                const section = sectionPositions[id];
+                if (section && scrollY >= section.top) {
+                    lastVisibleSection = id;
+                }
+            }
+            currentSection = lastVisibleSection;
+          }
+
+          setActiveSection(currentSection);
+          ticking = false;
+        });
+        ticking = true;
       }
+    };
 
-      setActiveSection(currentSection);
-    }, throttleMs);
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    const throttledHandleScroll = throttle(handleScroll, throttleMs);
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    throttledHandleScroll(); // Initial check
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', throttledHandleScroll);
     };
   }, [sectionIds, throttleMs]);
 
