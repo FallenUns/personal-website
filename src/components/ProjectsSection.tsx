@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useComponentLoader } from '../contexts/LoadingContext'; // Import the hook
@@ -77,6 +77,41 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
 
 DeviceMockup.displayName = 'DeviceMockup';
 
+// Hook for responsive card count
+const useResponsiveCards = () => {
+  const [visibleCards, setVisibleCards] = useState(2);
+  const [cardWidth, setCardWidth] = useState(500);
+
+  useEffect(() => {
+    const updateLayout = () => {
+      const screenWidth = window.innerWidth;
+      
+      if (screenWidth < 768) { // Mobile
+        setVisibleCards(1);
+        setCardWidth(Math.min(340, screenWidth - 48)); // Full width minus padding
+      } else if (screenWidth < 1024) { // Tablet
+        setVisibleCards(1);
+        setCardWidth(Math.min(420, screenWidth - 64));
+      } else if (screenWidth < 1280) { // Small desktop
+        setVisibleCards(2);
+        setCardWidth(380);
+      } else if (screenWidth < 1536) { // Medium desktop
+        setVisibleCards(2);
+        setCardWidth(450);
+      } else { // Large desktop
+        setVisibleCards(2);
+        setCardWidth(500);
+      }
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+
+  return { visibleCards, cardWidth };
+};
+
 // Memoize project data to prevent unnecessary re-creation
 const projects = [
   {
@@ -103,10 +138,29 @@ const projects = [
     technologies: ['Next.js', 'Framer Motion', 'CSS3'],
     category: 'Development'
   },
+  {
+    id: 4,
+    title: 'Mobile App',
+    description: 'Cross-platform mobile application with native performance',
+    mockupType: 'ui-ux',
+    technologies: ['React Native', 'Expo', 'Firebase'],
+    category: 'Mobile'
+  },
+  {
+    id: 5,
+    title: 'E-commerce',
+    description: 'Full-featured e-commerce platform with payment integration',
+    mockupType: 'web',
+    technologies: ['Next.js', 'Stripe', 'MongoDB'],
+    category: 'Development'
+  },
 ];
 
-const ProjectCard = memo(({ project, index }: { project: typeof projects[0]; index: number }) => {
-  const cardWidth = 380;
+const ProjectCard = memo(({ project, index, cardWidth }: { 
+  project: typeof projects[0]; 
+  index: number; 
+  cardWidth: number;
+}) => {
   const cardHeight = 340; 
 
   // Optimize LiquidGlass props - disable expensive features during scroll
@@ -129,7 +183,7 @@ const ProjectCard = memo(({ project, index }: { project: typeof projects[0]; ind
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
       transition={{ 
         duration: 0.5, 
         ease: 'easeOut',
@@ -210,11 +264,52 @@ ProjectCard.displayName = 'ProjectCard';
 
 const ProjectsSection: React.FC = () => {
   useComponentLoader('ProjectsSection'); // Register component for loading
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { visibleCards, cardWidth } = useResponsiveCards();
+
+  const totalCards = projects.length;
+  const maxIndex = Math.max(0, totalCards - visibleCards);
+
+  const scrollToIndex = (index: number) => {
+    const newIndex = Math.max(0, Math.min(maxIndex, index));
+    setCurrentIndex(newIndex);
+    
+    if (scrollContainerRef.current) {
+      const gap = window.innerWidth < 640 ? 24 : 32; // Responsive gap
+      const cardWidthWithGap = cardWidth + gap;
+      const scrollPosition = newIndex * cardWidthWithGap;
+      scrollContainerRef.current.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handlePrevious = () => {
+    const step = visibleCards === 1 ? 1 : 1; // Move one card at a time for better UX
+    scrollToIndex(currentIndex - step);
+  };
+
+  const handleNext = () => {
+    const step = visibleCards === 1 ? 1 : 1; // Move one card at a time for better UX
+    scrollToIndex(currentIndex + step);
+  };
+
+  // Handle scroll events to update current index
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const gap = window.innerWidth < 640 ? 24 : 32; // Responsive gap
+    const cardWidthWithGap = cardWidth + gap;
+    const scrollLeft = container.scrollLeft;
+    const newIndex = Math.round(scrollLeft / cardWidthWithGap);
+    setCurrentIndex(Math.max(0, Math.min(maxIndex, newIndex)));
+  };
 
   return (
     <motion.section 
       id="projects" 
-      className="py-16 px-4 w-full pt-24"
+      className="py-16 px-4 sm:px-6 lg:px-8 w-full pt-24"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20%" }}
@@ -223,9 +318,9 @@ const ProjectsSection: React.FC = () => {
         ease: 'easeOut'
       }}
     >
-      <div className="max-w-7xl mx-auto w-full">
+      <div className="max-w-7xl mx-auto w-full flex flex-col items-center">
         <motion.h2 
-          className="text-4xl font-bold text-center text-white mb-10"
+          className="text-3xl sm:text-4xl font-bold text-center text-white mb-8 sm:mb-10"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-20%" }}
@@ -233,35 +328,73 @@ const ProjectsSection: React.FC = () => {
         >
           My Work
         </motion.h2>
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-        >
-          {projects.map((project, index) => (
-            <ProjectCard key={project.id} project={project} index={index} />
-          ))}
-        </motion.div>
-        
-        {/* Pagination dots */}
-        <motion.div 
-          className="flex justify-center space-x-2"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.4 }}
-        >
-          {projects.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                index === 0 ? 'bg-orange-500' : 'bg-white/30'
-              }`}
-            />
-          ))}
-        </motion.div>
+
+        {/* Navigation and Scrollable Container */}
+        <div className="relative w-full">
+          {/* Navigation Buttons */}
+          <div className="flex justify-between items-center mb-6 px-4 sm:px-0">
+            <button
+              onClick={handlePrevious}
+              disabled={currentIndex === 0}
+              className="p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5">
+                <path d="M15 18L9 12L15 6" />
+              </svg>
+            </button>
+            
+            <div className="flex space-x-2">
+              {Array.from({ length: Math.ceil(totalCards / (visibleCards === 1 ? 1 : visibleCards)) }).map((_, index) => {
+                const isActive = visibleCards === 1 
+                  ? currentIndex === index
+                  : Math.floor(currentIndex / visibleCards) === index;
+                
+                return (
+                  <button
+                    key={index}
+                    onClick={() => scrollToIndex(index * (visibleCards === 1 ? 1 : visibleCards))}
+                    className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                      isActive ? 'bg-orange-500' : 'bg-white/30'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+
+            <button
+              onClick={handleNext}
+              disabled={currentIndex >= maxIndex}
+              className="p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5">
+                <path d="M9 18L15 12L9 6" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Scrollable Cards Container */}
+          <motion.div
+            ref={scrollContainerRef}
+            className="flex gap-6 sm:gap-8 overflow-x-auto scrollbar-hide horizontal-scroll snap-x snap-mandatory pb-4 mx-auto px-4 sm:px-0"
+            style={{ 
+              maxWidth: visibleCards === 1 
+                ? `${cardWidth + 32}px` // Add padding for mobile
+                : `calc(${visibleCards} * ${cardWidth}px + ${(visibleCards - 1) * 32}px)`,
+              width: '100%'
+            }}
+            onScroll={handleScroll}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+          >
+            {projects.map((project, index) => (
+              <div key={project.id} className="flex-shrink-0 snap-start">
+                <ProjectCard project={project} index={index} cardWidth={cardWidth} />
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </motion.section>
   );

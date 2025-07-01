@@ -8,7 +8,9 @@ const CircularLoader: React.FC = () => {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   // Calculate the stroke offset. As progress goes from 0 to 100, the offset goes from circumference to 0.
-  const strokeOffset = circumference - (progress / 100) * circumference;
+  // Ensure progress is always a valid number to prevent undefined values
+  const validProgress = Math.max(0, Math.min(100, progress || 0));
+  const strokeOffset = circumference - (validProgress / 100) * circumference;
 
   return (
     <motion.div

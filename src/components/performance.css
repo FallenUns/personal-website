@@ -43,6 +43,45 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hide scrollbars for horizontal scroll */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+/* Smooth horizontal scrolling */
+.horizontal-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Snap scrolling for better UX */
+.snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.snap-start {
+  scroll-snap-align: start;
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+
+/* Better scrolling on touch devices */
+@media (pointer: coarse) {
+  .horizontal-scroll {
+    scroll-padding: 20px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+}
+
 /* Disable animations on slower devices */
 @media (prefers-reduced-motion: reduce) {
   .motion-element,
