@@ -4,6 +4,7 @@ import React, {
     useRef,
     useId,
     useCallback,
+    useMemo,
     type CSSProperties,
 } from "react";
 import { motion, useSpring } from "framer-motion";
@@ -55,25 +56,24 @@ const GlassFilter: React.FC<GlassFilterProps> = ({
       position: "absolute", 
       width: width,
       height: height,
+      transform: 'translateZ(0)',
+      willChange: 'transform',
+      backfaceVisibility: 'hidden',
+      WebkitTransform: 'translateZ(0)',
+      WebkitBackfaceVisibility: 'hidden',
     }} 
     aria-hidden="true"
   >
     <defs>
-      <radialGradient id={`${id}-edge-mask`} cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="black" stopOpacity="0" />
-        <stop offset={`${Math.max(30, 80 - aberrationIntensity * 2)}%`} stopColor="black" stopOpacity="0" />
-        <stop offset="100%" stopColor="white" stopOpacity="1" />
-      </radialGradient>
       <filter 
         id={id} 
-        x="-35%" 
-        y="-35%" 
-        width="170%" 
-        height="170%" 
+        x="-20%" 
+        y="-20%" 
+        width="140%" 
+        height="140%" 
         colorInterpolationFilters="sRGB"
       >
         <feImage
-          id="feimage"
           x="0"
           y="0"
           width="100%"
@@ -83,102 +83,22 @@ const GlassFilter: React.FC<GlassFilterProps> = ({
           preserveAspectRatio="xMidYMid slice"
         />
 
-        {/* Create edge mask using the displacement map itself */}
-        <feColorMatrix
-          in="DISPLACEMENT_MAP"
-          type="matrix"
-          values="0.3 0.3 0.3 0 0
-                 0.3 0.3 0.3 0 0
-                 0.3 0.3 0.3 0 0
-                 0 0 0 1 0"
-          result="EDGE_INTENSITY"
-        />
-        <feComponentTransfer in="EDGE_INTENSITY" result="EDGE_MASK">
-          <feFuncA type="discrete" tableValues={`0 ${aberrationIntensity * 0.05} 1`} />
-        </feComponentTransfer>
-
-        {/* Original undisplaced image for center */}
-        <feOffset in="SourceGraphic" dx="0" dy="0" result="CENTER_ORIGINAL" />
-
-        {/* Red channel displacement with slight offset */}
+        {/* Simple displacement mapping */}
         <feDisplacementMap 
           in="SourceGraphic" 
           in2="DISPLACEMENT_MAP" 
           scale={displacementScale * (mode === "shader" ? 1 : -1)} 
           xChannelSelector="R" 
-          yChannelSelector="B" 
-          result="RED_DISPLACED" 
-        />
-        <feColorMatrix
-          in="RED_DISPLACED"
-          type="matrix"
-          values="1 0 0 0 0
-                 0 0 0 0 0
-                 0 0 0 0 0
-                 0 0 0 1 0"
-          result="RED_CHANNEL"
+          yChannelSelector="G" 
+          result="DISPLACED" 
         />
 
-        {/* Green channel displacement */}
-        <feDisplacementMap 
-          in="SourceGraphic" 
-          in2="DISPLACEMENT_MAP" 
-          scale={displacementScale * ((mode === "shader" ? 1 : -1) - aberrationIntensity * 0.05)} 
-          xChannelSelector="R" 
-          yChannelSelector="B" 
-          result="GREEN_DISPLACED" 
-        />
-        <feColorMatrix
-          in="GREEN_DISPLACED"
-          type="matrix"
-          values="0 0 0 0 0
-                 0 1 0 0 0
-                 0 0 0 0 0
-                 0 0 0 1 0"
-          result="GREEN_CHANNEL"
-        />
-
-        {/* Blue channel displacement with slight offset */}
-        <feDisplacementMap 
-          in="SourceGraphic" 
-          in2="DISPLACEMENT_MAP" 
-          scale={displacementScale * ((mode === "shader" ? 1 : -1) - aberrationIntensity * 0.1)} 
-          xChannelSelector="R" 
-          yChannelSelector="B" 
-          result="BLUE_DISPLACED" 
-        />
-        <feColorMatrix
-          in="BLUE_DISPLACED"
-          type="matrix"
-          values="0 0 0 0 0
-                 0 0 0 0 0
-                 0 0 1 0 0
-                 0 0 0 1 0"
-          result="BLUE_CHANNEL"
-        />
-
-        {/* Combine all channels with screen blend mode for chromatic aberration */}
-        <feBlend in="GREEN_CHANNEL" in2="BLUE_CHANNEL" mode="screen" result="GB_COMBINED" />
-        <feBlend in="RED_CHANNEL" in2="GB_COMBINED" mode="screen" result="RGB_COMBINED" />
-
-        {/* Add slight blur to soften the aberration effect */}
+        {/* Optional subtle blur for smoother effect */}
         <feGaussianBlur 
-          in="RGB_COMBINED" 
-          stdDeviation={Math.max(0.1, 0.5 - aberrationIntensity * 0.1)} 
-          result="ABERRATED_BLURRED" 
+          in="DISPLACED" 
+          stdDeviation={Math.max(0.1, aberrationIntensity * 0.3)} 
+          result="BLURRED" 
         />
-
-        {/* Apply edge mask to aberration effect */}
-        <feComposite in="ABERRATED_BLURRED" in2="EDGE_MASK" operator="in" result="EDGE_ABERRATION" />
-
-        {/* Create inverted mask for center */}
-        <feComponentTransfer in="EDGE_MASK" result="INVERTED_MASK">
-          <feFuncA type="table" tableValues="1 0" />
-        </feComponentTransfer>
-        <feComposite in="CENTER_ORIGINAL" in2="INVERTED_MASK" operator="in" result="CENTER_CLEAN" />
-
-        {/* Combine edge aberration with clean center */}
-        <feComposite in="EDGE_ABERRATION" in2="CENTER_CLEAN" operator="over" />
       </filter>
     </defs>
   </svg>
@@ -216,7 +136,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   isElastic = true,
   elasticity = 0.15,
   aberrationIntensity = 1,
-  displacementScale = 50,
+  displacementScale = 30, // Reduced default for subtler effect
   cornerRadius = 24,
   overLight = false,
   mode = "standard",
@@ -230,7 +150,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const optimizedElasticity = isLowPerf ? 0 : elasticity;
   const optimizedIsElastic = isLowPerf ? false : isElastic;
   const optimizedBlurAmount = isLowPerf ? Math.min(blurAmount, 5) : blurAmount;
-  const optimizedAberrationIntensity = isLowPerf ? Math.min(aberrationIntensity, 0.5) : aberrationIntensity;
+  const optimizedDisplacementScale = isLowPerf ? displacementScale * 0.5 : displacementScale;
 
   const [isHovering, setIsHovering] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -242,12 +162,54 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const elementWidth = initialWidth;
   const elementHeight = initialHeight;
 
-  // Framer Motion springs for smooth transformations
-  const smoothTx = useSpring(0, { stiffness: 200, damping: 25, mass: 0.8 });
-  const smoothTy = useSpring(0, { stiffness: 200, damping: 25, mass: 0.8 });
-  const smoothScaleX = useSpring(1, { stiffness: 250, damping: 28, mass: 0.7 });
-  const smoothScaleY = useSpring(1, { stiffness: 250, damping: 28, mass: 0.7 });
-  const smoothClickScale = useSpring(1, { stiffness: 500, damping: 25 });
+  // Memoize expensive calculations that depend on dimensions
+  const optimizedConstants = useMemo(() => ({
+    halfWidth: elementWidth * 0.5,
+    halfHeight: elementHeight * 0.5,
+    maxDimension: Math.max(elementWidth, elementHeight),
+    activationZoneBase: Math.max(elementWidth, elementHeight) * 1.5,
+    activationZone: Math.max(150, Math.min(300, Math.max(elementWidth, elementHeight) * 1.5)),
+  }), [elementWidth, elementHeight]);
+
+  const { halfWidth, halfHeight, activationZone } = optimizedConstants;
+  const activationZoneSquared = activationZone * activationZone;
+  const inverseActivationZone = 1 / activationZone;
+
+  // Framer Motion springs for smooth transformations - optimized for hardware acceleration
+  const smoothTx = useSpring(0, { 
+    stiffness: 200, 
+    damping: 25, 
+    mass: 0.8,
+    restDelta: 0.01,
+    restSpeed: 0.01
+  });
+  const smoothTy = useSpring(0, { 
+    stiffness: 200, 
+    damping: 25, 
+    mass: 0.8,
+    restDelta: 0.01,
+    restSpeed: 0.01
+  });
+  const smoothScaleX = useSpring(1, { 
+    stiffness: 250, 
+    damping: 28, 
+    mass: 0.7,
+    restDelta: 0.001,
+    restSpeed: 0.001
+  });
+  const smoothScaleY = useSpring(1, { 
+    stiffness: 250, 
+    damping: 28, 
+    mass: 0.7,
+    restDelta: 0.001,
+    restSpeed: 0.001
+  });
+  const smoothClickScale = useSpring(1, { 
+    stiffness: 500, 
+    damping: 25,
+    restDelta: 0.001,
+    restSpeed: 0.001
+  });
 
   // 2. USE EFFECT TO GENERATE THE SHADER MAP
   useEffect(() => {
@@ -279,7 +241,12 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     const isNearViewport = rect.top < window.innerHeight + 200 && rect.bottom > -200;
     
     if (isNearViewport) {
-      setGlobalMousePos({ x: e.clientX, y: e.clientY });
+      // Use requestAnimationFrame for smooth updates with built-in throttling
+      requestAnimationFrame(() => {
+        // Additional check to prevent stale updates
+        if (!containerRef.current) return;
+        setGlobalMousePos({ x: e.clientX, y: e.clientY });
+      });
     }
   }, [optimizedIsElastic]);
 
@@ -309,18 +276,28 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     }
 
     const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    const centerX = rect.left + halfWidth;
+    const centerY = rect.top + halfHeight;
     const deltaX = globalMousePos.x - centerX;
     const deltaY = globalMousePos.y - centerY;
-    const centerDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     
-    // Dynamic activation zone based on element size
-    const baseActivationZone = Math.max(elementWidth, elementHeight) * 1.5;
-    const activationZone = Math.max(150, Math.min(300, baseActivationZone));
+    // Use squared distance to avoid expensive sqrt calculation until needed
+    const centerDistanceSquared = deltaX * deltaX + deltaY * deltaY;
     
-    // Smooth falloff instead of hard cutoff
-    const distanceFactor = Math.max(0, 1 - (centerDistance / activationZone));
+    // Early exit if outside activation zone (using squared comparison)
+    if (centerDistanceSquared > activationZoneSquared) {
+      smoothTx.set(0);
+      smoothTy.set(0);
+      smoothScaleX.set(1);
+      smoothScaleY.set(1);
+      return;
+    }
+    
+    // Only calculate sqrt when we know we're in range
+    const centerDistance = Math.sqrt(centerDistanceSquared);
+    
+    // Optimized smooth falloff using pre-calculated inverse
+    const distanceFactor = Math.max(0, 1 - centerDistance * inverseActivationZone);
     const smoothFactor = distanceFactor * distanceFactor * (3 - 2 * distanceFactor); // Smoothstep
     
     if (smoothFactor <= 0.001) {
@@ -331,20 +308,25 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       return;
     }
 
-    // Translation with improved responsiveness
+    // Pre-calculate common values
     const translationIntensity = optimizedElasticity * smoothFactor;
-    const tx = deltaX * translationIntensity * 0.3;
-    const ty = deltaY * translationIntensity * 0.3;
-    smoothTx.set(tx);
-    smoothTy.set(ty);
-
-    // Scale effects with smoother transitions
-    const normalizedX = centerDistance === 0 ? 0 : deltaX / centerDistance;
-    const normalizedY = centerDistance === 0 ? 0 : deltaY / centerDistance;
-    const scaleIntensity = Math.min(centerDistance / 200, 1) * optimizedElasticity * smoothFactor;
+    const translationFactor = translationIntensity * 0.3;
     
-    const scaleX = 1 + Math.abs(normalizedX) * scaleIntensity * 0.4 - Math.abs(normalizedY) * scaleIntensity * 0.2;
-    const scaleY = 1 + Math.abs(normalizedY) * scaleIntensity * 0.4 - Math.abs(normalizedX) * scaleIntensity * 0.2;
+    // Translation with improved responsiveness
+    smoothTx.set(deltaX * translationFactor);
+    smoothTy.set(deltaY * translationFactor);
+
+    // Scale effects with optimized calculations
+    const invCenterDistance = centerDistance === 0 ? 0 : 1 / centerDistance;
+    const normalizedX = deltaX * invCenterDistance;
+    const normalizedY = deltaY * invCenterDistance;
+    const scaleBase = Math.min(centerDistance * 0.005, 1) * optimizedElasticity * smoothFactor; // Pre-calculate base scale
+    
+    const absNormalizedX = Math.abs(normalizedX);
+    const absNormalizedY = Math.abs(normalizedY);
+    
+    const scaleX = 1 + absNormalizedX * scaleBase * 0.4 - absNormalizedY * scaleBase * 0.2;
+    const scaleY = 1 + absNormalizedY * scaleBase * 0.4 - absNormalizedX * scaleBase * 0.2;
     
     smoothScaleX.set(scaleX);
     smoothScaleY.set(scaleY);
@@ -352,8 +334,10 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     globalMousePos,
     optimizedIsElastic,
     optimizedElasticity,
-    elementWidth,
-    elementHeight,
+    halfWidth,
+    halfHeight,
+    activationZoneSquared,
+    inverseActivationZone,
     smoothTx,
     smoothTy,
     smoothScaleX,
@@ -385,18 +369,19 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const handleMouseMoveDraggable = useCallback(
     (e: MouseEvent) => {
       if (positioning === "fixed" && isDragging.current) {
+        // Calculate new position with optimized math
         const deltaX = e.clientX - dragStart.current.x;
         const deltaY = e.clientY - dragStart.current.y;
         const newX = initialPosition.current.x + deltaX;
         const newY = initialPosition.current.y + deltaY;
-        const constrainedX = Math.max(
-          10,
-          Math.min(window.innerWidth - elementWidth - 10, newX)
-        );
-        const constrainedY = Math.max(
-          10,
-          Math.min(window.innerHeight - elementHeight - 10, newY)
-        );
+        
+        // Use pre-calculated window dimensions for constraints
+        const maxX = window.innerWidth - elementWidth - 10;
+        const maxY = window.innerHeight - elementHeight - 10;
+        
+        const constrainedX = Math.max(10, Math.min(maxX, newX));
+        const constrainedY = Math.max(10, Math.min(maxY, newY));
+        
         setPosition({ x: constrainedX, y: constrainedY });
       }
     },
@@ -416,10 +401,17 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
       if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      setMouseOffset({
-          x: ((e.clientX - rect.left - rect.width / 2) / rect.width) * 100,
-          y: ((e.clientY - rect.top - rect.height / 2) / rect.height) * 100,
+      // Use requestAnimationFrame to throttle updates for smooth performance
+      requestAnimationFrame(() => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        // Optimized calculations using pre-calculated half dimensions
+        const relativeX = e.clientX - rect.left - halfWidth;
+        const relativeY = e.clientY - rect.top - halfHeight;
+        setMouseOffset({
+            x: (relativeX / halfWidth) * 50, // Normalize to -50 to 50 range
+            y: (relativeY / halfHeight) * 50,
+        });
       });
   };
 
@@ -457,39 +449,41 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
       WebkitMaskComposite: "xor",
       maskComposite: "exclude",
+      // Hardware acceleration for borders
+      transform: "translateZ(0)",
+      willChange: "opacity, background",
+      backfaceVisibility: "hidden",
+      WebkitTransform: "translateZ(0)",
+      WebkitBackfaceVisibility: "hidden",
   };
 
-  const borderStyle1: React.CSSProperties = {
-    ...borderBaseStyle,
-    mixBlendMode: "screen",
-    opacity: 0.25,
-    background: `linear-gradient(${
-      135 + mouseOffset.x * 1.2
-    }deg, rgba(255, 255, 255, 0.0) 0%, rgba(255, 255, 255, ${
-      0.12 + Math.abs(mouseOffset.x) * 0.008
-    }) ${Math.max(
-      10,
-      33 + mouseOffset.y * 0.3
-    )}%, rgba(255, 255, 255, ${
-      0.4 + Math.abs(mouseOffset.x) * 0.012
-    }) ${Math.min(90, 66 + mouseOffset.y * 0.4)}%, rgba(255, 255, 255, 0.0) 100%)`,
-  };
+  // Memoize border styles to prevent unnecessary recalculations
+  const borderStyles = useMemo(() => {
+    // Pre-calculate gradient values for performance
+    const gradientAngle = 135 + mouseOffset.x * 1.2;
+    const baseOpacity1 = 0.12 + Math.abs(mouseOffset.x) * 0.008;
+    const baseOpacity2 = 0.4 + Math.abs(mouseOffset.x) * 0.012;
+    const gradientStop1 = Math.max(10, 33 + mouseOffset.y * 0.3);
+    const gradientStop2 = Math.min(90, 66 + mouseOffset.y * 0.4);
+    
+    const borderStyle1: React.CSSProperties = {
+      ...borderBaseStyle,
+      mixBlendMode: "screen",
+      opacity: 0.25,
+      background: `linear-gradient(${gradientAngle}deg, rgba(255, 255, 255, 0.0) 0%, rgba(255, 255, 255, ${baseOpacity1}) ${gradientStop1}%, rgba(255, 255, 255, ${baseOpacity2}) ${gradientStop2}%, rgba(255, 255, 255, 0.0) 100%)`,
+    };
 
-  const borderStyle2: React.CSSProperties = {
-    ...borderBaseStyle,
-    mixBlendMode: "overlay",
-    opacity: isHovering ? 0.8 : 0.4,
-    background: `linear-gradient(${
-      135 + mouseOffset.x * 1.2
-    }deg, rgba(255, 255, 255, 0.0) 0%, rgba(255, 255, 255, ${
-      0.32 + Math.abs(mouseOffset.x) * 0.008
-    }) ${Math.max(
-      10,
-      33 + mouseOffset.y * 0.3
-    )}%, rgba(255, 255, 255, ${
-      0.6 + Math.abs(mouseOffset.x) * 0.012
-    }) ${Math.min(90, 66 + mouseOffset.y * 0.4)}%, rgba(255, 255, 255, 0.0) 100%)`,
-  };
+    const borderStyle2: React.CSSProperties = {
+      ...borderBaseStyle,
+      mixBlendMode: "overlay",
+      opacity: isHovering ? 0.8 : 0.4,
+      background: `linear-gradient(${gradientAngle}deg, rgba(255, 255, 255, 0.0) 0%, rgba(255, 255, 255, ${0.32 + Math.abs(mouseOffset.x) * 0.008}) ${gradientStop1}%, rgba(255, 255, 255, ${0.6 + Math.abs(mouseOffset.x) * 0.012}) ${gradientStop2}%, rgba(255, 255, 255, 0.0) 100%)`,
+    };
+
+    return { borderStyle1, borderStyle2 };
+  }, [mouseOffset.x, mouseOffset.y, isHovering, borderBaseStyle]);
+
+  const { borderStyle1, borderStyle2 } = borderStyles;
 
   const shineStyle: React.CSSProperties = {
     position: "absolute",
@@ -503,6 +497,12 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     backgroundImage:
       "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 50%)",
     mixBlendMode: "overlay",
+    // Hardware acceleration for shine effect
+    transform: "translateZ(0)",
+    willChange: "opacity",
+    backfaceVisibility: "hidden",
+    WebkitTransform: "translateZ(0)",
+    WebkitBackfaceVisibility: "hidden",
   };
 
     // --- JSX ---
@@ -517,6 +517,18 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 borderRadius: `${cornerRadius}px`,
                 transformOrigin: 'center',
                 cursor: onClick ? 'pointer' : positioning === 'fixed' ? 'grab' : 'default',
+                // Hardware acceleration for main container
+                willChange: 'transform',
+                contain: 'layout style paint',
+                isolation: 'isolate',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                // Enable GPU compositing
+                transform: 'translateZ(0)',
+                WebkitTransform: 'translateZ(0)',
+                // Optimize for animations
+                WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale',
                 ...(positioning === "fixed" && {
                     top: `${position.y}px`,
                     left: `${position.x}px`,
@@ -545,23 +557,28 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                     width: '100%',
                     height: '100%',
                     borderRadius: `${cornerRadius}px`,
-                    // The new and improved shadow for the "overLight" state
                     boxShadow: overLight
-                        ? "0 0 25px rgba(255, 255, 255, 0.1), 0 4px 15px rgba(0, 0, 0, 0.2)" // MODIFIED
+                        ? "0 0 25px rgba(255, 255, 255, 0.1), 0 4px 15px rgba(0, 0, 0, 0.2)"
                         : "none",
                     backdropFilter: `blur(${optimizedBlurAmount}px) saturate(${saturation}%)`,
                     WebkitBackdropFilter: `blur(${optimizedBlurAmount}px) saturate(${saturation}%)`,
                     filter: `url(#${id})`,
                     overflow: 'hidden',
                     transform: 'translateZ(0)',
+                    willChange: 'transform, filter',
+                    contain: 'layout style paint',
+                    isolation: 'isolate',
+                    backfaceVisibility: 'hidden',
+                    WebkitTransform: 'translateZ(0)',
+                    WebkitBackfaceVisibility: 'hidden',
                 }}
             >
                 <GlassFilter
                     id={id}
                     width={elementWidth}
                     height={elementHeight}
-                    displacementScale={displacementScale}
-                    aberrationIntensity={optimizedAberrationIntensity}
+                    displacementScale={optimizedDisplacementScale}
+                    aberrationIntensity={aberrationIntensity}
                     mode={mode}
                     shaderMapUrl={shaderMapUrl}
                 />
@@ -578,6 +595,13 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                     borderRadius: `${cornerRadius}px`,
                     pointerEvents: 'none',
                     zIndex: 2,
+                    // Hardware acceleration for decorative layer
+                    transform: 'translateZ(0)',
+                    willChange: 'opacity, transform',
+                    contain: 'layout style paint',
+                    backfaceVisibility: 'hidden',
+                    WebkitTransform: 'translateZ(0)',
+                    WebkitBackfaceVisibility: 'hidden',
                 }}
             >
                 <span style={borderStyle1} />
@@ -596,6 +620,13 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 justifyContent: 'center',
                 color: 'inherit',
                 textShadow: overLight ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+                // Hardware acceleration for content layer
+                transform: 'translateZ(0)',
+                willChange: 'contents',
+                contain: 'layout style',
+                backfaceVisibility: 'hidden',
+                WebkitTransform: 'translateZ(0)',
+                WebkitBackfaceVisibility: 'hidden',
             }}>
                 {children}
             </div>

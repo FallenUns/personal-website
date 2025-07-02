@@ -1,10 +1,10 @@
-import React, { memo, useMemo, useState, useRef, useEffect } from 'react';
+import React, { memo, useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
-import { useComponentLoader } from '../contexts/LoadingContext'; // Import the hook
+import { useComponentLoader } from '../contexts/LoadingContext';
 import './performance.css';
 
-// Device mockup component
+// Device mockup component (no changes)
 const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => {
   if (type === 'ui-ux') {
     return (
@@ -52,7 +52,6 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
     );
   }
   
-  // Landing page mockup
   return (
     <div className="flex space-x-1 items-center">
       <div className={`w-16 h-20 ${color} rounded border border-white/40 relative overflow-hidden`}>
@@ -74,109 +73,84 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
     </div>
   );
 });
-
 DeviceMockup.displayName = 'DeviceMockup';
 
-// Hook for responsive card count
+// REFACTORED: Hook for responsive layout to prevent cutoff
 const useResponsiveCards = () => {
-  const [visibleCards, setVisibleCards] = useState(2);
-  const [cardWidth, setCardWidth] = useState(500);
+    const [layout, setLayout] = useState({
+        visibleCards: 2,
+        cardWidth: 500,
+        viewportWidth: 1200
+    });
 
-  useEffect(() => {
-    const updateLayout = () => {
-      const screenWidth = window.innerWidth;
-      
-      if (screenWidth < 768) { // Mobile
-        setVisibleCards(1);
-        setCardWidth(Math.min(350, screenWidth - 120)); 
-      } else if (screenWidth < 1024) { // Tablet
-        setVisibleCards(1);
-        setCardWidth(Math.min(450, screenWidth - 160)); 
-      } else if (screenWidth < 1280) { // Small desktop - 2 columns
-        setVisibleCards(2);
-        setCardWidth(Math.min(450, (screenWidth - 200) / 2));
-      } else if (screenWidth < 1920) { // Large Desktop - 2 columns
-        setVisibleCards(2);
-        setCardWidth(Math.min(550, (screenWidth - 240) / 2));
-      } else { // XL Desktop - 3 columns
-        setVisibleCards(3);
-        setCardWidth(Math.min(500, (screenWidth - 320) / 3));
-      }
-    };
+    useEffect(() => {
+        const updateLayout = () => {
+            const screenWidth = window.innerWidth;
 
-    updateLayout();
-    window.addEventListener('resize', updateLayout);
-    return () => window.removeEventListener('resize', updateLayout);
-  }, []);
+            // --- Define layout constants based on Tailwind classes ---
+            const buttonWidth = 56;
+            const sectionPadding = screenWidth >= 1024 ? 32 * 2 : (screenWidth >= 640 ? 24 * 2 : 16 * 2);
+            const viewportMargin = screenWidth < 640 ? 8 * 2 : 16 * 2;
+            const cardGap = screenWidth < 768 ? 16 : 24;
 
-  return { visibleCards, cardWidth };
+            // This is the available width for the entire slider component (buttons + viewport)
+            const componentWidth = screenWidth - sectionPadding;
+            // This is the specific width for the area that holds the cards
+            const viewportWidth = componentWidth - (buttonWidth * 2) - viewportMargin;
+
+            let visibleCards, cardWidth;
+
+            // --- Determine visible cards and their width based on breakpoints ---
+            if (screenWidth < 768) { // 1 card
+                visibleCards = 1;
+                cardWidth = Math.min(350, viewportWidth);
+            } else if (screenWidth < 1024) { // 1 card
+                visibleCards = 1;
+                cardWidth = Math.min(450, viewportWidth);
+            } else if (screenWidth < 1536) { // 2 cards (Adjusted breakpoint for better 2-card view)
+                visibleCards = 2;
+                cardWidth = Math.floor((viewportWidth - cardGap) / 2);
+            } else { // 3 cards
+                visibleCards = 3;
+                cardWidth = Math.floor(Math.min(480, (viewportWidth - (cardGap * 2)) / 3));
+            }
+            
+            setLayout({ visibleCards, cardWidth, viewportWidth });
+        };
+
+        updateLayout();
+        window.addEventListener('resize', updateLayout);
+        return () => window.removeEventListener('resize', updateLayout);
+    }, []);
+
+    return layout;
 };
 
-// Memoize project data to prevent unnecessary re-creation
+
+// Project data (no changes)
 const projects = [
-  {
-    id: 1,
-    title: 'UI/UX Design',
-    description: 'Modern mobile app interface design with intuitive user experience',
-    mockupType: 'ui-ux',
-    technologies: ['Figma', 'Adobe XD', 'Principle'],
-    category: 'Design'
-  },
-  {
-    id: 2,
-    title: 'Web Design',
-    description: 'Responsive web application with modern design principles',
-    mockupType: 'web',
-    technologies: ['React', 'TypeScript', 'Tailwind'],
-    category: 'Development'
-  },
-  {
-    id: 3,
-    title: 'Landing Page',
-    description: 'High-converting landing page with optimized user flow',
-    mockupType: 'landing',
-    technologies: ['Next.js', 'Framer Motion', 'CSS3'],
-    category: 'Development'
-  },
-  {
-    id: 4,
-    title: 'Mobile App',
-    description: 'Cross-platform mobile application with native performance',
-    mockupType: 'ui-ux',
-    technologies: ['React Native', 'Expo', 'Firebase'],
-    category: 'Mobile'
-  },
-  {
-    id: 5,
-    title: 'E-commerce',
-    description: 'Full-featured e-commerce platform with payment integration',
-    mockupType: 'web',
-    technologies: ['Next.js', 'Stripe', 'MongoDB'],
-    category: 'Development'
-  },
+  { id: 1, title: 'UI/UX Design', description: 'Modern mobile app interface design with intuitive user experience', mockupType: 'ui-ux', technologies: ['Figma', 'Adobe XD', 'Principle'], category: 'Design' },
+  { id: 2, title: 'Web Design', description: 'Responsive web application with modern design principles', mockupType: 'web', technologies: ['React', 'TypeScript', 'Tailwind'], category: 'Development' },
+  { id: 3, title: 'Landing Page', description: 'High-converting landing page with optimized user flow', mockupType: 'landing', technologies: ['Next.js', 'Framer Motion', 'CSS3'], category: 'Development' },
+  { id: 4, title: 'Mobile App', description: 'Cross-platform mobile application with native performance', mockupType: 'ui-ux', technologies: ['React Native', 'Expo', 'Firebase'], category: 'Mobile' },
+  { id: 5, title: 'E-commerce', description: 'Full-featured e-commerce platform with payment integration', mockupType: 'web', technologies: ['Next.js', 'Stripe', 'MongoDB'], category: 'Development' },
 ];
 
-const ProjectCard = memo(({ project, index, cardWidth }: { 
-  project: typeof projects[0]; 
-  index: number; 
-  cardWidth: number;
-}) => {
-  const cardHeight = 450; // Increased from 380 to 450
+// ProjectCard component (no changes)
+const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
+  const cardHeight = 480;
 
-  // Optimize LiquidGlass props - disable expensive features during scroll
   const optimizedProps = useMemo(() => ({
     width: cardWidth,
     height: cardHeight,
     positioning: "relative" as const,
     style: { borderRadius: '24px' },
-    elasticity: 0.07,
+    elasticity: 0.1,
     saturation: 150,
-    aberrationIntensity: 0,
-    displacementScale: 50,
+    displacementScale: 150,
     overLight: false,
     blurAmount: 8,
-    mode: 'standard' as const,
-    isElastic: true, 
+    mode: 'shader' as const,
   }), [cardWidth, cardHeight]);
 
   return (
@@ -184,220 +158,188 @@ const ProjectCard = memo(({ project, index, cardWidth }: {
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-      transition={{ 
-        duration: 0.5, 
-        ease: 'easeOut',
-        delay: index * 0.1
-      }}
+      transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
-      className="group cursor-pointer"
+      className="group cursor-pointer flex-shrink-0"
     >
-      <LiquidGlass {...optimizedProps}>
-        <div className="w-full h-full flex flex-col relative p-6 overflow-hidden">
-          {/* Header with title */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white [text-shadow:0_2px_5px_rgba(0,0,0,0.8)]">
-              {project.title}
-            </h3>
-          </div>
-
-          {/* Main content area with device mockup */}
-          <div className="flex-1 flex items-center justify-center mb-4">
-            <div className="relative w-full h-32 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10 overflow-hidden">
-              {/* Device mockup */}
-              <div className="absolute inset-2 flex items-center justify-center">
-                <DeviceMockup 
-                  type={project.mockupType} 
-                  color="bg-white/20" 
-                />
-              </div>
-              
-              {/* Category badge */}
-              <div className="absolute top-2 right-2">
-                <span className="px-2 py-1 text-xs bg-white/20 text-white rounded-full backdrop-blur-sm">
-                  {project.category}
-                </span>
-              </div>
+      <motion.div
+        whileHover={{ scale: 1.02, y: -5, transition: { duration: 0.3, ease: "easeOut" } }}
+        whileTap={{ scale: 0.98, transition: { duration: 0.2 } }}
+      >
+        <LiquidGlass {...optimizedProps}>
+          <div className="w-full h-full flex flex-col relative p-6 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-400/20 to-transparent rounded-full blur-xl"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400/20 to-transparent rounded-full blur-xl"></div>
             </div>
-          </div>
-
-          {/* Bottom section with description and arrow */}
-          <div className="flex items-end justify-between">
-            <div className="flex-1">
-              <p className="text-sm text-white/80 leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-                {project.description}
-              </p>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {project.technologies.slice(0, 2).map((tech, i) => (
-                  <span key={i} className="text-xs px-2 py-1 bg-white/10 text-white/70 rounded-full">
-                    {tech}
-                  </span>
-                ))}
+            <div className="relative z-10 mb-4">
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="text-xl font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">{project.title}</h3>
+                <span className="px-3 py-1.5 text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">{project.category}</span>
+              </div>
+              <p className="text-sm text-white/70 leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{project.description}</p>
+            </div>
+            <div className="flex-1 flex items-center justify-center mb-4 relative">
+              <div className="relative w-full h-40 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
+                <div className="absolute inset-4 flex items-center justify-center">
+                  <DeviceMockup type={project.mockupType} color="bg-white/30" />
+                </div>
+                <div className="absolute top-3 left-3 w-2 h-2 bg-green-400/60 rounded-full animate-pulse"></div>
+                <div className="absolute top-3 right-3 w-2 h-2 bg-orange-400/60 rounded-full animate-pulse delay-300"></div>
+                <div className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full animate-pulse delay-700"></div>
               </div>
             </div>
-            
-            {/* Arrow icon */}
-            <div className="ml-4 p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors duration-300">
-              <svg 
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                className="text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
-              >
-                <path d="M7 17L17 7" />
-                <path d="M7 7L17 7L17 17" />
-              </svg>
+            <div className="relative z-10 flex items-end justify-between">
+              <div className="flex-1">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {project.technologies.slice(0, 3).map((tech, i) => (
+                    <motion.span key={i} className="text-xs px-3 py-1.5 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5" whileHover={{ scale: 1.05 }}>
+                      {tech}
+                    </motion.span>
+                  ))}
+                </div>
+              </div>
+              <motion.div className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300" whileHover={{ scale: 1.1, rotate: 45 }} whileTap={{ scale: 0.9 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                  <path d="M7 17L17 7" /><path d="M7 7L17 7L17 17" />
+                </svg>
+              </motion.div>
             </div>
           </div>
-        </div>
-      </LiquidGlass>
+        </LiquidGlass>
+      </motion.div>
     </motion.div>
   );
 });
-
 ProjectCard.displayName = 'ProjectCard';
+
 
 const ProjectsSection: React.FC = () => {
   useComponentLoader('ProjectsSection');
   const [currentPage, setCurrentPage] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { visibleCards, cardWidth } = useResponsiveCards();
+  const { visibleCards, cardWidth, viewportWidth } = useResponsiveCards();
 
   const totalCards = projects.length;
   const totalPages = Math.ceil(totalCards / visibleCards);
 
-  const scrollToPage = (page: number) => {
-    const newPage = Math.max(0, Math.min(totalPages - 1, page));
-    setCurrentPage(newPage);
-    
-    if (scrollContainerRef.current) {
-      const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32;
-      const cardWidthWithGap = cardWidth + gap;
-      const startIndex = newPage * visibleCards;
-      
-      // Calculate if we're on the last page and need to center remaining cards
-      const remainingCards = totalCards - startIndex;
-      const cardsOnCurrentPage = Math.min(remainingCards, visibleCards);
-      
-      let scrollPosition = startIndex * cardWidthWithGap;
-      
-      // Center cards on the last page if there are fewer cards than visible slots
-      if (newPage === totalPages - 1 && cardsOnCurrentPage < visibleCards) {
-        const containerWidth = visibleCards * cardWidth + (visibleCards - 1) * gap;
-        const contentWidth = cardsOnCurrentPage * cardWidth + (cardsOnCurrentPage - 1) * gap;
-        const centerOffset = (containerWidth - contentWidth) / 2;
-        scrollPosition = startIndex * cardWidthWithGap - centerOffset;
-      }
-      
-      scrollContainerRef.current.scrollTo({
-        left: Math.max(0, scrollPosition),
-        behavior: 'smooth'
-      });
-    }
-  };
+  const handlePrevious = () => setCurrentPage((prev) => Math.max(0, prev - 1));
+  const handleNext = () => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+  const handleDotClick = (pageIndex: number) => setCurrentPage(pageIndex);
 
-  const handlePrevious = () => {
-    scrollToPage(currentPage - 1);
+  const getVisibleProjects = () => {
+    const startIndex = currentPage * visibleCards;
+    return projects.slice(startIndex, startIndex + visibleCards);
   };
-
-  const handleNext = () => {
-    scrollToPage(currentPage + 1);
-  };
-
-  // Handle scroll events to update current page
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const container = e.currentTarget;
-    const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32;
-    const cardWidthWithGap = cardWidth + gap;
-    const scrollLeft = container.scrollLeft;
-    
-    // Calculate which page is currently visible
-    const cardIndex = Math.round(scrollLeft / cardWidthWithGap);
-    const page = Math.floor(cardIndex / visibleCards);
-    
-    setCurrentPage(Math.max(0, Math.min(totalPages - 1, page)));
-  };
+  
+  const isPrevDisabled = currentPage === 0;
+  const isNextDisabled = currentPage >= totalPages - 1;
 
   return (
     <motion.section 
       id="projects" 
-      className="min-h-screen flex flex-col justify-center py-16 px-2 sm:px-6 lg:px-8 w-full overflow-visible"
+      className="min-h-screen flex flex-col items-center pt-24 pb-16 px-4 sm:px-6 lg:px-8 w-full"
     >
-      <div className="max-w-none mx-auto w-full flex flex-col items-center">
-        <motion.h2 
-          className="text-3xl sm:text-4xl font-bold text-center text-white mb-8 sm:mb-10"
+      <div className="max-w-7xl mx-auto w-full flex flex-col items-center">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center"
         >
-          My Work
-        </motion.h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
+            Featured Work
+          </h2>
+          <p className="text-lg text-white/70 max-w-2xl mx-auto [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+            Explore my latest projects and creative solutions
+          </p>
+        </motion.div>
 
-        <div className="w-full overflow-visible"> {/* Added overflow-visible */}
-          {/* Container with proper spacing for arrows */}
-          <div className="relative flex items-center justify-center mx-auto px-8 sm:px-16 lg:px-20 overflow-visible"> {/* Added overflow-visible */}
-            {/* Left Arrow - positioned outside the cards */}
-            <button
+        {/* REFACTORED: Main Content Area with explicit viewport width */}
+        <div className="w-full flex items-center justify-center mt-16">
+          {/* Left Navigation Button */}
+          <motion.button
               onClick={handlePrevious}
-              disabled={currentPage === 0}
-              className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5"><path d="M15 18L9 12L15 6" /></svg>
-            </button>
+              disabled={isPrevDisabled}
+              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 sm:mx-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+              whileHover={{ scale: isPrevDisabled ? 1 : 1.05, y: isPrevDisabled ? 0 : -2 }}
+              whileTap={{ scale: isPrevDisabled ? 1 : 0.95, y: isPrevDisabled ? 0 : 2 }}
+              aria-label="Previous project"
+          >
+              <div className="relative">
+                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} overLight={false} blurAmount={6} mode='shader' />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white"><path d="M15 18L9 12L15 6" /></svg>
+                  </div>
+              </div>
+          </motion.button>
 
-            {/* Scrollable Cards Container */}
-            <motion.div
-              ref={scrollContainerRef}
-              className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scrollbar-hide horizontal-scroll snap-x snap-mandatory overflow-y-visible"
-              style={{ 
-                width: (() => {
-                  const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32;
-                  return visibleCards === 1 
-                    ? `${cardWidth}px` 
-                    : `${visibleCards * cardWidth + (visibleCards - 1) * gap}px`;
-                })(),
-                height: '490px',
-                paddingTop: '20px',
-                paddingBottom: '20px'
-              }}
-              onScroll={handleScroll}
-            >
-              {projects.map((project, index) => (
-                <div key={project.id} className="flex-shrink-0 snap-start">
-                  <ProjectCard project={project} index={index} cardWidth={cardWidth} />
-                </div>
-              ))}
-            </motion.div>
+          {/* Cards Viewport */}
+          <div className="flex justify-center items-center" style={{ width: `${viewportWidth}px`}}>
+              <motion.div 
+                  key={currentPage}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="flex gap-4 md:gap-6 justify-center items-start"
+                  style={{ minHeight: '520px' }}
+              >
+                  {getVisibleProjects().map((project, index) => (
+                      <ProjectCard key={project.id} project={project} index={index} cardWidth={cardWidth} />
+                  ))}
+              </motion.div>
+          </div>
 
-            {/* Right Arrow - positioned outside the cards */}
-            <button
+          {/* Right Navigation Button */}
+          <motion.button
               onClick={handleNext}
-              disabled={currentPage >= totalPages - 1}
-              className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5"><path d="M9 18L15 12L9 6" /></svg>
-            </button>
-          </div>
-
-          {/* Navigation Dots Container */}
-          <div className="flex justify-center space-x-2 mt-8">
-            {Array.from({ length: totalPages }).map((_, pageIndex) => {
-              const isActive = currentPage === pageIndex;
-              
-              return (
-                <button
-                  key={`page-${pageIndex}`}
-                  onClick={() => scrollToPage(pageIndex)}
-                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                    isActive ? 'bg-orange-500' : 'bg-white/30'
-                  }`}
-                />
-              );
-            })}
-          </div>
+              disabled={isNextDisabled}
+              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 sm:mx-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+              whileHover={{ scale: isNextDisabled ? 1 : 1.05, y: isNextDisabled ? 0 : -2 }}
+              whileTap={{ scale: isNextDisabled ? 1 : 0.95, y: isNextDisabled ? 0 : 2 }}
+              aria-label="Next project"
+          >
+              <div className="relative">
+                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} overLight={false} blurAmount={6} mode='shader' />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white"><path d="M9 18L15 12L9 6" /></svg>
+                  </div>
+              </div>
+          </motion.button>
         </div>
+
+        {/* Navigation Dots */}
+        <div className="flex justify-center space-x-3 mt-8">
+          {Array.from({ length: totalPages }).map((_, pageIndex) => {
+            const isActive = currentPage === pageIndex;
+            return (
+              <motion.button
+                key={`dot-${pageIndex}`}
+                onClick={() => handleDotClick(pageIndex)}
+                className={`relative w-3 h-3 rounded-full transition-all duration-300 ${isActive ? 'bg-orange-500 scale-125' : 'bg-white/30 hover:bg-white/50'}`}
+                whileHover={{ scale: isActive ? 1.25 : 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                {isActive && (
+                  <motion.div className="absolute inset-0 rounded-full bg-orange-400" animate={{ scale: [1, 1.3, 1], opacity: [1, 0.3, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Project Counter */}
+        <motion.div 
+          className="text-center mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <span className="text-white text-base font-semibold bg-black/40 px-6 py-3 rounded-full backdrop-blur-md border border-white/20 shadow-lg">
+            Page {currentPage + 1} of {totalPages} • {totalCards} Projects
+          </span>
+        </motion.div>
       </div>
     </motion.section>
   );

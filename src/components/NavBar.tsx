@@ -110,6 +110,8 @@ SkyControllerDropdown.displayName = 'SkyControllerDropdown';
 
 const Navbar: React.FC<NavbarProps> = (props) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [isNavbarPressed, setIsNavbarPressed] = useState(false);
+  const [isLogoPressed, setIsLogoPressed] = useState(false);
   const rightContentRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
@@ -222,12 +224,25 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           left: '48px', // Using consistent pixel values
         }}
       >
-        <div
-          className="flex items-center justify-center font-sans h-full relative"
+        <motion.div
+          className="flex items-center justify-center font-sans h-full relative cursor-pointer"
           style={{ height: navContentHeight }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onMouseDown={() => setIsLogoPressed(true)}
+          onMouseUp={() => setIsLogoPressed(false)}
+          onMouseLeave={() => setIsLogoPressed(false)}
+          animate={{
+            scale: isLogoPressed ? 0.95 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 25
+          }}
         >
           <Logo />
-        </div>
+        </motion.div>
       </motion.nav>
 
       {/* Right Navigation Section - Menu Items */}
@@ -246,21 +261,55 @@ const Navbar: React.FC<NavbarProps> = (props) => {
         }}
       >
         {rightContentDimensions.width > 0 && (
-          <LiquidGlass
-            width={rightContentDimensions.width}
-            height={rightContentDimensions.height}
-            positioning="relative"
-            style={{
-              borderRadius: '9999px', cursor: 'pointer',
+          <motion.div
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.98, y: 2 }}
+            onMouseDown={() => setIsNavbarPressed(true)}
+            onMouseUp={() => setIsNavbarPressed(false)}
+            onMouseLeave={() => setIsNavbarPressed(false)}
+            animate={{
+              scale: isNavbarPressed ? 0.98 : 1,
+              y: isNavbarPressed ? 2 : 0,
             }}
-            elasticity={0.1}
-            saturation={150}
-            aberrationIntensity={1}
-            displacementScale={50}
-            overLight={false}
-            blurAmount={5}
-            mode='shader'
-          />
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 25
+            }}
+            style={{
+              width: '100%',
+              height: '100%',
+              cursor: 'pointer'
+            }}
+          >
+            <motion.div
+              animate={{
+                y: isNavbarPressed ? 1 : 0,
+                scaleY: isNavbarPressed ? 0.96 : 1,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 30
+              }}
+            >
+              <LiquidGlass
+                width={rightContentDimensions.width}
+                height={rightContentDimensions.height}
+                positioning="relative"
+                style={{
+                  borderRadius: '9999px',
+                }}
+                elasticity={isNavbarPressed ? 0.3 : 0.1}
+                saturation={150}
+                aberrationIntensity={isNavbarPressed ? 2 : 1}
+                displacementScale={isNavbarPressed ? 80 : 50}
+                overLight={false}
+                blurAmount={isNavbarPressed ? 8 : 5}
+                mode='shader'
+              />
+            </motion.div>
+          </motion.div>
         )}
         <div
           style={{
@@ -281,7 +330,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                 <div className="hidden md:flex items-center space-x-6">
                   {/* -- MODIFIED: Dynamic nav buttons with active indicator -- */}
                   {navLinks.map((link) => (
-                    <button
+                    <motion.button
                       key={link.id}
                       onClick={() => scrollToSection(link.id)}
                       className={`relative hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none py-2 whitespace-nowrap
@@ -290,6 +339,13 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                           : 'text-white/70'
                         }`
                       }
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.95, y: 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25
+                      }}
                     >
                       {link.label}
                       {activeSection === link.id && (
@@ -302,7 +358,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                           style={{ borderRadius: '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
                         />
                       )}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
                   {/* Dark Mode Toggle Icon */}
@@ -365,14 +421,21 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                     </motion.svg>
                   </motion.div>
                 </motion.button>
-                <button
+                <motion.button
                   ref={settingsButtonRef}
                   onClick={handleToggleDropdown}
                   className="p-1.5 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
                   aria-label="Toggle sky controls"
+                  whileHover={{ scale: 1.1, rotate: 45 }}
+                  whileTap={{ scale: 0.9, rotate: -45 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25
+                  }}
                 >
                   <SettingsIcon isActive={isDropdownVisible} />
-                </button>
+                </motion.button>
               </div>
             </div>
         </div>
