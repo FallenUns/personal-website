@@ -8,6 +8,7 @@ import React, {
     type CSSProperties,
 } from "react";
 import { motion, useSpring } from "framer-motion";
+import { useTime } from '../contexts/TimeContext';
 import { displacementMap, polarDisplacementMap, prominentDisplacementMap } from "../utils/utils";
 import { ShaderDisplacementGenerator, fragmentShaders } from '../utils/shader-utils';
 import { isLowPerformanceDevice } from '../utils/performance';
@@ -120,7 +121,7 @@ interface LiquidGlassProps {
   displacementScale?: number;
   cornerRadius?: number;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
-  overLight?: boolean;
+  overLight?: boolean | 'auto'; // Allow 'auto' to use time context
   mode?: "standard" | "polar" | "prominent" | "shader";
 }
 
@@ -138,12 +139,23 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   aberrationIntensity = 1,
   displacementScale = 30, // Reduced default for subtler effect
   cornerRadius = 24,
-  overLight = false,
+  overLight = 'auto', // Default to 'auto' to use time context
   mode = "standard",
   onClick,
 }) => {
   const id = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Get time context for automatic overLight behavior
+  let timeContext: { overLight: boolean } | null = null;
+  try {
+    timeContext = useTime();
+  } catch {
+    // TimeContext is not available, use default value
+  }
+
+  // Determine the actual overLight value
+  const actualOverLight = overLight === 'auto' && timeContext ? timeContext.overLight : (overLight === 'auto' ? false : overLight);
 
   // Performance optimization: reduce features on low-end devices
   const isLowPerf = isLowPerformanceDevice();
@@ -541,6 +553,10 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 scaleX: smoothScaleX,
                 scaleY: smoothScaleY,
                 scale: smoothClickScale,
+                boxShadow: actualOverLight
+                  ? "0px 16px 70px rgba(0, 0, 0, 0.75), 0px 4px 20px rgba(0, 0, 0, 0.1), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)"
+                  : "0px 12px 40px rgba(0, 0, 0, 0.25)",
+                transition: 'box-shadow 0.3s ease-out'
             }}
             onClick={onClick}
             onMouseDown={handleMouseDown}
@@ -549,6 +565,30 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
             onMouseLeave={() => setIsHovering(false)}
             onMouseMove={handleMouseMove}
         >
+            {/* Over light effect - positioned absolutely within the container but behind content */}
+            {actualOverLight && (
+                <>
+                    <div
+                        className="bg-black pointer-events-none"
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: `${cornerRadius}px`,
+                            opacity: 0.04,
+                            zIndex: 0,
+                            transform: 'translateZ(0)',
+                            transition: 'opacity 150ms ease-in-out',
+                            willChange: 'opacity',
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                        }}
+                    />
+                </>
+            )}
+
             {/* Layer 1: Filtered Background */}
             <div
                 style={{
@@ -558,13 +598,12 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                     width: '100%',
                     height: '100%',
                     borderRadius: `${cornerRadius}px`,
-                    boxShadow: overLight
-                        ? "0 0 25px rgba(255, 255, 255, 0.1), 0 4px 15px rgba(0, 0, 0, 0.2)"
-                        : "none",
-                    backdropFilter: `blur(${optimizedBlurAmount}px) saturate(${saturation}%)`,
-                    WebkitBackdropFilter: `blur(${optimizedBlurAmount}px) saturate(${saturation}%)`,
+                    boxShadow: actualOverLight ? "0px 16px 70px rgba(0, 0, 0, 0.75)" : "0px 12px 40px rgba(0, 0, 0, 0.25)",
+                    backdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
+                    WebkitBackdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
                     filter: `url(#${id})`,
                     overflow: 'hidden',
+                    zIndex: 1,
                     transform: 'translateZ(0)',
                     willChange: 'transform, filter',
                     contain: 'layout style paint',
@@ -578,7 +617,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                     id={id}
                     width={elementWidth}
                     height={elementHeight}
-                    displacementScale={optimizedDisplacementScale}
+                    displacementScale={actualOverLight ? optimizedDisplacementScale * 0.5 : optimizedDisplacementScale}
                     aberrationIntensity={aberrationIntensity}
                     mode={mode}
                     shaderMapUrl={shaderMapUrl}
@@ -620,7 +659,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'inherit',
-                textShadow: overLight ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+                textShadow: actualOverLight ? '0px 2px 12px rgba(0, 0, 0, 0)' : '0px 2px 12px rgba(0, 0, 0, 0.4)',
                 // Hardware acceleration for content layer
                 transform: 'translateZ(0)',
                 willChange: 'contents',

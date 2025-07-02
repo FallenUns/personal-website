@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
+import { TimeProvider } from './contexts/TimeContext';
 import { useAssetPreloader, useCriticalResourceLoader } from './hooks/useAssetPreloader';
 import GooeyBackground from './components/GooeyBackground';
 import HeroSection from './components/HeroSection';
@@ -126,7 +127,7 @@ const AppContent: React.FC = () => {
       {/* The main content will only render when loading is complete */}
       <AnimatePresence>
         {!isLoading && (
-          <>
+          <TimeProvider hour={currentTime} isDarkMode={isDarkMode}>
             <GooeyBackground hour={currentTime} />
             
             <Navbar
@@ -157,7 +158,7 @@ const AppContent: React.FC = () => {
                 </div>
               </div>
             </motion.main>
-          </>
+          </TimeProvider>
         )}
       </AnimatePresence>
     </>

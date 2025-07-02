@@ -44,7 +44,6 @@ const HeroSection: React.FC = () => {
                 blurAmount={12}
                 saturation={150}
                 displacementScale={50}
-                overLight={false}
                 mode='shader'
                 onClick={() => {
                   const projectsSection = document.getElementById('projects');
@@ -75,7 +74,6 @@ const HeroSection: React.FC = () => {
                 blurAmount={12}
                 saturation={150}
                 displacementScale={50}
-                overLight={false}
                 mode='shader'
                 onClick={() => {
                     const contactSection = document.getElementById('contact');
