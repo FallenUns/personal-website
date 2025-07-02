@@ -71,7 +71,7 @@ const Contact: React.FC = () => {
                 height={44}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="hover:bg-white/20 transition-all duration-300"
+                className="hover:bg-white/20"
                 aberrationIntensity={2}
                 elasticity={0.1}
                 blurAmount={8}
@@ -93,9 +93,9 @@ const Contact: React.FC = () => {
                 height={44}
                 positioning="relative"
                 style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="hover:bg-white/20 transition-all duration-300"
+                className="hover:bg-white/20"
                 aberrationIntensity={2}
-                elasticity={0.1}
+                elasticity={0.2}
                 blurAmount={12}
                 saturation={150}
                 displacementScale={15}

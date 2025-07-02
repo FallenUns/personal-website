@@ -7,13 +7,8 @@ import React, {
     type CSSProperties,
 } from "react";
 import { motion, useSpring } from "framer-motion";
-import {
-    displacementMap,
-    polarDisplacementMap,
-    prominentDisplacementMap,
-} from "../utils/utils";
+import { displacementMap, polarDisplacementMap, prominentDisplacementMap } from "../utils/utils";
 import { ShaderDisplacementGenerator, fragmentShaders } from '../utils/shader-utils';
-import { throttle } from '../utils/throttle';
 import { isLowPerformanceDevice } from '../utils/performance';
 
 // Helper to get the correct displacement map based on the mode
@@ -248,11 +243,11 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const elementHeight = initialHeight;
 
   // Framer Motion springs for smooth transformations
-  const smoothTx = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
-  const smoothTy = useSpring(0, { stiffness: 500, damping: 40, mass: 1 });
-  const smoothScaleX = useSpring(1, { stiffness: 500, damping: 40, mass: 1 });
-  const smoothScaleY = useSpring(1, { stiffness: 500, damping: 40, mass: 1 });
-  const smoothClickScale = useSpring(1, { stiffness: 800, damping: 35 });
+  const smoothTx = useSpring(0, { stiffness: 200, damping: 25, mass: 0.8 });
+  const smoothTy = useSpring(0, { stiffness: 200, damping: 25, mass: 0.8 });
+  const smoothScaleX = useSpring(1, { stiffness: 250, damping: 28, mass: 0.7 });
+  const smoothScaleY = useSpring(1, { stiffness: 250, damping: 28, mass: 0.7 });
+  const smoothClickScale = useSpring(1, { stiffness: 500, damping: 25 });
 
   // 2. USE EFFECT TO GENERATE THE SHADER MAP
   useEffect(() => {
@@ -276,7 +271,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     y: window.innerHeight / 2 - elementHeight / 2,
   });
 
-  const handleGlobalMouseMove = useCallback(throttle((e: MouseEvent) => {
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
     // Only update if elastic is enabled and element is near viewport
     if (!optimizedIsElastic || !containerRef.current) return;
     
@@ -286,7 +281,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     if (isNearViewport) {
       setGlobalMousePos({ x: e.clientX, y: e.clientY });
     }
-  }, 16), [optimizedIsElastic]); // ~60fps throttling
+  }, [optimizedIsElastic]);
 
   useEffect(() => {
     if (optimizedIsElastic) {
@@ -303,20 +298,9 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       smoothScaleY.set(1);
       return;
     }
+    
     const isMouseUninitialized = globalMousePos.x === -1;
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const deltaX = globalMousePos.x - centerX;
-    const deltaY = globalMousePos.y - centerY;
-    const edgeDistanceX = Math.max(0, Math.abs(deltaX) - rect.width / 2);
-    const edgeDistanceY = Math.max(0, Math.abs(deltaY) - rect.height / 2);
-    const edgeDistance = Math.sqrt(
-      edgeDistanceX * edgeDistanceX + edgeDistanceY * edgeDistanceY
-    );
-    const activationZone = 200;
-
-    if (edgeDistance > activationZone || isMouseUninitialized) {
+    if (isMouseUninitialized) {
       smoothTx.set(0);
       smoothTy.set(0);
       smoothScaleX.set(1);
@@ -324,31 +308,52 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       return;
     }
 
-    const fadeInFactor = 1 - edgeDistance / activationZone;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const deltaX = globalMousePos.x - centerX;
+    const deltaY = globalMousePos.y - centerY;
     const centerDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    const tx = deltaX * optimizedElasticity * 0.4 * fadeInFactor;
-    const ty = deltaY * optimizedElasticity * 0.4 * fadeInFactor;
+    
+    // Dynamic activation zone based on element size
+    const baseActivationZone = Math.max(elementWidth, elementHeight) * 1.5;
+    const activationZone = Math.max(150, Math.min(300, baseActivationZone));
+    
+    // Smooth falloff instead of hard cutoff
+    const distanceFactor = Math.max(0, 1 - (centerDistance / activationZone));
+    const smoothFactor = distanceFactor * distanceFactor * (3 - 2 * distanceFactor); // Smoothstep
+    
+    if (smoothFactor <= 0.001) {
+      smoothTx.set(0);
+      smoothTy.set(0);
+      smoothScaleX.set(1);
+      smoothScaleY.set(1);
+      return;
+    }
+
+    // Translation with improved responsiveness
+    const translationIntensity = optimizedElasticity * smoothFactor;
+    const tx = deltaX * translationIntensity * 0.3;
+    const ty = deltaY * translationIntensity * 0.3;
     smoothTx.set(tx);
     smoothTy.set(ty);
 
+    // Scale effects with smoother transitions
     const normalizedX = centerDistance === 0 ? 0 : deltaX / centerDistance;
     const normalizedY = centerDistance === 0 ? 0 : deltaY / centerDistance;
-    const stretchIntensity =
-      (Math.min(centerDistance / 300, 1) * optimizedElasticity * fadeInFactor);
-    const scaleX =
-      1 +
-      Math.abs(normalizedX) * stretchIntensity * 0.6 -
-      Math.abs(normalizedY) * stretchIntensity * 0.3;
-    const scaleY =
-      1 +
-      Math.abs(normalizedY) * stretchIntensity * 0.6 -
-      Math.abs(normalizedX) * stretchIntensity * 0.3;
+    const scaleIntensity = Math.min(centerDistance / 200, 1) * optimizedElasticity * smoothFactor;
+    
+    const scaleX = 1 + Math.abs(normalizedX) * scaleIntensity * 0.4 - Math.abs(normalizedY) * scaleIntensity * 0.2;
+    const scaleY = 1 + Math.abs(normalizedY) * scaleIntensity * 0.4 - Math.abs(normalizedX) * scaleIntensity * 0.2;
+    
     smoothScaleX.set(scaleX);
     smoothScaleY.set(scaleY);
   }, [
     globalMousePos,
     optimizedIsElastic,
     optimizedElasticity,
+    elementWidth,
+    elementHeight,
     smoothTx,
     smoothTy,
     smoothScaleX,

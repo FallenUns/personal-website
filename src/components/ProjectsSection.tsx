@@ -88,21 +88,19 @@ const useResponsiveCards = () => {
       
       if (screenWidth < 768) { // Mobile
         setVisibleCards(1);
-        // Account for arrows (64px) + section padding (32px) + some margin (32px)
-        setCardWidth(Math.min(320, screenWidth - 128)); 
+        setCardWidth(Math.min(350, screenWidth - 120)); 
       } else if (screenWidth < 1024) { // Tablet
         setVisibleCards(1);
-        // Account for arrows (80px) + section padding (48px) + margin (32px)
         setCardWidth(Math.min(450, screenWidth - 160)); 
-      } else if (screenWidth < 1280) { // Small desktop
+      } else if (screenWidth < 1280) { // Small desktop - 2 columns
         setVisibleCards(2);
-        setCardWidth(Math.min(450, (screenWidth - 200) / 2)); // Account for arrows + padding
-      } else if (screenWidth < 1600) { // Large Desktop (2 columns)
+        setCardWidth(Math.min(450, (screenWidth - 200) / 2));
+      } else if (screenWidth < 1920) { // Large Desktop - 2 columns
         setVisibleCards(2);
-        setCardWidth(Math.min(520, (screenWidth - 240) / 2)); // Account for arrows + padding
-      } else { // XL Desktop (3 columns)
+        setCardWidth(Math.min(550, (screenWidth - 240) / 2));
+      } else { // XL Desktop - 3 columns
         setVisibleCards(3);
-        setCardWidth(Math.min(420, (screenWidth - 280) / 3)); // Account for arrows + padding
+        setCardWidth(Math.min(500, (screenWidth - 320) / 3));
       }
     };
 
@@ -163,7 +161,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: {
   index: number; 
   cardWidth: number;
 }) => {
-  const cardHeight = 340; 
+  const cardHeight = 450; // Increased from 380 to 450
 
   // Optimize LiquidGlass props - disable expensive features during scroll
   const optimizedProps = useMemo(() => ({
@@ -171,14 +169,14 @@ const ProjectCard = memo(({ project, index, cardWidth }: {
     height: cardHeight,
     positioning: "relative" as const,
     style: { borderRadius: '24px' },
-    elasticity: 1,
+    elasticity: 0.07,
     saturation: 150,
     aberrationIntensity: 0,
     displacementScale: 50,
     overLight: false,
     blurAmount: 8,
     mode: 'standard' as const,
-    isElastic: false,
+    isElastic: true, 
   }), [cardWidth, cardHeight]);
 
   return (
@@ -265,59 +263,74 @@ const ProjectCard = memo(({ project, index, cardWidth }: {
 ProjectCard.displayName = 'ProjectCard';
 
 const ProjectsSection: React.FC = () => {
-  useComponentLoader('ProjectsSection'); // Register component for loading
-  const [currentIndex, setCurrentIndex] = useState(0);
+  useComponentLoader('ProjectsSection');
+  const [currentPage, setCurrentPage] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { visibleCards, cardWidth } = useResponsiveCards();
 
   const totalCards = projects.length;
-  const maxIndex = Math.max(0, totalCards - visibleCards);
+  const totalPages = Math.ceil(totalCards / visibleCards);
 
-  const scrollToIndex = (index: number) => {
-    const newIndex = Math.max(0, Math.min(maxIndex, index));
-    setCurrentIndex(newIndex);
+  const scrollToPage = (page: number) => {
+    const newPage = Math.max(0, Math.min(totalPages - 1, page));
+    setCurrentPage(newPage);
     
     if (scrollContainerRef.current) {
-      const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32; // Fixed gap calculation
+      const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32;
       const cardWidthWithGap = cardWidth + gap;
-      const scrollPosition = newIndex * cardWidthWithGap;
+      const startIndex = newPage * visibleCards;
+      
+      // Calculate if we're on the last page and need to center remaining cards
+      const remainingCards = totalCards - startIndex;
+      const cardsOnCurrentPage = Math.min(remainingCards, visibleCards);
+      
+      let scrollPosition = startIndex * cardWidthWithGap;
+      
+      // Center cards on the last page if there are fewer cards than visible slots
+      if (newPage === totalPages - 1 && cardsOnCurrentPage < visibleCards) {
+        const containerWidth = visibleCards * cardWidth + (visibleCards - 1) * gap;
+        const contentWidth = cardsOnCurrentPage * cardWidth + (cardsOnCurrentPage - 1) * gap;
+        const centerOffset = (containerWidth - contentWidth) / 2;
+        scrollPosition = startIndex * cardWidthWithGap - centerOffset;
+      }
+      
       scrollContainerRef.current.scrollTo({
-        left: scrollPosition,
+        left: Math.max(0, scrollPosition),
         behavior: 'smooth'
       });
     }
   };
 
   const handlePrevious = () => {
-    const step = visibleCards === 1 ? 1 : 1; // Move one card at a time for better UX
-    scrollToIndex(currentIndex - step);
+    scrollToPage(currentPage - 1);
   };
 
   const handleNext = () => {
-    const step = visibleCards === 1 ? 1 : 1; // Move one card at a time for better UX
-    scrollToIndex(currentIndex + step);
+    scrollToPage(currentPage + 1);
   };
 
-  // Handle scroll events to update current index
+  // Handle scroll events to update current page
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
-    const gap = window.innerWidth < 640 ? 24 : 32; // Responsive gap
+    const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32;
     const cardWidthWithGap = cardWidth + gap;
     const scrollLeft = container.scrollLeft;
-    const newIndex = Math.round(scrollLeft / cardWidthWithGap);
-    setCurrentIndex(Math.max(0, Math.min(maxIndex, newIndex)));
+    
+    // Calculate which page is currently visible
+    const cardIndex = Math.round(scrollLeft / cardWidthWithGap);
+    const page = Math.floor(cardIndex / visibleCards);
+    
+    setCurrentPage(Math.max(0, Math.min(totalPages - 1, page)));
   };
 
   return (
     <motion.section 
       id="projects" 
-      className="py-16 px-2 sm:px-6 lg:px-8 w-full pt-24 overflow-visible" // Added overflow-visible
-      // ...existing motion props...
+      className="min-h-screen flex flex-col justify-center py-16 px-2 sm:px-6 lg:px-8 w-full overflow-visible"
     >
       <div className="max-w-none mx-auto w-full flex flex-col items-center">
         <motion.h2 
           className="text-3xl sm:text-4xl font-bold text-center text-white mb-8 sm:mb-10"
-          // ...existing motion props
         >
           My Work
         </motion.h2>
@@ -328,7 +341,7 @@ const ProjectsSection: React.FC = () => {
             {/* Left Arrow - positioned outside the cards */}
             <button
               onClick={handlePrevious}
-              disabled={currentIndex === 0}
+              disabled={currentPage === 0}
               className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5"><path d="M15 18L9 12L15 6" /></svg>
@@ -337,17 +350,19 @@ const ProjectsSection: React.FC = () => {
             {/* Scrollable Cards Container */}
             <motion.div
               ref={scrollContainerRef}
-              className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scrollbar-hide horizontal-scroll snap-x snap-mandatory overflow-y-visible" // Added overflow-y-visible
+              className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scrollbar-hide horizontal-scroll snap-x snap-mandatory overflow-y-visible"
               style={{ 
-                width: visibleCards === 1 
-                  ? `${cardWidth}px` 
-                  : `calc(${visibleCards} * ${cardWidth}px + ${(visibleCards - 1) * (window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32)}px)`,
-                height: '380px', // Fixed height to prevent clipping
-                paddingTop: '20px', // Add top padding to prevent clipping
-                paddingBottom: '20px' // Add bottom padding for balance
+                width: (() => {
+                  const gap = window.innerWidth < 640 ? 16 : window.innerWidth < 1024 ? 24 : 32;
+                  return visibleCards === 1 
+                    ? `${cardWidth}px` 
+                    : `${visibleCards * cardWidth + (visibleCards - 1) * gap}px`;
+                })(),
+                height: '490px',
+                paddingTop: '20px',
+                paddingBottom: '20px'
               }}
               onScroll={handleScroll}
-              // ...existing motion props...
             >
               {projects.map((project, index) => (
                 <div key={project.id} className="flex-shrink-0 snap-start">
@@ -359,7 +374,7 @@ const ProjectsSection: React.FC = () => {
             {/* Right Arrow - positioned outside the cards */}
             <button
               onClick={handleNext}
-              disabled={currentIndex >= maxIndex}
+              disabled={currentPage >= totalPages - 1}
               className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-5 sm:h-5"><path d="M9 18L15 12L9 6" /></svg>
@@ -368,44 +383,19 @@ const ProjectsSection: React.FC = () => {
 
           {/* Navigation Dots Container */}
           <div className="flex justify-center space-x-2 mt-8">
-            {/* The dot logic from the previous step goes here */}
-            {(() => {
-              if (visibleCards > 1) {
-                const pages = [[0, 1], [2, 3], [4]];
-                return pages.map((page, index) => {
-                  let activeDotIndex = 0;
-                  for (let i = 0; i < pages.length; i++) {
-                    if (pages[i].includes(currentIndex)) {
-                      activeDotIndex = i;
-                      break;
-                    }
-                  }
-                  if (currentIndex >= maxIndex) {
-                    activeDotIndex = pages.length - 1;
-                  }
-                  const isActive = activeDotIndex === index;
-                  return (
-                    <button
-                      key={`page-${index}`}
-                      onClick={() => scrollToIndex(page[0])}
-                      className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                        isActive ? 'bg-orange-500' : 'bg-white/30'
-                      }`}
-                    />
-                  );
-                });
-              } else {
-                return Array.from({ length: totalCards }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => scrollToIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                      currentIndex === index ? 'bg-orange-500' : 'bg-white/30'
-                    }`}
-                  />
-                ));
-              }
-            })()}
+            {Array.from({ length: totalPages }).map((_, pageIndex) => {
+              const isActive = currentPage === pageIndex;
+              
+              return (
+                <button
+                  key={`page-${pageIndex}`}
+                  onClick={() => scrollToPage(pageIndex)}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    isActive ? 'bg-orange-500' : 'bg-white/30'
+                  }`}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

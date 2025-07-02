@@ -117,8 +117,6 @@ const Navbar: React.FC<NavbarProps> = (props) => {
     width: 0, // Start with 0 to measure actual content
     height: 54  // A fixed height
   });
-  const [contentDimensions, setContentDimensions] = useState({ width: 0, height: 0 });
-  const contentRef = useRef<HTMLDivElement>(null);
 
   // -- NEW: Scroll spy setup --
   const sectionIds = ['about', 'projects', 'contact'];
