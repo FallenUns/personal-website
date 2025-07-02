@@ -494,12 +494,13 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     pointerEvents: "none",
     transition: "opacity 0.2s ease-out",
     opacity: isHovering || isActive ? 0.6 : 0,
-    backgroundImage:
-      "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 50%)",
+    background: isHovering 
+      ? `radial-gradient(circle at ${50 + mouseOffset.x * 0.8}% ${50 + mouseOffset.y * 0.8}%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.2) 30%, rgba(255, 255, 255, 0) 60%)`
+      : "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 50%)",
     mixBlendMode: "overlay",
     // Hardware acceleration for shine effect
     transform: "translateZ(0)",
-    willChange: "opacity",
+    willChange: "opacity, background",
     backfaceVisibility: "hidden",
     WebkitTransform: "translateZ(0)",
     WebkitBackfaceVisibility: "hidden",

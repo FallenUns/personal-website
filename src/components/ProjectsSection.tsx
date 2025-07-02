@@ -138,7 +138,7 @@ const projects = [
 
 // ProjectCard component (no changes)
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
-  const cardHeight = 480;
+  const cardHeight = 380; // Reduced from 480px to 380px
 
   const optimizedProps = useMemo(() => ({
     width: cardWidth,
@@ -180,7 +180,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
               <p className="text-sm text-white/70 leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{project.description}</p>
             </div>
             <div className="flex-1 flex items-center justify-center mb-4 relative">
-              <div className="relative w-full h-40 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
+              <div className="relative w-full h-32 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
                 <div className="absolute inset-4 flex items-center justify-center">
                   <DeviceMockup type={project.mockupType} color="bg-white/30" />
                 </div>
@@ -237,15 +237,15 @@ const ProjectsSection: React.FC = () => {
   return (
     <motion.section 
       id="projects" 
-      className="min-h-screen flex flex-col items-center pt-24 pb-16 px-4 sm:px-6 lg:px-8 w-full"
+      className="min-h-screen flex flex-col items-center justify-center py-8 px-4 sm:px-6 lg:px-8 w-full"
     >
-      <div className="max-w-7xl mx-auto w-full flex flex-col items-center">
+      <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-screen">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center"
+          className="text-center mb-8"
         >
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
             Featured Work
@@ -256,7 +256,7 @@ const ProjectsSection: React.FC = () => {
         </motion.div>
 
         {/* REFACTORED: Main Content Area with explicit viewport width */}
-        <div className="w-full flex items-center justify-center mt-16">
+        <div className="w-full flex items-center justify-center mb-8">
           {/* Left Navigation Button */}
           <motion.button
               onClick={handlePrevious}
@@ -283,7 +283,7 @@ const ProjectsSection: React.FC = () => {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
                   className="flex gap-4 md:gap-6 justify-center items-start"
-                  style={{ minHeight: '520px' }}
+                  style={{ minHeight: '420px' }}
               >
                   {getVisibleProjects().map((project, index) => (
                       <ProjectCard key={project.id} project={project} index={index} cardWidth={cardWidth} />
@@ -310,7 +310,7 @@ const ProjectsSection: React.FC = () => {
         </div>
 
         {/* Navigation Dots */}
-        <div className="flex justify-center space-x-3 mt-8">
+        <div className="flex justify-center space-x-3 mb-6">
           {Array.from({ length: totalPages }).map((_, pageIndex) => {
             const isActive = currentPage === pageIndex;
             return (
@@ -331,14 +331,27 @@ const ProjectsSection: React.FC = () => {
 
         {/* Project Counter */}
         <motion.div 
-          className="text-center mt-8"
+          className="text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <span className="text-white text-base font-semibold bg-black/40 px-6 py-3 rounded-full backdrop-blur-md border border-white/20 shadow-lg">
-            Page {currentPage + 1} of {totalPages} • {totalCards} Projects
-          </span>
+          <LiquidGlass
+            width={215}
+            height={56}
+            positioning="relative"
+            style={{ borderRadius: '28px' }}
+            elasticity={0.12}
+            saturation={140}
+            displacementScale={150}
+            overLight={true}
+            blurAmount={8}
+            mode="shader"
+          >
+            <span className="text-white text-base font-semibold [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+              Page {currentPage + 1} of {totalPages} • {totalCards} Projects
+            </span>
+          </LiquidGlass>
         </motion.div>
       </div>
     </motion.section>
