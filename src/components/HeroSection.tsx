@@ -1,14 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
+import AssistantIcon from './AssistantIcon';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 
-const HeroSection: React.FC = () => {
+interface HeroSectionProps {
+  onChatOpen: () => void;
+  isAIThinking?: boolean;
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ onChatOpen, isAIThinking = false }) => {
   useComponentLoader('HeroSection'); // Register component for loading
   const { isLoading } = useLoading();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroHeight = window.innerHeight;
+      setIsScrolled(window.scrollY > heroHeight * 0.8);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <section id="about" className="h-screen flex items-center px-12 md:px-20 lg:px-32 pt-20">
+    <section id="about" className="h-screen flex items-center px-12 md:px-20 lg:px-32 pt-20 relative">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ 
@@ -95,6 +112,27 @@ const HeroSection: React.FC = () => {
             </LiquidGlass>
           </div>
         </div>
+      </motion.div>
+
+      {/* Assistant Icon with conditional positioning */}
+      <motion.div
+        className={`${
+          isScrolled 
+            ? 'fixed bottom-6 left-6 z-50' 
+            : 'absolute right-12 md:right-20 lg:right-32 top-1/2 transform -translate-y-1/2'
+        } transition-all duration-300 ease-in-out`}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ 
+          opacity: isLoading ? 0 : 1, 
+          scale: isLoading ? 0.8 : 1 
+        }}
+        transition={{ 
+          duration: 0.6, 
+          ease: 'easeOut',
+          delay: isLoading ? 0 : 1
+        }}
+      >
+        <AssistantIcon onClick={onChatOpen} isThinking={isAIThinking} />
       </motion.div>
     </section>
   );

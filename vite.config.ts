@@ -17,7 +17,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          motion: ['framer-motion']
+          motion: ['framer-motion'],
+          three: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing']
         }
       }
     },
@@ -34,6 +35,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion']
-  }
+    include: ['react', 'react-dom', 'framer-motion', 'three', '@react-three/fiber', '@react-three/drei']
+  },
+  assetsInclude: ['**/*.glsl']
 })

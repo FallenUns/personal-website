@@ -10,6 +10,7 @@ import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
 import './components/performance.css';
+import ChatWindow from './components/ChatWindow';
 
 // Function to get the background color based on the hour
 const getLoaderBackgroundColor = (hour: number) => {
@@ -28,6 +29,8 @@ const getLoaderBackgroundColor = (hour: number) => {
 // App content component that uses the loading hooks
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isAITyping, setIsAITyping] = useState(false);
 
   // Register critical resource loaders
   useCriticalResourceLoader();
@@ -56,7 +59,7 @@ const AppContent: React.FC = () => {
     const now = new Date();
     return now.getHours() + now.getMinutes() / 60;
   });
-  const [isDarkMode, setIsDarkMode] = useState(currentTime >= 18 || currentTime < 6);
+  const [isDarkMode, setIsDarkMode] = useState(currentTime >= 17 || currentTime < 5);
 
   useEffect(() => {
     if (isAuto) {
@@ -64,7 +67,7 @@ const AppContent: React.FC = () => {
         const now = new Date();
         const newTime = now.getHours() + now.getMinutes() / 60;
         setCurrentTime(newTime);
-        setIsDarkMode(newTime >= 18 || newTime < 6);
+        setIsDarkMode(newTime >= 17 || newTime < 5);
       }, 60000);
       return () => clearInterval(timer);
     }
@@ -74,7 +77,7 @@ const AppContent: React.FC = () => {
     if (isAuto) setIsAuto(false);
     const newTime = parseFloat(e.target.value);
     setCurrentTime(newTime);
-    setIsDarkMode(newTime >= 18 || newTime < 6);
+    setIsDarkMode(newTime >= 17 || newTime < 5);
   }, [isAuto]);
 
   const handleToggleAuto = useCallback(() => {
@@ -84,7 +87,7 @@ const AppContent: React.FC = () => {
             const now = new Date();
             const newTime = now.getHours() + now.getMinutes() / 60;
             setCurrentTime(newTime);
-            setIsDarkMode(newTime >= 18 || newTime < 6);
+            setIsDarkMode(newTime >= 17 || newTime < 5);
         }
         return newIsAuto;
     });
@@ -148,7 +151,15 @@ const AppContent: React.FC = () => {
                 ease: "easeOut",
               }}
             >
-              <HeroSection />
+              <ChatWindow 
+                isOpen={isChatOpen} 
+                onClose={() => setIsChatOpen(false)} 
+                onIsTypingChange={setIsAITyping} 
+              />
+              <HeroSection 
+                onChatOpen={() => setIsChatOpen(true)} 
+                isAIThinking={isAITyping} 
+              />
               <ProjectsSection />
               <Contact />
               <div className="h-screen flex items-center justify-center">
