@@ -9,8 +9,8 @@ import ProjectsSection from './components/ProjectsSection';
 import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
+import FloatingAssistant from './components/FloatingAssistant';
 import './components/performance.css';
-import ChatWindow from './components/ChatWindow';
 
 // Function to get the background color based on the hour
 const getLoaderBackgroundColor = (hour: number) => {
@@ -29,15 +29,11 @@ const getLoaderBackgroundColor = (hour: number) => {
 // App content component that uses the loading hooks
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isAITyping, setIsAITyping] = useState(false);
 
   // Register critical resource loaders
   useCriticalResourceLoader();
   useAssetPreloader({
     // Add paths to any images, fonts, or scripts you want to preload
-    // images: ['/path/to/image1.jpg'],
-    // fonts: ['FontName'],
   });
 
   // Prevent scrolling during loading
@@ -108,7 +104,7 @@ const AppContent: React.FC = () => {
     });
   };
 
-  const loaderBackgroundColor = getLoaderBackgroundColor(currentTime);
+  const loaderBackgroundColor = getLoaderBackgroundColor(Math.floor(currentTime));
 
   return (
     <>
@@ -151,15 +147,7 @@ const AppContent: React.FC = () => {
                 ease: "easeOut",
               }}
             >
-              <ChatWindow 
-                isOpen={isChatOpen} 
-                onClose={() => setIsChatOpen(false)} 
-                onIsTypingChange={setIsAITyping} 
-              />
-              <HeroSection 
-                onChatOpen={() => setIsChatOpen(true)} 
-                isAIThinking={isAITyping} 
-              />
+              <HeroSection />
               <ProjectsSection />
               <Contact />
               <div className="h-screen flex items-center justify-center">
@@ -169,6 +157,9 @@ const AppContent: React.FC = () => {
                 </div>
               </div>
             </motion.main>
+            
+            {/* Floating Assistant is now self-contained and manages its own state */}
+            <FloatingAssistant isLoading={isLoading} />
           </TimeProvider>
         )}
       </AnimatePresence>

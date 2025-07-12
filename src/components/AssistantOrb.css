@@ -1,0 +1,34 @@
+/* AI Orb Component Styles */
+.ai-orb-container.dragging {
+  cursor: grabbing !important;
+}
+
+.ai-orb-container.clicked {
+  transform: scale(0.95) !important;
+}
+
+.ai-orb-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ai-orb-canvas {
+  pointer-events: none;
+}
+
+.ai-orb-instructions {
+  user-select: none;
+  pointer-events: none;
+}
+
+.ai-orb-button {
+  user-select: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.ai-orb-button:focus {
+  outline: 2px solid rgb(0, 255, 34);
+  outline-offset: 2px;
+}

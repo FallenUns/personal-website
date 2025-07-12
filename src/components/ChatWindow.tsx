@@ -1,4 +1,3 @@
-// src/components/ChatWindow.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
@@ -10,84 +9,89 @@ interface Message {
 }
 
 interface ChatWindowProps {
-  isOpen: boolean;
+  isChatOpen: boolean;
+  showOutput: boolean;
+  messages: Message[];
+  onSendMessage: (input: string) => void;
   onClose: () => void;
-  onIsTypingChange?: (isTyping: boolean) => void;
+  isPressed: boolean;
+  isAITyping: boolean;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ isOpen, onClose, onIsTypingChange }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+const ChatWindow: React.FC<ChatWindowProps> = ({
+  isChatOpen,
+  showOutput,
+  messages,
+  onSendMessage,
+  onClose,
+  isPressed,
+  isAITyping
+}) => {
   const [input, setInput] = useState('');
-  const [showResponse, setShowResponse] = useState(false);
-  const [showInput, setShowInput] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
+  const [responseHeight, setResponseHeight] = useState(110);
+  
   const inputRef = useRef<HTMLInputElement>(null);
+  const responseRef = useRef<HTMLDivElement>(null);
+  const responseTextRef = useRef<HTMLParagraphElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
   const latestResponse = messages.filter(msg => msg.role === 'model').pop();
 
+  // Focus the input when the chat opens
   useEffect(() => {
-    if (isOpen && showInput && inputRef.current) {
+    if (isChatOpen && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isOpen, showInput]);
+  }, [isChatOpen]);
 
-  // Reset states when chat is opened
+  // Typing animation for the response text
   useEffect(() => {
-    if (isOpen) {
-      setShowInput(true);
-      setShowResponse(false);
-    }
-  }, [isOpen]);
-
-  // Notify parent component when typing state changes
-  useEffect(() => {
-    if (onIsTypingChange) {
-      onIsTypingChange(isTyping);
-    }
-  }, [isTyping, onIsTypingChange]);
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-    
-    setMessages(prev => [...prev, { role: 'user', text: input }]);
-    setInput('');
-    setShowResponse(false);
-    setShowInput(false);
-    setIsTyping(true);
-    
-    // Notify parent component about typing state
-    onIsTypingChange?.(true);
-    
-    // Simulate AI response
-    setTimeout(() => {
-      const responseText = "Hi! I'm Patrick's AI assistant. How can I help you learn more about his work?";
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        text: responseText
-      }]);
-      setShowResponse(true);
-      setIsTyping(false);
-      
-      // Notify parent component that typing has stopped
-      onIsTypingChange?.(false);
-      
-      // Start typing animation
-      setDisplayedText('');
+    if (latestResponse && showOutput) {
       let index = 0;
+      setDisplayedText('');
       const typeInterval = setInterval(() => {
-        if (index < responseText.length) {
-          setDisplayedText(responseText.slice(0, index + 1));
-          index++;
+        if (index < latestResponse.text.length) {
+          setDisplayedText(prev => latestResponse.text.slice(0, prev.length + 1));
         } else {
           clearInterval(typeInterval);
-          // Show input again after typing is complete
-          setTimeout(() => {
-            setShowInput(true);
-          }, 300);
         }
       }, 30);
-    }, 1000);
+      return () => clearInterval(typeInterval);
+    }
+  }, [latestResponse, showOutput]);
+
+  // Handle clicking outside the chat windows to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const isOutsideResponse = responseRef.current && !responseRef.current.contains(target);
+      const isOutsideInput = inputContainerRef.current && !inputContainerRef.current.contains(target);
+
+      if (isChatOpen && isOutsideResponse && isOutsideInput) {
+        onClose();
+      }
+    };
+    if (isChatOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isChatOpen, onClose]);
+
+  // Dynamically adjust the height of the response window
+  useEffect(() => {
+    if (showOutput && responseTextRef.current) {
+      const scrollHeight = responseTextRef.current.scrollHeight;
+      setResponseHeight(Math.min(300, Math.max(110, scrollHeight + 40)));
+    }
+  }, [displayedText, showOutput]);
+
+  const handleSend = () => {
+    if (isAITyping) return; // Prevent sending while AI is typing
+    onSendMessage(input);
+    setInput('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -101,23 +105,54 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isOpen, onClose, onIsTypingChan
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
-    // Hide response when user starts typing new message
-    if (showResponse) {
-      setShowResponse(false);
-      setDisplayedText('');
-    }
   };
 
   return (
     <>
-      {/* Floating Input */}
+      {/* Floating Response */}
       <AnimatePresence>
-        {isOpen && showInput && (
+        {showOutput && latestResponse && !isPressed && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            ref={responseRef}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="fixed bottom-[120px] right-[170px] z-[50] max-w-sm"
+          >
+            <LiquidGlass
+              width={320}
+              height={responseHeight}
+              positioning="relative"
+              style={{ borderRadius: '20px' }}
+              aberrationIntensity={0.3}
+              elasticity={0.1}
+              blurAmount={3}
+              saturation={110}
+              displacementScale={90}
+              mode='shader'
+            >
+              <div className="p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full" style={{maxHeight: '300px'}}>
+                <p ref={responseTextRef}>
+                  {displayedText}
+                  {isAITyping && <span className="animate-pulse">|</span>}
+                </p>
+              </div>
+            </LiquidGlass>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Input Field */}
+      <AnimatePresence>
+        {isChatOpen && !isPressed && (
+          <motion.div
+            ref={inputContainerRef}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-28 right-8 z-[100]"
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="fixed bottom-[65px] right-[170px] z-[100] max-w-sm"
           >
             <LiquidGlass
               width={320}
@@ -137,39 +172,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isOpen, onClose, onIsTypingChan
                 value={input}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                className="w-full h-full bg-transparent text-white placeholder-white/70 px-4 outline-none border-none"
-                placeholder="Ask me anything..."
+                disabled={isAITyping} // Input is disabled when AI is typing
+                className={`w-full h-full bg-transparent text-white placeholder-white/70 px-4 outline-none border-none ${isAITyping ? 'cursor-not-allowed' : ''}`}
+                placeholder={isAITyping ? 'Waiting for response...' : 'Ask me anything...'}
               />
-            </LiquidGlass>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Floating Response */}
-      <AnimatePresence>
-        {showResponse && latestResponse && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-32 right-8 z-[99] max-w-sm"
-          >
-            <LiquidGlass
-              width={350}
-              height={120}
-              positioning="relative"
-              style={{ borderRadius: '20px' }}
-              aberrationIntensity={0.3}
-              elasticity={0.1}
-              blurAmount={3}
-              saturation={110}
-              displacementScale={90}
-              mode='shader'
-            >
-              <div className="p-4 text-white/90 text-sm leading-relaxed">
-                {displayedText}
-                {isTyping && <span className="animate-pulse">|</span>}
-              </div>
             </LiquidGlass>
           </motion.div>
         )}
