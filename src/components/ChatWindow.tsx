@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
+import './ChatScrollbar.css';
 
 // Define the shape of a message
 interface Message {
@@ -12,7 +13,7 @@ interface ChatWindowProps {
   isChatOpen: boolean;
   showOutput: boolean;
   messages: Message[];
-  onSendMessage: (input: string) => void;
+  onSendMessage: (input: string) => void | Promise<void>;
   onClose: () => void;
   isPressed: boolean;
   isAITyping: boolean;
@@ -34,6 +35,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const responseRef = useRef<HTMLDivElement>(null);
   const responseTextRef = useRef<HTMLParagraphElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
 
   const latestResponse = messages.filter(msg => msg.role === 'model').pop();
@@ -80,11 +82,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     };
   }, [isChatOpen, onClose]);
 
-  // Dynamically adjust the height of the response window
+  // Dynamically adjust the height of the response window and auto-scroll
   useEffect(() => {
-    if (showOutput && responseTextRef.current) {
-      const scrollHeight = responseTextRef.current.scrollHeight;
+    if (showOutput && scrollContainerRef.current) {
+      const scrollHeight = responseTextRef.current?.scrollHeight || 0;
       setResponseHeight(Math.min(300, Math.max(110, scrollHeight + 40)));
+      
+      // Auto-scroll to bottom with a small delay for smooth animation
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        }
+      }, 50);
     }
   }, [displayedText, showOutput]);
 
@@ -132,7 +141,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               displacementScale={90}
               mode='shader'
             >
-              <div className="p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full" style={{maxHeight: '300px'}}>
+              <div 
+                ref={scrollContainerRef}
+                className="scroll-container p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full scrollbar-transparent" 
+                style={{maxHeight: '300px'}}
+              >
                 <p ref={responseTextRef}>
                   {displayedText}
                   {isAITyping && <span className="animate-pulse">|</span>}

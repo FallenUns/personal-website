@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AssistantIcon from './AssistantIcon';
 import ChatWindow from './ChatWindow';
+import { llmService } from '../api/llmService';
+import type { LLMMessage } from '../api/types';
 
 // Define the shape of a message
 interface Message {
@@ -18,6 +20,7 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
   const [showOutput, setShowOutput] = useState(false);
   const [isAITyping, setIsAITyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<LLMMessage[]>([]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -33,9 +36,12 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
       // If we are closing the chat, also hide the output window.
       if (!newChatState) {
         setShowOutput(false);
+        // Clear conversation history when closing chat
+        setConversationHistory([]);
       } else {
         // When opening, reset messages for a new session.
         setMessages([]);
+        setConversationHistory([]);
       }
       return newChatState;
     });
@@ -45,9 +51,10 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
   const handleCloseChat = () => {
     setIsChatOpen(false);
     setShowOutput(false);
+    setConversationHistory([]);
   };
 
-  const handleSendMessage = (input: string) => {
+  const handleSendMessage = async (input: string) => {
     if (!input.trim() || isAITyping) return;
 
     // Hide the previous output and disable input
@@ -55,15 +62,40 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
     setIsAITyping(true);
     setMessages(prev => [...prev, { role: 'user', text: input }]);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responseText = "Excellent! The input bar remains while I respond, and the old output is replaced. When you're finished, click the orb to close everything.";
-      setMessages(prev => [...prev, { role: 'model', text: responseText }]);
+    // Add user message to conversation history
+    const newConversationHistory: LLMMessage[] = [
+      ...conversationHistory,
+      { role: 'user', content: input }
+    ];
+
+    try {
+      // Send message to LLM API
+      const response = await llmService.sendMessage(newConversationHistory);
       
+      if (response.success && response.message) {
+        // Add AI response to messages and conversation history
+        setMessages(prev => [...prev, { role: 'model', text: response.message! }]);
+        setConversationHistory([
+          ...newConversationHistory,
+          { role: 'assistant', content: response.message! }
+        ]);
+      } else {
+        // Handle API error
+        const errorMessage = response.error || 'Sorry, I encountered an error. Please try again.';
+        setMessages(prev => [...prev, { role: 'model', text: errorMessage }]);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage = error instanceof Error 
+        ? `Error: ${error.message}` 
+        : 'Sorry, I\'m having trouble connecting. Please check your configuration and try again.';
+      
+      setMessages(prev => [...prev, { role: 'model', text: errorMessage }]);
+    } finally {
       // Show the new output and re-enable the input
       setShowOutput(true);
       setIsAITyping(false);
-    }, 1500);
+    }
   };
 
   if (!isComponentVisible || isLoading) {

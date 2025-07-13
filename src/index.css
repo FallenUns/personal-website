@@ -22,16 +22,64 @@ body {
   scroll-snap-type: y mandatory;
 }
 
-/* hide scrollbar everywhere */
-body::-webkit-scrollbar {
-  display: none;
-}
-body {
-  -ms-overflow-style: none;  /* IE 10+ */
-  scrollbar-width: none;     /* Firefox */
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
 }
 
-/* optional—if you want to further optimize on mobile: */
+/* Force override any framework scrollbar styles */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* Beautiful transparent scrollbar for entire page */
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1) !important;
+  border-radius: 5px !important;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.3) 100%
+  ) !important;
+  border-radius: 5px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.5) 100%
+  ) !important;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Firefox scrollbar styling */
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive scrollbar for different screen sizes */
+@media (max-width: 1024px) {
+  body::-webkit-scrollbar {
+    width: 6px;
+  }
+}
+
 @media (max-width: 768px) {
   :root {
     --blur-amount: 20px;
@@ -39,6 +87,37 @@ body {
   .gradient-bg .gradients-container {
     filter: url(#goo) blur(var(--blur-amount));
   }
+  
+  body::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+  }
+  
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Hide scrollbar on very small screens for cleaner mobile experience */
+@media (max-width: 480px) {
+  body::-webkit-scrollbar {
+    width: 2px;
+  }
+}
+
+/* Custom selection color to match the theme */
+::selection {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+::-moz-selection {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 /* For the new dynamic border effect */

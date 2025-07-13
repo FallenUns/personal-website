@@ -146,3 +146,9 @@ export default tseslint.config({
   },
 })
 ```
+
+### 🤖 AI Chatbot Integration
+- **LLM-Powered Assistant**: Integrated with OpenAI/Anthropic APIs for intelligent responses
+- **Project-Focused**: AI only answers questions related to the website and portfolio
+- **Conversation Memory**: Maintains context throughout the chat session
+- **Secure Configuration**: Environment variable-based API key management
