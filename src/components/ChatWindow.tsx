@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import './ChatScrollbar.css';
+import './ChatAlignment.css';
 import ReactMarkdown from 'react-markdown';
 // Define the shape of a message
 interface Message {
@@ -54,7 +55,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       setDisplayedText('');
       const typeInterval = setInterval(() => {
         if (index < latestResponse.text.length) {
-          setDisplayedText(prev => latestResponse.text.slice(0, prev.length + 1));
+          index++;
+          setDisplayedText(latestResponse.text.slice(0, index));
         } else {
           clearInterval(typeInterval);
         }
@@ -140,23 +142,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               saturation={110}
               displacementScale={150}
               mode='shader'
-            >
-              <div 
+            >              <div
                 ref={scrollContainerRef}
-                className="scroll-container p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full scrollbar-transparent" 
-                style={{maxHeight: '300px'}}
+                className="scroll-container p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full scrollbar-transparent chat-container" 
+                style={{maxHeight: '300px', textAlign: 'left'}}
               >
-                <div ref={responseTextRef}>
-                  <ReactMarkdown
-                    components={{
-                      strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-                      ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-2" {...props} />,
-                      li: ({node, ...props}) => <li className="text-white/90" {...props} />,
-                      p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />
-                    }}
-                  >
-                    {displayedText}
-                  </ReactMarkdown>
+                <div ref={responseTextRef} className="chat-content chat-text-left" style={{textAlign: 'left', width: '100%'}}>
+                  <div className="chat-text-left" style={{textAlign: 'left', width: '100%'}}>
+                    <ReactMarkdown
+                      components={{
+                        strong: ({node, ...props}) => <strong className="font-bold chat-text-left" style={{textAlign: 'left'}} {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-2 chat-text-left" style={{textAlign: 'left'}} {...props} />,
+                        li: ({node, ...props}) => <li className="text-white/90 chat-text-left" style={{textAlign: 'left'}} {...props} />,
+                        p: ({node, ...props}) => <p className="mb-2 last:mb-0 chat-text-left" style={{textAlign: 'left'}} {...props} />
+                      }}
+                    >
+                      {displayedText}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             </LiquidGlass>
