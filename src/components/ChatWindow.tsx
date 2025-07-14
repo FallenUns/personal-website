@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import './ChatScrollbar.css';
-
+import ReactMarkdown from 'react-markdown';
 // Define the shape of a message
 interface Message {
   role: 'user' | 'model';
@@ -138,7 +138,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               elasticity={0.1}
               blurAmount={3}
               saturation={110}
-              displacementScale={90}
+              displacementScale={150}
               mode='shader'
             >
               <div 
@@ -146,10 +146,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 className="scroll-container p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full scrollbar-transparent" 
                 style={{maxHeight: '300px'}}
               >
-                <p ref={responseTextRef}>
-                  {displayedText}
-                  {isAITyping && <span className="animate-pulse">|</span>}
-                </p>
+                <div ref={responseTextRef}>
+                  <ReactMarkdown
+                    components={{
+                      strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-2" {...props} />,
+                      li: ({node, ...props}) => <li className="text-white/90" {...props} />,
+                      p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />
+                    }}
+                  >
+                    {displayedText}
+                  </ReactMarkdown>
+                </div>
               </div>
             </LiquidGlass>
           </motion.div>

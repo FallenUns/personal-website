@@ -10,6 +10,7 @@ import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
 import FloatingAssistant from './components/FloatingAssistant';
+import { websiteControlService } from './api/controlService';
 import './components/performance.css';
 
 // Function to get the background color based on the hour
@@ -56,6 +57,73 @@ const AppContent: React.FC = () => {
     return now.getHours() + now.getMinutes() / 60;
   });
   const [isDarkMode, setIsDarkMode] = useState(currentTime >= 17 || currentTime < 5);
+
+  // Create stable control functions using useCallback
+  const controlFunctions = React.useMemo(() => ({
+    setTime: (time: number) => {
+      if (isAuto) setIsAuto(false);
+      setCurrentTime(time);
+      setIsDarkMode(time >= 17 || time < 5);
+    },
+    getTime: () => currentTime,
+    toggleDarkMode: () => {
+      if (isAuto) {
+        setIsAuto(false);
+      }
+      setIsDarkMode(prev => {
+        const newIsDarkMode = !prev;
+        if (newIsDarkMode) {
+          setCurrentTime(20);
+        } else {
+          setCurrentTime(8);
+        }
+        return newIsDarkMode;
+      });
+    },
+    setDarkMode: (enabled: boolean) => {
+      if (isAuto) {
+        setIsAuto(false);
+      }
+      if (enabled !== isDarkMode) {
+        setIsDarkMode(enabled);
+        if (enabled) {
+          setCurrentTime(20);
+        } else {
+          setCurrentTime(8);
+        }
+      }
+    },
+    getDarkMode: () => isDarkMode,
+    toggleAutoSync: () => {
+      setIsAuto(prev => {
+        const newIsAuto = !prev;
+        if (newIsAuto) {
+          const now = new Date();
+          const newTime = now.getHours() + now.getMinutes() / 60;
+          setCurrentTime(newTime);
+          setIsDarkMode(newTime >= 17 || newTime < 5);
+        }
+        return newIsAuto;
+      });
+    },
+    setAutoSync: (enabled: boolean) => {
+      if (enabled !== isAuto) {
+        setIsAuto(enabled);
+        if (enabled) {
+          const now = new Date();
+          const newTime = now.getHours() + now.getMinutes() / 60;
+          setCurrentTime(newTime);
+          setIsDarkMode(newTime >= 17 || newTime < 5);
+        }
+      }
+    },
+    getAutoSync: () => isAuto
+  }), [isAuto, currentTime, isDarkMode]);
+
+  // Initialize website controls for the LLM - only once
+  useEffect(() => {
+    websiteControlService.setControls(controlFunctions);
+  }, [controlFunctions]);
 
   useEffect(() => {
     if (isAuto) {
