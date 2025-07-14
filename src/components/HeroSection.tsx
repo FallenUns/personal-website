@@ -8,7 +8,7 @@ const HeroSection: React.FC = () => {
   const { isLoading } = useLoading();
 
   return (
-    <section id="about" className="h-screen flex items-center px-12 md:px-20 lg:px-32 pt-20 relative">
+    <section id="about" className="h-screen flex items-center px-6 sm:px-12 md:px-20 lg:px-32 pt-20 relative">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ 
@@ -23,7 +23,7 @@ const HeroSection: React.FC = () => {
         className="text-left"
       >
         <div className="text-white">
-          <h1 className="text-6xl md:text-6xl font-bold [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
+           <h1 className="text-5xl md:text-6xl font-bold [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
             PATRICK ADRIANUS
           </h1>
           <h2 className="text-2xl md:text-3xl mb-6 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">

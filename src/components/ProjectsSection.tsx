@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState, useEffect } from 'react';
+import React, { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useComponentLoader } from '../contexts/LoadingContext';
@@ -75,8 +75,7 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
 });
 DeviceMockup.displayName = 'DeviceMockup';
 
-// REFACTORED: Hook for responsive layout to prevent cutoff
-const useResponsiveCards = () => {
+const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>) => {
     const [layout, setLayout] = useState({
         visibleCards: 2,
         cardWidth: 500,
@@ -85,32 +84,31 @@ const useResponsiveCards = () => {
 
     useEffect(() => {
         const updateLayout = () => {
-            const screenWidth = window.innerWidth;
+            if (!containerRef.current) return;
 
-            // --- Define layout constants based on Tailwind classes ---
-            const buttonWidth = 56;
-            const sectionPadding = screenWidth >= 1024 ? 32 * 2 : (screenWidth >= 640 ? 24 * 2 : 16 * 2);
-            const viewportMargin = screenWidth < 640 ? 8 * 2 : 16 * 2;
-            const cardGap = screenWidth < 768 ? 16 : 24;
+            // All calculations are now based on the container's width for consistency
+            const containerWidth = containerRef.current.clientWidth;
 
-            // This is the available width for the entire slider component (buttons + viewport)
-            const componentWidth = screenWidth - sectionPadding;
-            // This is the specific width for the area that holds the cards
-            const viewportWidth = componentWidth - (buttonWidth * 2) - viewportMargin;
+            const buttonWidth = 56; // as per LiquidGlass width
+            const viewportMargin = 32; // 16px on each side (md:mx-4)
+            const cardGap = 24; // (md:gap-6)
+
+            // Available width for the card viewport
+            const viewportWidth = containerWidth - (buttonWidth * 2) - viewportMargin;
 
             let visibleCards, cardWidth;
 
-            // --- Determine visible cards and their width based on breakpoints ---
-            if (screenWidth < 768) { // 1 card
+            // Breakpoints now check against the container's width
+            if (containerWidth < 600) { // 1 card on small screens
                 visibleCards = 1;
                 cardWidth = Math.min(350, viewportWidth);
-            } else if (screenWidth < 1024) { // 1 card
-                visibleCards = 1;
-                cardWidth = Math.min(450, viewportWidth);
-            } else if (screenWidth < 1536) { // 2 cards (Adjusted breakpoint for better 2-card view)
+            } else if (containerWidth < 900) { // 1 or 2 cards
                 visibleCards = 2;
                 cardWidth = Math.floor((viewportWidth - cardGap) / 2);
-            } else { // 3 cards
+            } else if (containerWidth < 1280) { // 2 or 3 cards
+                visibleCards = 2; // Defaulting to 2 for better spacing
+                cardWidth = Math.min(450, (viewportWidth - cardGap) / 2);
+            } else { // 3 cards on large screens
                 visibleCards = 3;
                 cardWidth = Math.floor(Math.min(480, (viewportWidth - (cardGap * 2)) / 3));
             }
@@ -121,7 +119,7 @@ const useResponsiveCards = () => {
         updateLayout();
         window.addEventListener('resize', updateLayout);
         return () => window.removeEventListener('resize', updateLayout);
-    }, []);
+    }, [containerRef]);
 
     return layout;
 };
@@ -216,7 +214,12 @@ ProjectCard.displayName = 'ProjectCard';
 const ProjectsSection: React.FC = () => {
   useComponentLoader('ProjectsSection');
   const [currentPage, setCurrentPage] = useState(0);
-  const { visibleCards, cardWidth, viewportWidth } = useResponsiveCards();
+  
+  // Create a ref for the slider container
+  const sliderContainerRef = useRef<HTMLDivElement>(null);
+
+  // Single, correct call to the hook with the ref
+  const { visibleCards, cardWidth, viewportWidth } = useResponsiveCards(sliderContainerRef);
 
   const totalCards = projects.length;
   const totalPages = Math.ceil(totalCards / visibleCards);
@@ -253,16 +256,16 @@ const ProjectsSection: React.FC = () => {
             Explore my latest projects and creative solutions
           </p>
         </motion.div>
-
-        {/* REFACTORED: Main Content Area with explicit viewport width */}
-        <div className="w-full flex items-center justify-center mb-8">
+        
+        {/* Attach the ref to this container */}
+        <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8">
           {/* Left Navigation Button */}
           <motion.button
               onClick={handlePrevious}
               disabled={isPrevDisabled}
-              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 sm:mx-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
-              whileHover={{ scale: isPrevDisabled ? 1 : 1.05, y: isPrevDisabled ? 0 : -2 }}
-              whileTap={{ scale: isPrevDisabled ? 1 : 0.95, y: isPrevDisabled ? 0 : 2 }}
+              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 md:mx-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+              whileHover={{ scale: isPrevDisabled ? 1 : 1.05 }}
+              whileTap={{ scale: isPrevDisabled ? 1 : 0.95 }}
               aria-label="Previous project"
           >
               <div className="relative">
@@ -294,9 +297,9 @@ const ProjectsSection: React.FC = () => {
           <motion.button
               onClick={handleNext}
               disabled={isNextDisabled}
-              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 sm:mx-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
-              whileHover={{ scale: isNextDisabled ? 1 : 1.05, y: isNextDisabled ? 0 : -2 }}
-              whileTap={{ scale: isNextDisabled ? 1 : 0.95, y: isNextDisabled ? 0 : 2 }}
+              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 md:mx-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+              whileHover={{ scale: isNextDisabled ? 1 : 1.05 }}
+              whileTap={{ scale: isNextDisabled ? 1 : 0.95 }}
               aria-label="Next project"
           >
               <div className="relative">

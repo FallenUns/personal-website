@@ -4,6 +4,12 @@
 /*  Global resets & scroll/snapping */
 /* ------------------------------ */
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -25,6 +31,7 @@ body {
 /* Smooth scrolling for the entire page */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 /* Force override any framework scrollbar styles */
