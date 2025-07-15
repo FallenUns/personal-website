@@ -4,6 +4,7 @@ import AssistantIcon from './AssistantIcon';
 import ChatWindow from './ChatWindow';
 import { llmService } from '../api/llmService';
 import type { LLMMessage } from '../api/types';
+import './mobile-optimizations.css';
 
 // Define the shape of a message
 interface Message {
@@ -105,17 +106,23 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
   return (
     <>
       <motion.div
-        className="fixed bottom-[-40px] right-[-40px] z-50"
+        className="fixed z-50 assistant-icon-container"
+        style={{
+          right: '20px', // Fixed 20px from right edge
+          bottom: '20px', // Fixed 20px from bottom edge
+        }}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.7, ease: 'easeOut', type: 'spring', stiffness: 100, damping: 20 }}
       >
-        <AssistantIcon
-          onClick={handleOrbClick}
-          isThinking={isAITyping}
-          onMouseDown={() => setIsPressed(true)}
-          onMouseUp={() => setIsPressed(false)}
-        />
+        <div className="assistant-icon-wrapper">
+          <AssistantIcon
+            onClick={handleOrbClick}
+            isThinking={isAITyping}
+            onMouseDown={() => setIsPressed(true)}
+            onMouseUp={() => setIsPressed(false)}
+          />
+        </div>
       </motion.div>
       <ChatWindow
         isChatOpen={isChatOpen}

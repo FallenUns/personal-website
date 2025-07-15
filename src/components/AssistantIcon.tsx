@@ -12,6 +12,17 @@ interface AssistantIconProps {
 const AssistantIcon: React.FC<AssistantIconProps> = ({ onClick, isThinking = false, onMouseDown, onMouseUp }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  const handleTouchStart = () => {
+    setIsHovered(true);
+    onMouseDown?.();
+  };
+
+  const handleTouchEnd = () => {
+    setIsHovered(false);
+    onMouseUp?.();
+    onClick?.();
+  };
+
   return (
     <div 
       onClick={onClick} 
@@ -19,13 +30,14 @@ const AssistantIcon: React.FC<AssistantIconProps> = ({ onClick, isThinking = fal
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       style={{ 
         cursor: onClick ? 'pointer' : 'default',
-        width: '200px',
-        height: '200px',
         position: 'relative',
         zIndex: 10,
-
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <LiquidGlass

@@ -220,7 +220,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           position: 'fixed',
           zIndex: 50,
           top: '20px',
-          left: '48px', // Using consistent pixel values
+          left: 'clamp(16px, 5vw, 48px)', // Using consistent pixel values
         }}
       >
         <motion.div
@@ -253,7 +253,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           position: 'fixed',
           zIndex: 50,
           top: '20px',
-          right: '48px', // Using consistent pixel values
+          right: 'clamp(16px, 5vw, 48px)', // Using consistent pixel values
           width: `${rightContentDimensions.width}px`,
           height: `${rightContentDimensions.height}px`,
           visibility: rightContentDimensions.width > 0 ? 'visible' : 'hidden',

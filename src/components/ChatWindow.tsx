@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import './ChatScrollbar.css';
 import './ChatAlignment.css';
+import './mobile-optimizations.css';
 import ReactMarkdown from 'react-markdown';
 // Define the shape of a message
 interface Message {
@@ -129,9 +130,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed bottom-[120px] right-[170px] z-[50] max-w-sm"
+            className="response-window fixed bottom-[120px] right-[170px] z-[50] max-w-sm"
           >
             <LiquidGlass
+              className="liquid-glass"
               width={320}
               height={responseHeight}
               positioning="relative"
@@ -176,9 +178,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed bottom-[65px] right-[170px] z-[100] max-w-sm"
+            className="chat-input-container fixed bottom-[65px] right-[170px] z-[100] max-w-sm"
           >
             <LiquidGlass
+              className="liquid-glass"
               width={320}
               height={50}
               positioning="relative"

@@ -1,0 +1,31 @@
+/* Mobile optimizations for chat windows */
+@media (max-width: 768px) {
+  /* Make assistant icon smaller on mobile */
+  .assistant-icon-container .assistant-icon-wrapper {
+    transform: scale(0.7);
+    transform-origin: bottom right;
+  }
+
+  .chat-input-container .liquid-glass,
+  .response-window .liquid-glass {
+    width: 240px !important; /* Reduced from 320px */
+  }
+
+  /* Move chat input closer to assistant icon on mobile */
+  .chat-input-container {
+    right: 120px !important; /* Reduced from 170px to bring it closer to the icon */
+    bottom: 40px !important; /* Adjusted for better alignment */
+  }
+
+  /* Also move the response window closer */
+  .response-window {
+    right: 120px !important; /* Keep response aligned with input */
+    bottom: 100px !important;
+  }
+
+  /* Reduce the width of both windows on mobile for better fit */
+  .chat-input-container .liquid-glass,
+  .response-window .liquid-glass {
+    width: 240px !important; /* Reduced from 320px */
+  }
+}
