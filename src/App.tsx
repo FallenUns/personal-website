@@ -34,7 +34,13 @@ const AppContent: React.FC = () => {
   // Register critical resource loaders
   useCriticalResourceLoader();
   useAssetPreloader({
-    // Add paths to any images, fonts, or scripts you want to preload
+       images: [
+      '/vite.svg',
+      '/react-logo.png',
+      '/python-logo.png',
+      '/js-logo.png',
+      '/tensorflow-logo.png'
+    ],
   });
 
   // Prevent scrolling during loading
@@ -176,7 +182,45 @@ const AppContent: React.FC = () => {
 
   return (
     <>
-      {/* The circular loader will appear in the center during loading */}
+      {/* Render main content immediately but let loading screen cover it */}
+      <TimeProvider hour={currentTime} isDarkMode={isDarkMode}>
+        <GooeyBackground hour={currentTime} />
+        
+        <Navbar
+          time={currentTime}
+          onTimeChange={handleTimeChange}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={handleToggleDarkMode}
+          isAuto={isAuto}
+          onToggleAuto={handleToggleAuto}
+        />
+        
+        <motion.main 
+          className="relative z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isLoading ? 0 : 1 }}
+          transition={{ 
+            duration: 0.8, 
+            ease: "easeOut",
+            delay: isLoading ? 0 : 0.3
+          }}
+        >
+          <HeroSection />
+          <ProjectsSection />
+          <Contact />
+          <div className="h-screen flex items-center justify-center">
+            <div className="text-white text-center">
+              <h2 className="text-3xl font-bold mb-4">More Content</h2>
+              <p className="text-lg">This is additional content to ensure the page is scrollable.</p>
+            </div>
+          </div>
+        </motion.main>
+        
+        {/* Floating Assistant is now self-contained and manages its own state */}
+        <FloatingAssistant isLoading={isLoading} />
+      </TimeProvider>
+
+      {/* The loading screen acts as an overlay on top of everything */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
@@ -190,54 +234,13 @@ const AppContent: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      {/* The main content will only render when loading is complete */}
-      <AnimatePresence>
-        {!isLoading && (
-          <TimeProvider hour={currentTime} isDarkMode={isDarkMode}>
-            <GooeyBackground hour={currentTime} />
-            
-            <Navbar
-              time={currentTime}
-              onTimeChange={handleTimeChange}
-              isDarkMode={isDarkMode}
-              onToggleDarkMode={handleToggleDarkMode}
-              isAuto={isAuto}
-              onToggleAuto={handleToggleAuto}
-            />
-            
-            <motion.main 
-              className="relative z-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ 
-                duration: 0.8, 
-                ease: "easeOut",
-              }}
-            >
-              <HeroSection />
-              <ProjectsSection />
-              <Contact />
-              <div className="h-screen flex items-center justify-center">
-                <div className="text-white text-center">
-                  <h2 className="text-3xl font-bold mb-4">More Content</h2>
-                  <p className="text-lg">This is additional content to ensure the page is scrollable.</p>
-                </div>
-              </div>
-            </motion.main>
-            
-            {/* Floating Assistant is now self-contained and manages its own state */}
-            <FloatingAssistant isLoading={isLoading} />
-          </TimeProvider>
-        )}
-      </AnimatePresence>
     </>
   );
 };
 
 function App() {
   return (
-    <LoadingProvider minimumLoadTime={2000}>
+    <LoadingProvider minimumLoadTime={3000}>
       <AppContent />
     </LoadingProvider>
   );

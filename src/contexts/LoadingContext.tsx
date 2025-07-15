@@ -56,10 +56,10 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     const loadedCount = loadedItems.size;
     const elapsedTime = Date.now() - startTime;
 
-    // If no loaders have registered, progress is 0.
+    // If no loaders have registered yet, keep progress at 0
     if (totalLoaders === 0) {
         setProgress(0);
-        // If minimum time passes and still no loaders, finish.
+        // If minimum time passes and still no loaders, finish loading
         if (elapsedTime >= minimumLoadTime) {
             setProgress(100);
             const hideTimer = setTimeout(() => setIsLoading(false), 300);
@@ -68,19 +68,17 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
         return;
     }
 
-    // Calculate progress based purely on loaded components.
+    // Calculate progress based on loaded components
     const newProgress = Math.floor((loadedCount / totalLoaders) * 100);
-    setProgress(newProgress);
+    setProgress(prev => Math.max(prev, newProgress)); // Prevent progress from going backwards
 
     // Check for completion
     const allLoaded = loadedCount >= totalLoaders;
     const minimumTimePassed = elapsedTime >= minimumLoadTime;
 
     if (allLoaded && minimumTimePassed) {
-        // Ensure progress hits 100 before hiding.
-        if (progress < 100) {
-            setProgress(100);
-        }
+        // Ensure progress hits 100 before hiding
+        setProgress(100);
       
         const hideTimer = setTimeout(() => {
             setIsLoading(false);
@@ -88,7 +86,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
       
         return () => clearTimeout(hideTimer);
     }
-  }, [loaders, loadedItems, startTime, minimumLoadTime, progress]);
+  }, [loaders, loadedItems, startTime, minimumLoadTime]);
 
   return (
     <LoadingContext.Provider value={{
@@ -118,10 +116,10 @@ export const useComponentLoader = (componentId: string) => {
   useEffect(() => {
     registerLoader(componentId);
     
-    // Reduced loading simulation time for better performance
+    // Simulate component loading time for better UX
     const loadTimer = setTimeout(() => {
       markLoaded(componentId);
-    }, 100 + Math.random() * 200); // Reduced from 500-1500ms to 100-300ms
+    }, 100 + Math.random() * 200); // 100-300ms simulation
     
     return () => clearTimeout(loadTimer);
   }, [componentId, registerLoader, markLoaded]);

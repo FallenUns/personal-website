@@ -14,7 +14,8 @@
   /* Move chat input closer to assistant icon on mobile */
   .chat-input-container {
     right: 120px !important; /* Reduced from 170px to bring it closer to the icon */
-    bottom: 40px !important; /* Adjusted for better alignment */
+    bottom: 45px !important; /* Adjusted for better alignment */
+    height: 45px !important; /* Adjusted height for better fit */
   }
 
   /* Also move the response window closer */
