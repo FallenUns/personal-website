@@ -23,9 +23,6 @@ body {
   margin: 0;
   overscroll-behavior: contain;
   backface-visibility: hidden;
-
-  /* enable vertical snap */
-  scroll-snap-type: y mandatory;
 }
 
 /* Smooth scrolling for the entire page */

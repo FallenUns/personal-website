@@ -208,12 +208,6 @@ const AppContent: React.FC = () => {
           <HeroSection />
           <ProjectsSection />
           <Contact />
-          <div className="h-screen flex items-center justify-center">
-            <div className="text-white text-center">
-              <h2 className="text-3xl font-bold mb-4">More Content</h2>
-              <p className="text-lg">This is additional content to ensure the page is scrollable.</p>
-            </div>
-          </div>
         </motion.main>
         
         {/* Floating Assistant is now self-contained and manages its own state */}

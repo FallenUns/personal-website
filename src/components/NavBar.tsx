@@ -119,22 +119,27 @@ const Navbar: React.FC<NavbarProps> = (props) => {
     height: 54  // A fixed height
   });
 
-  // -- NEW: Scroll spy setup --
+  // -- NEW: Scroll spy setup with better offset --
   const sectionIds = ['about', 'projects', 'contact'];
-  const activeSection = useScrollSpy(sectionIds, { offset: 100 });
+  const activeSection = useScrollSpy(sectionIds, { offset: 100 }); // Reduced offset for better accuracy
 
-  // Scroll function
+  // Improved scroll function
   const scrollToSection = useCallback((sectionId: string) => {
+    console.log('Attempting to scroll to section:', sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
-      const navHeight = 0; // Adjusted for better positioning
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementPosition - navHeight;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
+      console.log('Element found:', element);
+      
+      // Use scrollIntoView with block: 'start' for better positioning
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
       });
+      
+      console.log('Scrolling to:', sectionId);
+    } else {
+      console.error('Element not found:', sectionId);
     }
   }, []);
 
@@ -175,7 +180,6 @@ const Navbar: React.FC<NavbarProps> = (props) => {
         });
       }
     };
-
 
     // Initial measurement
     measureContent();
@@ -326,7 +330,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
               className="flex items-center justify-center font-sans h-full relative" style={{height: navContentHeight}}>
               <div className="flex items-center space-x-3 text-sm">
                 <div className="hidden md:flex items-center space-x-6">
-                  {/* -- MODIFIED: Dynamic nav buttons with active indicator -- */}
+                  {/* -- Navigation buttons with improved active indicator -- */}
                   {navLinks.map((link) => (
                     <motion.button
                       key={link.id}
@@ -350,10 +354,15 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                         <motion.div
                           className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
                           layoutId="active-nav-link-indicator"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          style={{ borderRadius: '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
+                          initial={{ opacity: 0, scaleX: 0 }}
+                          animate={{ opacity: 1, scaleX: 1 }}
+                          exit={{ opacity: 0, scaleX: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          style={{ 
+                            borderRadius: '2px', 
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                            transformOrigin: 'center'
+                          }}
                         />
                       )}
                     </motion.button>

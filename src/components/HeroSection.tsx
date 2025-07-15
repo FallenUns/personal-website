@@ -8,6 +8,24 @@ const HeroSection: React.FC = () => {
   useComponentLoader('HeroSection');
   const { isLoading } = useLoading();
 
+  const scrollToSection = (sectionId: string) => {
+    console.log(`${sectionId} button clicked`);
+    
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+      console.log(`${sectionId} section found:`, targetSection);
+      
+      // With scroll-snap removed, this should work smoothly
+      targetSection.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+    } else {
+      console.error(`${sectionId} section not found`);
+    }
+  };
+
   return (
     <section id="about" className="h-screen flex items-center px-6 sm:px-12 md:px-20 lg:px-32 pt-20 relative">
       <div className="flex items-center justify-between w-full">
@@ -48,19 +66,7 @@ const HeroSection: React.FC = () => {
                 saturation={150}
                 displacementScale={50}
                 mode='shader'
-                onClick={() => {
-                  const projectsSection = document.getElementById('projects');
-                  if (projectsSection) {
-                    const navHeight = 0; // Account for navbar height and padding
-                    const elementPosition = projectsSection.getBoundingClientRect().top + window.pageYOffset;
-                    const offsetPosition = elementPosition - navHeight;
-
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
-                }}
+                onClick={() => scrollToSection('projects')}
             >
                 <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                     View My Work
@@ -78,19 +84,7 @@ const HeroSection: React.FC = () => {
                 saturation={150}
                 displacementScale={50}
                 mode='shader'
-                onClick={() => {
-                    const contactSection = document.getElementById('contact');
-                    if (contactSection) {
-                      const navHeight = 0; // Account for navbar height and padding
-                      const elementPosition = contactSection.getBoundingClientRect().top + window.pageYOffset;
-                      const offsetPosition = elementPosition - navHeight;
-
-                      window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                      });
-                    }
-                  }}
+                onClick={() => scrollToSection('contact')}
             >
                 <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                     Get In Touch
