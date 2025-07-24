@@ -1,343 +1,180 @@
-import React, { useRef, useMemo, useState, Suspense } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { Text, OrbitControls, MeshTransmissionMaterial } from '@react-three/drei';
-import * as THREE from 'three';
-import { useComponentLoader } from '../contexts/LoadingContext';
-import { use3DResourceLoader } from '../hooks/useAssetPreloader';
+// src/components/TechSphere.tsx
+import React from 'react';
+import { motion } from 'framer-motion';
+import LiquidGlass from './LiquidGlass';
+import './TechSphere.css';
 
-interface TechData {
-  name: string;
-  color: number;
-  symbol: string;
-  logoPath?: string;
+// Define the properties for a single tech bubble
+interface TechBubbleProps {
+  logo: string;
+  size: number;
+  style: React.CSSProperties;
+  alt: string;
+  delay: number;
+  url?: string;
+  description?: string;
 }
 
-const techData: TechData[] = [
-  { name: 'VS Code', color: 0x007ACC, symbol: '</>', logoPath: '/vite.svg' },
-  { name: 'Node.js', color: 0x339933, symbol: 'N' },
-  { name: 'React', color: 0x61DAFB, symbol: 'R', logoPath: '/react-logo.png' },
-  { name: 'Python', color: 0x3776AB, symbol: 'Py', logoPath: '/python-logo.png' },
-  { name: 'JavaScript', color: 0xF7DF1E, symbol: 'JS', logoPath: '/js-logo.png' },
-  { name: 'Docker', color: 0x2496ED, symbol: '🐳' },
-  { name: 'Git', color: 0xF05032, symbol: 'G' },
-  { name: 'TensorFlow', color: 0xFF6F00, symbol: 'TF', logoPath: '/tensorflow-logo.png' }
-];
+const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, url, description }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
 
-function createOrbitPath(radiusX: number, radiusY: number, radiusZ: number, tiltX: number, tiltY: number, tiltZ: number, centerOffset: THREE.Vector3) {
-  const points: THREE.Vector3[] = [];
-  const segments = 64;
-
-  for (let i = 0; i <= segments; i++) {
-    const angle = (i / segments) * Math.PI * 2;
-    let x = Math.cos(angle) * radiusX;
-    let y = Math.sin(angle) * radiusY;
-    let z = Math.sin(angle * 2) * radiusZ;
-
-    // Apply rotations for tilted orbits
-    const cosX = Math.cos(tiltX), sinX = Math.sin(tiltX);
-    const cosY = Math.cos(tiltY), sinY = Math.sin(tiltY);
-    const cosZ = Math.cos(tiltZ), sinZ = Math.sin(tiltZ);
-
-    // Rotate around X axis
-    let newY = y * cosX - z * sinX;
-    let newZ = y * sinX + z * cosX;
-    y = newY;
-    z = newZ;
-
-    // Rotate around Y axis
-    let newX = x * cosY + z * sinY;
-    newZ = -x * sinY + z * cosY;
-    x = newX;
-    z = newZ;
-
-    // Rotate around Z axis
-    newX = x * cosZ - y * sinZ;
-    newY = x * sinZ + y * cosZ;
-    x = newX;
-    y = newY;
-
-    // Add center offset to move orbit center
-    points.push(new THREE.Vector3(x + centerOffset.x, y + centerOffset.y, z + centerOffset.z));
-  }
-
-  return points;
-}
-
-interface LogoMeshProps {
-  logoPath: string;
-}
-
-function LogoMesh({ logoPath }: LogoMeshProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const texture = useLoader(THREE.TextureLoader, logoPath);
-  
-  useFrame(({ camera }) => {
-    if (meshRef.current) {
-      // Make logo always face the camera
-      meshRef.current.lookAt(camera.position);
+  const handleClick = () => {
+    if (url) {
+      window.open(url, '_blank');
     }
-  });
-  
-  return (
-    <mesh ref={meshRef} position={[0, 0, 1.3]}>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial 
-        map={texture} 
-        transparent 
-        alphaTest={0.1}
-        side={THREE.DoubleSide}
-        toneMapped={false}
-      />
-    </mesh>
-  );
-}
-
-interface OrbitingSphereProps {
-  tech: TechData;
-  index: number;
-  onSphereClick: (tech: TechData) => void;
-}
-
-function OrbitingSphere({ tech, index, onSphereClick }: OrbitingSphereProps) {
-  const groupRef = useRef<THREE.Group>(null);
-  const sphereRef = useRef<THREE.Mesh>(null);
-  const innerGlowRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-
-  const orbitData = useMemo(() => {
-    // Create wider distribution with bias towards right side
-    const baseRadius = 8 + Math.random() * 12; // Increased range
-    const radiusX = baseRadius + Math.random() * 8; // More variation
-    const radiusY = baseRadius * (0.4 + Math.random() * 0.9); // Wider Y range
-    const radiusZ = Math.random() * 8; // Increased Z variation
-
-    const tiltX = (Math.random() - 0.5) * Math.PI * 0.9;
-    const tiltY = (Math.random() - 0.5) * Math.PI * 0.9;
-    const tiltZ = (Math.random() - 0.5) * Math.PI * 0.9;
-
-    // Create different center offsets for each sphere to spread them out
-    const centerOffset = new THREE.Vector3(
-      -2 + (index % 3) * 4, // Spread across X axis (-2, 2, 6)
-      (Math.random() - 0.5) * 6, // Random Y offset
-      (Math.random() - 0.5) * 4  // Random Z offset
-    );
-
-    const orbitPoints = createOrbitPath(radiusX, radiusY, radiusZ, tiltX, tiltY, tiltZ, centerOffset);
-    
-    return {
-      orbitPoints,
-      speed: 0.01 + Math.random() * 0.01,
-      direction: Math.random() > 0.5 ? 1 : -1,
-      currentIndex: Math.random() * orbitPoints.length
-    };
-  }, [index]);
-
-  useFrame((state) => {
-    if (!groupRef.current) return;
-
-    // Move along orbit path
-    orbitData.currentIndex += orbitData.speed * orbitData.direction;
-
-    if (orbitData.currentIndex >= orbitData.orbitPoints.length) {
-      orbitData.currentIndex = 0;
-    } else if (orbitData.currentIndex < 0) {
-      orbitData.currentIndex = orbitData.orbitPoints.length - 1;
-    }
-
-    // Get current and next points for smooth interpolation
-    const currentIdx = Math.floor(orbitData.currentIndex);
-    const nextIdx = (currentIdx + 1) % orbitData.orbitPoints.length;
-    const t = orbitData.currentIndex - currentIdx;
-
-    // Interpolate between points
-    const currentPoint = orbitData.orbitPoints[currentIdx];
-    const nextPoint = orbitData.orbitPoints[nextIdx];
-    
-    groupRef.current.position.lerpVectors(currentPoint, nextPoint, t);
-
-    // Rotate individual spheres
-    groupRef.current.rotation.y += 0.002;
-    groupRef.current.rotation.x += 0.001;
-
-    // Pulsing effect for inner glow
-    if (innerGlowRef.current) {
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 2 + index) * 0.1;
-      innerGlowRef.current.scale.setScalar(scale);
-    }
-
-    // Scale effect on hover
-    const targetScale = hovered ? 1.2 : 1;
-    groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
-  });
-
-  return (
-    <group ref={groupRef}>
-      {/* Main sphere */}
-      <mesh 
-        ref={sphereRef}
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
-        onClick={() => onSphereClick(tech)}
-      >
-        <sphereGeometry args={[1.2, 32, 32]} />
-        <MeshTransmissionMaterial
-          color={tech.color}
-          thickness={hovered ? 1.2 : 0.8}
-          roughness={0.1}
-          transmission={0.95}
-          ior={1.4}
-          chromaticAberration={0.06}
-          backside={true}
-          distortion={0.1}
-          distortionScale={0.5}
-          temporalDistortion={0.1}
-          clearcoat={0.8}
-          clearcoatRoughness={0.2}
-          opacity={hovered ? 0.6 : 0.4}
-          transparent
-        />
-      </mesh>
-
-      {/* Inner glow */}
-      <mesh ref={innerGlowRef}>
-        <sphereGeometry args={[0.8, 16, 16]} />
-        <MeshTransmissionMaterial 
-          color={tech.color}
-          thickness={0.3}
-          transmission={0.7}
-          ior={1.2}
-          roughness={0.3}
-          chromaticAberration={0.04}
-          distortion={0.05}
-          backside={true}
-          opacity={0.3}
-          transparent
-        />
-      </mesh>
-
-      {/* Logo display */}
-      {tech.logoPath ? (
-        <Suspense fallback={null}>
-          <LogoMesh logoPath={tech.logoPath} />
-        </Suspense>
-      ) : (
-        <mesh position={[0, 0, 1.3]}>
-          <planeGeometry args={[0.8, 0.8]} />
-          <meshBasicMaterial 
-            color={0xffffff}
-            transparent
-            opacity={0.8}
-          />
-          <Text
-            position={[0, 0, 0.01]}
-            fontSize={0.4}
-            color="black"
-            anchorX="center"
-            anchorY="middle"
-          >
-            {tech.symbol}
-          </Text>
-        </mesh>
-      )}
-
-      {/* Text label */}
-      <Text
-        position={[0, -1, 0]}
-        fontSize={0.3}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        visible={hovered}
-      >
-        {tech.name}
-      </Text>
-    </group>
-  );
-}
-
-interface TechSphereSceneProps {
-  onSphereClick: (tech: TechData) => void;
-}
-
-function TechSphereScene({ onSphereClick }: TechSphereSceneProps) {
-  return (
-    <>
-      {/* Enhanced lighting for glass effect */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[10, 10, 10]} intensity={1.5} castShadow />
-      <pointLight position={[-10, 0, 0]} intensity={0.8} color={0x4a90e2} />
-      <pointLight position={[10, 0, 0]} intensity={0.8} color={0xe74c3c} />
-      <pointLight position={[0, 10, 0]} intensity={0.6} color={0xffffff} />
-
-      {/* Orbiting spheres */}
-      {techData.map((tech, index) => (
-        <OrbitingSphere 
-          key={tech.name}
-          tech={tech}
-          index={index}
-          onSphereClick={onSphereClick}
-        />
-      ))}
-    </>
-  );
-}
-
-const TechSphere: React.FC = () => {
-  useComponentLoader('TechSphere'); // Register for loading tracking
-  use3DResourceLoader('TechSphere-3D'); // Register 3D resources
-  const [selectedTech, setSelectedTech] = useState<TechData | null>(null);
-
-  const handleSphereClick = (tech: TechData) => {
-    setSelectedTech(tech);
-    setTimeout(() => setSelectedTech(null), 3000);
   };
 
   return (
-    <div className="relative w-full h-full min-h-[700px]">
-      {/* Info panel */}
-      <div className="absolute top-4 left-4 z-10 bg-black/30 backdrop-blur-lg rounded-lg p-4 text-white max-w-xs">
-        <h3 className="text-lg font-bold mb-2">
-          🌌 {selectedTech ? selectedTech.name : 'Multi-Orbital Technology'}
-        </h3>
-        <p className="text-sm">
-          {selectedTech 
-            ? 'Technology sphere activated!' 
-            : 'Drag to rotate • Click spheres to interact'
-          }
-        </p>
+    <motion.div
+      className="tech-bubble"
+      initial={{ opacity: 0, scale: 0.5, y: 20 }}
+      animate={{ 
+        opacity: 1, 
+        scale: 1, 
+        y: [0, -10, 0],
+      }}
+      transition={{ 
+        opacity: { duration: 0.6, delay },
+        scale: { duration: 0.6, delay },
+        y: { 
+          duration: 3, 
+          repeat: Infinity, 
+          ease: "easeInOut",
+          delay: delay + 1
+        }
+      }}
+      whileHover={{ scale: 1.15, zIndex: 10 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
+      style={{
+        ...style,
+        cursor: url ? 'pointer' : 'default'
+      }}
+    >
+      {/* Tooltip */}
+      {isHovered && description && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap z-20"
+        >
+          {description}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-black/90"></div>
+        </motion.div>
+      )}
+      
+      <LiquidGlass
+        width={size}
+        height={size}
+        positioning="relative"
+        style={{ borderRadius: '50%' }}
+        elasticity={0.3}
+        blurAmount={isHovered ? 8 : 5}
+        displacementScale={isHovered ? 40 : 30}
+        mode="shader"
+      >
+        <img 
+          src={logo} 
+          alt={alt} 
+          style={{ 
+            width: '60%', 
+            height: '60%', 
+            objectFit: 'contain',
+            filter: isHovered ? 'brightness(1.1)' : 'brightness(1)'
+          }} 
+        />
+      </LiquidGlass>
+    </motion.div>
+  );
+};
+
+// Main component for the technology sphere
+const TechSphere: React.FC = () => {
+  const bubbles = [
+    { 
+      logo: '/react-logo.png', 
+      size: 90, 
+      style: { top: '15%', left: '15%' }, 
+      alt: 'React', 
+      delay: 0.2,
+      url: 'https://reactjs.org',
+      description: 'React - A JavaScript library for building user interfaces'
+    },
+    { 
+      logo: '/tensorflow-logo.png', 
+      size: 85, 
+      style: { top: '35%', left: '5%' }, 
+      alt: 'TensorFlow', 
+      delay: 0.4,
+      url: 'https://tensorflow.org',
+      description: 'TensorFlow - Machine Learning platform'
+    },
+    { 
+      logo: '/python-logo.png', 
+      size: 95, 
+      style: { bottom: '20%', left: '10%' }, 
+      alt: 'Python', 
+      delay: 0.6,
+      url: 'https://python.org',
+      description: 'Python - Programming language for data science & AI'
+    },
+    { 
+      logo: '/js-logo.png', 
+      size: 80, 
+      style: { top: '10%', right: '15%' }, 
+      alt: 'JavaScript', 
+      delay: 0.3,
+      url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+      description: 'JavaScript - The language of the web'
+    },
+    { 
+      logo: '/vite.svg', 
+      size: 85, 
+      style: { top: '40%', right: '5%' }, 
+      alt: 'Vite', 
+      delay: 0.5,
+      url: 'https://vitejs.dev',
+      description: 'Vite - Next generation frontend tooling'
+    },
+    { 
+      logo: '/react-logo.png', 
+      size: 75, 
+      style: { bottom: '15%', right: '20%' }, 
+      alt: 'React Native', 
+      delay: 0.7,
+      url: 'https://reactnative.dev',
+      description: 'React Native - Build mobile apps with React'
+    },
+  ];
+
+  return (
+    <div className="tech-sphere-container">
+      {/* Central Portrait */}
+      <div className="central-portrait-container">
+        <div className="relative">
+          <img
+            src="/Subject.png"
+            alt="Patrick Adrianus"
+            style={{
+              width: '320px',
+              height: '480px',
+              objectFit: 'cover',
+              objectPosition: 'center top',
+              borderRadius: '20px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+            }}
+          />
+        </div>
       </div>
 
-      {/* Three.js Canvas */}
-      <Canvas
-        camera={{ position: [0, 0, 8], fov: 75 }}
-        style={{ background: 'transparent', width: '100%', height: '100%' }}
-        className="w-full h-full"
-        gl={{ 
-          antialias: true,
-          alpha: true,
-          powerPreference: "high-performance"
-        }}
-        onCreated={({ gl }) => {
-          // Optimize for performance
-          gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        }}
-        dpr={[1, 2]} // Limit device pixel ratio for performance
-        frameloop="demand" // Only render when needed during loading
-      >
-        <TechSphereScene 
-          onSphereClick={handleSphereClick}
-        />
-        <OrbitControls
-          enablePan={false}
-          enableZoom={false}
-          enableRotate={true}
-          zoomSpeed={0.6}
-          rotateSpeed={0.5}
-          minDistance={20}
-        />
-      </Canvas>
+      {/* Floating Tech Bubbles */}
+      {bubbles.map((bubble, index) => (
+        <TechBubble key={index} {...bubble} />
+      ))}
     </div>
   );
 };
 
-export default React.memo(TechSphere);
+export default TechSphere;

@@ -1,0 +1,59 @@
+/* src/components/TechSphere.css */
+.tech-sphere-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.central-portrait-container {
+  position: relative;
+  z-index: 2; /* Ensure the portrait is above the bubbles' liquid glass */
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+}
+
+.tech-bubble {
+  position: absolute;
+  z-index: 1; /* Bubbles are behind the portrait */
+  transition: all 0.3s ease-out;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+.tech-bubble:hover {
+  z-index: 3; /* Bring the hovered bubble to the front */
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .tech-sphere-container {
+    min-height: 400px;
+  }
+  
+  .central-portrait-container img {
+    width: 280px !important;
+    height: 420px !important;
+  }
+  
+  .tech-bubble {
+    transform: scale(0.8);
+  }
+}
+
+@media (max-width: 768px) {
+  .tech-sphere-container {
+    min-height: 300px;
+  }
+  
+  .central-portrait-container img {
+    width: 240px !important;
+    height: 360px !important;
+  }
+  
+  .tech-bubble {
+    transform: scale(0.6);
+  }
+}

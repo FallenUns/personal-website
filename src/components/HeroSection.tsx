@@ -1,8 +1,9 @@
+// src/components/HeroSection.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
-import TechSphere from './TechSphere';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
+import TechSphere from './TechSphere';
 
 const HeroSection: React.FC = () => {
   useComponentLoader('HeroSection');
@@ -44,41 +45,56 @@ const HeroSection: React.FC = () => {
           className="text-left flex-1 max-w-2xl"
         >
           <div className="text-white">
-             <h1 className="text-5xl md:text-6xl font-bold [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
-              PATRICK ADRIANUS
+            {/* Greeting */}
+            <div className="flex items-center mb-4">
+              <span className="text-5xl mr-3 wave-animation">👋</span>
+            </div>
+            
+            {/* Main Title */}
+            <h1 className="text-5xl md:text-6xl font-bold mb-4 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
+              Hello! I'm Patrick
             </h1>
-            <h2 className="text-2xl md:text-3xl mb-6 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
-              Data Scientist
-            </h2>
-            <p className="text-base text-white/90 max-w-xl mb-8 [text-shadow:0_1px_4px_rgba(0,0,0,1)]">
-              Recently Graduated Student with excelency in Python, ML, AI.
+            
+            {/* Subtitle with decorative element */}
+            <div className="flex items-center mb-6">
+              <div className="w-18 h-0.5 bg-white/60 mr-4"></div>
+              <span className="text-lg font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+                Data Scientist ✦
+              </span>
+            </div>
+            
+            {/* Description */}
+            <p className="text-base text-white/90 max-w-xl mb-6 [text-shadow:0_1px_4px_rgba(0,0,0,1)]">
+              Hello! I'm Patrick, I'm a <span className="font-semibold">UX leader, design thinker, product designer,</span> experience strategist, generative artist & human-loving introvert
             </p>
+            
+            {/* Key Points */}
+            <div className="mb-8 space-y-2">
+              <div className="flex items-center text-white/90">
+                <span className="text-green-400 mr-3">✓</span>
+                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Product must be authentic</span>
+              </div>
+              <div className="flex items-center text-white/90">
+                <span className="text-green-400 mr-3">✓</span>
+                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Solve pain points elegantly</span>
+              </div>
+              <div className="flex items-center text-white/90">
+                <span className="text-green-400 mr-3">✓</span>
+                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">User testing, feedback, and validation</span>
+              </div>
+            </div>
             <div className="flex space-x-4">
+
             <LiquidGlass
                 width={180}
-                height={44}
+                height={45}
                 positioning="relative"
-                style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="hover:bg-white/20"
-                aberrationIntensity={1}
-                elasticity={0.2}
-                blurAmount={12}
-                saturation={150}
-                displacementScale={50}
-                mode='shader'
-                onClick={() => scrollToSection('projects')}
-            >
-                <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
-                    View My Work
-                </span>
-            </LiquidGlass>
-            <LiquidGlass
-                width={180}
-                height={44}
-                positioning="relative"
-                style={{ borderRadius: '9999px', cursor: 'pointer' }}
-                className="hover:bg-white/20"
-                aberrationIntensity={1}
+                style={{ 
+                  borderRadius: '99px', 
+                  cursor: 'pointer',
+                }}
+                className="hover:bg-white/10"
+                aberrationIntensity={0.5}
                 elasticity={0.2}
                 blurAmount={12}
                 saturation={150}
@@ -86,8 +102,34 @@ const HeroSection: React.FC = () => {
                 mode='shader'
                 onClick={() => scrollToSection('contact')}
             >
-                <span className="font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
-                    Get In Touch
+                <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+                    Let's Talk
+                </span>
+            </LiquidGlass>
+            
+            {/* Download CV Button - Transparent with border */}
+            <LiquidGlass
+                width={180}
+                height={45}
+                positioning="relative"
+                style={{ 
+                  borderRadius: '99px', 
+                  cursor: 'pointer',
+                }}
+                className="hover:bg-white/10"
+                aberrationIntensity={0.5}
+                elasticity={0.2}
+                blurAmount={12}
+                saturation={150}
+                displacementScale={50}
+                mode='shader'
+                onClick={() => window.open('/resume.pdf', '_blank')}
+            >
+                <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center">
+                    Download CV 
+                    <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
                 </span>
             </LiquidGlass>
           </div>
@@ -111,6 +153,44 @@ const HeroSection: React.FC = () => {
         <TechSphere />
       </motion.div>
       </div>
+      
+      {/* Bottom Technology Categories */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ 
+          opacity: isLoading ? 0 : 1, 
+          y: isLoading ? 20 : 0 
+        }}
+        transition={{ 
+          duration: 0.8, 
+          ease: 'easeOut',
+          delay: isLoading ? 0 : 1
+        }}
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-4xl"
+      >
+        <div className="flex justify-center items-center space-x-8 text-white/80 text-sm font-medium">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">WEB DESIGN</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">APP DESIGN</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">DEVELOPMENT</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">WEB FLOW</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">BRANDING</span>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 };

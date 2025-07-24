@@ -235,6 +235,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           onMouseDown={() => setIsLogoPressed(true)}
           onMouseUp={() => setIsLogoPressed(false)}
           onMouseLeave={() => setIsLogoPressed(false)}
+          onClick={() => scrollToSection('about')}
           animate={{
             scale: isLogoPressed ? 0.95 : 1,
           }}
