@@ -20,7 +20,7 @@ const Logo: React.FC = () => {
       style={{
         fontFamily: "'safiro-regular-i' ,sans-serif",
         fontSize: '20px',
-        fontWeight: '20',
+        fontWeight: '40',
         color: 'white',
         width: '50px',
         height: '40px',
