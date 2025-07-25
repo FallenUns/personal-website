@@ -1,5 +1,5 @@
 // src/components/TechSphere.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import './TechSphere.css';
@@ -13,9 +13,20 @@ interface TechBubbleProps {
   delay: number;
   url?: string;
   description?: string;
+  optimizedProps?: {
+    positioning: "relative";
+    style: { borderRadius: string };
+    elasticity: number;
+    saturation: number;
+    aberrationIntensity: number;
+    displacementScale: number;
+    blurAmount: number;
+    mode: "shader";
+    overLight: "auto";
+  };
 }
 
-const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, url, description }) => {
+const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, url, description, optimizedProps }) => {
   const [isHovered, setIsHovered] = React.useState(false);
 
   const handleClick = () => {
@@ -68,12 +79,15 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
       <LiquidGlass
         width={size}
         height={size}
-        positioning="relative"
-        style={{ borderRadius: '50%' }}
-        elasticity={0.3}
-        blurAmount={isHovered ? 8 : 5}
-        displacementScale={isHovered ? 40 : 30}
-        mode="shader"
+        positioning={optimizedProps?.positioning || "relative"}
+        style={optimizedProps?.style || { borderRadius: '50%' }}
+        elasticity={optimizedProps?.elasticity || 0.15}
+        blurAmount={isHovered ? (optimizedProps?.blurAmount || 6) + 2 : (optimizedProps?.blurAmount || 6)}
+        displacementScale={isHovered ? (optimizedProps?.displacementScale || 60) + 20 : (optimizedProps?.displacementScale || 60)}
+        mode={optimizedProps?.mode || "shader"}
+        saturation={optimizedProps?.saturation || 150}
+        aberrationIntensity={optimizedProps?.aberrationIntensity || 1.5}
+        overLight={optimizedProps?.overLight || "auto"}
       >
         <img 
           src={logo} 
@@ -92,6 +106,32 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
 
 // Main component for the technology sphere
 const TechSphere: React.FC = () => {
+  // Optimized props for tech bubble liquid glass effects
+  const techBubbleOptimizedProps = useMemo(() => ({
+    positioning: "relative" as const,
+    style: { borderRadius: '50%' },
+    elasticity: 0.15,
+    saturation: 150,
+    aberrationIntensity: 1.5,
+    displacementScale: 60,
+    blurAmount: 6,
+    mode: 'shader' as const,
+    overLight: "auto" as const
+  }), []);
+
+  // Optimized props for portrait liquid glass effects
+  const portraitOptimizedProps = useMemo(() => ({
+    width: 320,
+    height: 480,
+    positioning: "relative" as const,
+    style: { borderRadius: '24px' },
+    elasticity: 0.3,
+    blurAmount: 8,
+    displacementScale: 150,
+    mode: "shader" as const,
+    saturation: 150,
+  }), []);
+
   const bubbles = [
     { 
       logo: '/react-logo.png', 
@@ -100,7 +140,8 @@ const TechSphere: React.FC = () => {
       alt: 'React', 
       delay: 0.2,
       url: 'https://reactjs.org',
-      description: 'React - A JavaScript library for building user interfaces'
+      description: 'React - A JavaScript library for building user interfaces',
+      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/tensorflow-logo.png', 
@@ -109,7 +150,8 @@ const TechSphere: React.FC = () => {
       alt: 'TensorFlow', 
       delay: 0.4,
       url: 'https://tensorflow.org',
-      description: 'TensorFlow - Machine Learning platform'
+      description: 'TensorFlow - Machine Learning platform',
+      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/python-logo.png', 
@@ -118,7 +160,8 @@ const TechSphere: React.FC = () => {
       alt: 'Python', 
       delay: 0.6,
       url: 'https://python.org',
-      description: 'Python - Programming language for data science & AI'
+      description: 'Python - Programming language for data science & AI',
+      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/js-logo.png', 
@@ -127,7 +170,8 @@ const TechSphere: React.FC = () => {
       alt: 'JavaScript', 
       delay: 0.3,
       url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-      description: 'JavaScript - The language of the web'
+      description: 'JavaScript - The language of the web',
+      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/vite.svg', 
@@ -136,7 +180,8 @@ const TechSphere: React.FC = () => {
       alt: 'Vite', 
       delay: 0.5,
       url: 'https://vitejs.dev',
-      description: 'Vite - Next generation frontend tooling'
+      description: 'Vite - Next generation frontend tooling',
+      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/react-logo.png', 
@@ -145,28 +190,40 @@ const TechSphere: React.FC = () => {
       alt: 'React Native', 
       delay: 0.7,
       url: 'https://reactnative.dev',
-      description: 'React Native - Build mobile apps with React'
+      description: 'React Native - Build mobile apps with React',
+      optimizedProps: techBubbleOptimizedProps
     },
   ];
 
   return (
     <div className="tech-sphere-container">
-      {/* Central Portrait */}
+      {/* Central Portrait with LiquidGlass Effect */}
       <div className="central-portrait-container">
-        <div className="relative">
-          <img
-            src="/Subject.png"
-            alt="Patrick Adrianus"
-            style={{
-              width: '320px',
-              height: '480px',
-              objectFit: 'cover',
-              objectPosition: 'center top',
-              borderRadius: '20px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-            }}
-          />
-        </div>
+        <motion.div 
+          className="relative"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          style={{
+            filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.3))',
+          }}
+        >
+          <LiquidGlass
+            {...portraitOptimizedProps}
+          >
+            <img
+              src="/Subject.png"
+              alt="Patrick Adrianus"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center top',
+                borderRadius: '20px',
+              }}
+            />
+          </LiquidGlass>
+        </motion.div>
       </div>
 
       {/* Floating Tech Bubbles */}
