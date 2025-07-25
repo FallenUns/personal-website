@@ -13,12 +13,15 @@ export interface WebsiteControls {
   toggleDarkMode: () => void;
   setDarkMode: (enabled: boolean) => void;
   getDarkMode: () => boolean;
+  
+  // Navigation control
+  navigateToSection: (sectionId: string) => void;
 }
 
 // Available LLM commands for website control
 export interface LLMCommand {
-  type: 'setTime' | 'toggleAutoSync' | 'setAutoSync' | 'toggleDarkMode' | 'setDarkMode' | 'getStatus';
-  value?: number | boolean;
+  type: 'setTime' | 'toggleAutoSync' | 'setAutoSync' | 'toggleDarkMode' | 'setDarkMode' | 'getStatus' | 'navigateToSection';
+  value?: number | boolean | string;
 }
 
 // Response from LLM command execution

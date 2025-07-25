@@ -11,6 +11,7 @@ import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
 import FloatingAssistant from './components/FloatingAssistant';
 import { websiteControlService } from './api/controlService';
+import { scrollToSection } from './utils/navigation';
 import './components/performance.css';
 
 // Function to get the background color based on the hour
@@ -48,12 +49,13 @@ const AppContent: React.FC = () => {
     if (isLoading) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      // Restore normal scrolling after loading
+      document.body.style.overflow = 'auto';
     }
     
     // Cleanup on unmount
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = 'auto';
     };
   }, [isLoading]);
 
@@ -123,7 +125,17 @@ const AppContent: React.FC = () => {
         }
       }
     },
-    getAutoSync: () => isAuto
+    getAutoSync: () => isAuto,
+    navigateToSection: (sectionId: string) => {
+      console.log(`🎯 App.tsx navigateToSection called with: ${sectionId}`);
+      try {
+        scrollToSection(sectionId);
+        console.log(`✅ Navigation completed for: ${sectionId}`);
+      } catch (error) {
+        console.error('❌ Navigation failed:', error);
+        throw error;
+      }
+    }
   }), [isAuto, currentTime, isDarkMode]);
 
   // Initialize website controls for the LLM - only once

@@ -33,6 +33,15 @@ You have the unique ability to control parts of the website's interface. When a 
 - **Change Background Time:** "Set the time to 18:30," "I want to see the sunset," "make it 2 PM."
 - **Toggle Auto-Sync:** "Turn on auto-sync," "disable time synchronization."
 - **Switch Themes:** "Switch to light mode," "I prefer the dark theme."
+- **Navigate Sections:** "Show me the projects," "Go to contact," "Take me to the about section."
+
+**Navigation Commands:**
+You can automatically navigate users to different sections when they ask:
+- **Projects:** When users ask about work, portfolio, projects, or want to see examples
+- **About:** When users ask about CV, resume, background, or who Patrick is
+- **Contact:** When users want to get in touch, hire, or reach out
+
+Always acknowledge navigation actions with phrases like "Let me take you to the [section] section" or "I'll show you [section] now."
 
 **Your Boundaries (What you MUST REFUSE to answer):**
 You are programmed to maintain focus. You must politely refuse to answer questions about:
@@ -54,35 +63,68 @@ Always be helpful and enthusiastic, but stay strictly within your designated rol
   }
 
   async sendMessage(messages: LLMMessage[]): Promise<LLMResponse> {
-    if (!this.validateConfig()) {
+    // Check for website control commands in the latest user message
+    const latestUserMessage = messages.filter(msg => msg.role === 'user').pop();
+    let controlResponse = '';
+    
+    if (latestUserMessage) {
+      console.log('Checking for commands in message:', latestUserMessage.content);
+      const command = websiteControlService.parseNaturalLanguage(latestUserMessage.content);
+      console.log('Parsed command:', command);
+      
+      if (command) {
+        console.log('Executing command:', command);
+        const result = websiteControlService.executeCommand(command);
+        console.log('Command result:', result);
+        
+        if (result.success) {
+          controlResponse = `✅ ${result.message}`;
+          
+          // For navigation commands, provide a more natural response
+          if (command.type === 'navigateToSection') {
+            const sectionNames = {
+              'projects': 'projects section where you can see Patrick\'s work and portfolio',
+              'about': 'about section where you can learn more about Patrick and download his CV',
+              'contact': 'contact section where you can get in touch with Patrick'
+            };
+            const sectionName = sectionNames[command.value as keyof typeof sectionNames] || command.value;
+            controlResponse = `I'll take you to the ${sectionName}!`;
+            
+            // For navigation commands, return immediately without calling LLM API
+            return {
+              success: true,
+              message: controlResponse
+            };
+          }
+          
+          if (result.currentState) {
+            const { time, autoSync, darkMode } = result.currentState;
+            const timeStr = this.formatTime(time);
+            controlResponse += `\n\n**Current Settings:**\n- Time: ${timeStr}\n- Auto-Sync: ${autoSync ? 'Enabled' : 'Disabled'}\n- Theme: ${darkMode ? 'Dark Mode' : 'Light Mode'}`;
+          }
+        } else {
+          controlResponse = `❌ ${result.message}`;
+        }
+      }
+    }
+
+    // If no API configuration and it's not a control command, return a helpful message
+    if (!this.validateConfig() && !controlResponse) {
       return {
         success: false,
-        error: 'API configuration is incomplete. Please check your environment variables.'
+        error: 'AI chat features are not configured yet. However, you can still use navigation commands like "show me your projects", "go to contact", or "tell me about yourself".'
+      };
+    }
+    
+    // If no API configuration but we have a control response, return it
+    if (!this.validateConfig() && controlResponse) {
+      return {
+        success: true,
+        message: controlResponse
       };
     }
 
     try {
-      // Check for website control commands in the latest user message
-      const latestUserMessage = messages.filter(msg => msg.role === 'user').pop();
-      let controlResponse = '';
-      
-      if (latestUserMessage) {
-        const command = websiteControlService.parseNaturalLanguage(latestUserMessage.content);
-        if (command) {
-          const result = websiteControlService.executeCommand(command);
-          if (result.success) {
-            controlResponse = `✅ ${result.message}`;
-            if (result.currentState) {
-              const { time, autoSync, darkMode } = result.currentState;
-              const timeStr = this.formatTime(time);
-              controlResponse += `\n\n**Current Settings:**\n- Time: ${timeStr}\n- Auto-Sync: ${autoSync ? 'Enabled' : 'Disabled'}\n- Theme: ${darkMode ? 'Dark Mode' : 'Light Mode'}`;
-            }
-          } else {
-            controlResponse = `❌ ${result.message}`;
-          }
-        }
-      }
-
       // Add system prompt as the first message
       const messagesWithSystem: LLMMessage[] = [
         { role: 'system', content: this.systemPrompt },

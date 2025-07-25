@@ -123,7 +123,20 @@ const HeroSection: React.FC = () => {
                 saturation={150}
                 displacementScale={50}
                 mode='shader'
-                onClick={() => window.open('/resume.pdf', '_blank')}
+                onClick={() => {
+                  try {
+                    window.open('/resume.pdf', '_blank');
+                  } catch (error) {
+                    console.error('Failed to open resume:', error);
+                    // Fallback to download
+                    const link = document.createElement('a');
+                    link.href = '/resume.pdf';
+                    link.download = 'Patrick_Resume.pdf';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }
+                }}
             >
                 <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center">
                     Download CV 

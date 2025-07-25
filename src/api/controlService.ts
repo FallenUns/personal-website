@@ -91,10 +91,40 @@ class WebsiteControlService {
             currentState: this.getCurrentState()
           };
 
+        case 'navigateToSection':
+          if (typeof command.value !== 'string') {
+            return {
+              success: false,
+              message: 'Invalid section name. Please provide a valid section.'
+            };
+          }
+          
+          const validSections = ['about', 'projects', 'contact'];
+          const sectionId = command.value.toLowerCase();
+          
+          console.log('Navigation command - section:', sectionId);
+          
+          if (!validSections.includes(sectionId)) {
+            return {
+              success: false,
+              message: `Invalid section "${command.value}". Available sections: About, Projects, Contact.`
+            };
+          }
+          
+          console.log('Executing navigation to:', sectionId);
+          this.controls.navigateToSection(sectionId);
+          console.log('Navigation executed successfully');
+          
+          return {
+            success: true,
+            message: `Navigated to ${this.formatSectionName(sectionId)} section.`,
+            currentState: this.getCurrentState()
+          };
+
         default:
           return {
             success: false,
-            message: 'Unknown command. Available commands: setTime, toggleAutoSync, toggleDarkMode, getStatus.'
+            message: 'Unknown command. Available commands: setTime, toggleAutoSync, toggleDarkMode, navigateToSection, getStatus.'
           };
       }
     } catch (error) {
@@ -108,6 +138,7 @@ class WebsiteControlService {
   // Parse natural language commands into structured commands
   parseNaturalLanguage(input: string): LLMCommand | null {
     const lowerInput = input.toLowerCase();
+    console.log('Parsing input for commands:', lowerInput);
 
     // Time setting patterns
     const timePatterns = [
@@ -159,6 +190,44 @@ class WebsiteControlService {
       return { type: 'getStatus' };
     }
 
+    // Navigation patterns
+    // Projects section patterns
+    if ((lowerInput.includes('show') && (lowerInput.includes('project') || lowerInput.includes('work'))) ||
+        lowerInput.includes('go to project') || lowerInput.includes('navigate to project') ||
+        lowerInput.includes('view project') || lowerInput.includes('see project') ||
+        lowerInput.includes('projects section') || lowerInput.includes('my work') ||
+        lowerInput.includes('portfolio') || lowerInput.includes('what projects') ||
+        lowerInput.includes('show me your work') || lowerInput.includes('examples of work') ||
+        lowerInput.includes('what have you built') || lowerInput.includes('see your projects')) {
+      console.log('🎯 Detected projects navigation command');
+      return { type: 'navigateToSection', value: 'projects' };
+    }
+    
+    // About section patterns
+    if ((lowerInput.includes('show') && (lowerInput.includes('cv') || lowerInput.includes('resume'))) ||
+        lowerInput.includes('go to about') || lowerInput.includes('navigate to about') ||
+        lowerInput.includes('about section') || lowerInput.includes('about me') ||
+        lowerInput.includes('who are you') || lowerInput.includes('tell me about') ||
+        lowerInput.includes('background') || lowerInput.includes('experience') ||
+        lowerInput.includes('skills') || lowerInput.includes('download cv') ||
+        lowerInput.includes('download resume') || lowerInput.includes('learn more about')) {
+      console.log('🎯 Detected about navigation command');
+      return { type: 'navigateToSection', value: 'about' };
+    }
+    
+    // Contact section patterns
+    if (lowerInput.includes('contact') || lowerInput.includes('reach out') ||
+        lowerInput.includes('get in touch') || lowerInput.includes('email') ||
+        lowerInput.includes('message') || lowerInput.includes('hire') ||
+        lowerInput.includes('work together') || lowerInput.includes('contact section') ||
+        lowerInput.includes('how to contact') || lowerInput.includes('talk to you') ||
+        lowerInput.includes('send message') || lowerInput.includes('collaboration') ||
+        lowerInput.includes('linkedin') || lowerInput.includes('connect with')) {
+      console.log('🎯 Detected contact navigation command');
+      return { type: 'navigateToSection', value: 'contact' };
+    }
+
+    console.log('❌ No navigation command detected');
     return null;
   }
 
@@ -176,6 +245,15 @@ class WebsiteControlService {
     const hours = Math.floor(time);
     const minutes = Math.round((time % 1) * 60);
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+
+  private formatSectionName(sectionId: string): string {
+    const sectionNames: { [key: string]: string } = {
+      'about': 'About',
+      'projects': 'Projects',
+      'contact': 'Contact'
+    };
+    return sectionNames[sectionId] || sectionId;
   }
 
   // Check if a message contains a control command
