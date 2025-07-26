@@ -81,7 +81,7 @@ const GlassFilter: React.FC<GlassFilterProps> = ({
           height="100%"
           result="DISPLACEMENT_MAP"
           href={getMap(mode, shaderMapUrl)}
-          preserveAspectRatio="xMidYMid slice"
+          preserveAspectRatio="none"
         />
 
         {/* Simple displacement mapping */}

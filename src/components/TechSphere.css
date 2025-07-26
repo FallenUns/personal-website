@@ -6,22 +6,114 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* The min-height will be inherited from the parent in HeroSection */
+  overflow: hidden; /* Prevent overflow on larger screens */
 }
 
+/* Make portrait stay behind the bubbles */
 .central-portrait-container {
   position: relative;
-  /* z-index is managed by framer-motion's layout projection, 
-     but we can set a baseline if needed */
-  z-index: 5; 
+  z-index: 10;
 }
 
+/* Make bubbles float in front */
 .tech-bubble {
   position: absolute;
-  z-index: 2; /* Bubbles are above the background elements */
+  z-index: 20; /* In front of portrait */
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
+  transition: transform 0.3s ease;
 }
 
-/* whileHover={{ zIndex: 10 }} in the component will bring the hovered bubble to the very front */
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 1536px) {
+  .tech-bubble {
+    transform: scale(0.95);
+  }
+}
+
+@media (max-width: 1280px) {
+  .tech-bubble {
+    transform: scale(0.85);
+  }
+}
+
+/* Adjustments for tablets and smaller screens */
+@media (max-width: 1024px) {
+  .tech-sphere-container {
+    overflow: visible; /* Let it use available space */
+  }
+  .tech-bubble {
+    transform: scale(0.75); /* Bubbles are smaller */
+  }
+}
+
+/* Make hovered bubble come to the very front */
+@media (min-width: 1025px) {
+  .tech-bubble:hover {
+    z-index: 30;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .tech-sphere-container.is-mobile {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    overflow: visible;
+    height: auto;
+    padding: 1rem 0;
+  }
+
+  .central-portrait-container {
+    flex-shrink: 0;
+  }
+
+  .mobile-bubbles-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  }
+
+  .mobile-bubbles-scroll-container::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .mobile-bubbles-scroll-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+
+  .mobile-bubbles-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+
+  .mobile-bubbles-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .mobile-bubble-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Override tech-bubble positioning for mobile */
+  .tech-sphere-container.is-mobile .tech-bubble {
+    position: relative;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+}

@@ -7,7 +7,7 @@ const CircularLoader: React.FC = () => {
   
   // Fun loading messages that change based on progress
   const loadingMessages = [
-    { range: [0, 15], text: "🔥 Heating the furnace...", subtext: "Reaching 2000°F for molten glass" },
+    { range: [0, 15], text: "🔥 Heating the furnace...", subtext: "Reaching 1100°C for molten glass" },
     { range: [15, 30], text: "� Gathering molten glass...", subtext: "Collecting the perfect amount" },
     { range: [30, 45], text: "🌪️ Shaping the form...", subtext: "Blowing and molding with precision" },
     { range: [45, 60], text: "✨ Adding crystalline details...", subtext: "Crafting intricate patterns" },

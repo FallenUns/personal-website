@@ -1,8 +1,41 @@
 // src/components/TechSphere.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import './TechSphere.css';
+
+// Hook to check if the viewport is mobile-sized
+const useIsMobile = (breakpoint = 768) => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < breakpoint);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [breakpoint]);
+
+    return isMobile;
+};
+
+// Hook to responsively size the portrait
+const useResponsivePortrait = () => {
+    const [size, setSize] = useState({ width: 320, height: 460 });
+    useEffect(() => {
+        const updateSize = () => {
+            if (window.innerWidth < 768) { 
+                setSize({ width: 250, height: 360 });
+            } else {
+                setSize({ width: 320, height: 460 });
+            }
+        };
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
+    return size;
+};
 
 // Define the properties for a single tech bubble
 interface TechBubbleProps {
@@ -13,49 +46,40 @@ interface TechBubbleProps {
   delay: number;
   url?: string;
   description?: string;
+  isFloating?: boolean; 
 }
 
-const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, url, description }) => {
+const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, url, description, isFloating = true }) => {
   const [isHovered, setIsHovered] = React.useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent click from bubbling up to parent containers
+    e.stopPropagation();
     if (url) {
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
 
+  const animateProps = isFloating ? { opacity: 1, scale: 1, y: [0, -12, 0] } : { opacity: 1, scale: 1 };
+  const transitionProps = isFloating ? {
+    opacity: { duration: 0.7, delay },
+    scale: { duration: 0.7, delay },
+    y: { duration: Math.random() * 2 + 3, repeat: Infinity, ease: "easeInOut" as const, delay: delay + Math.random() }
+  } : { opacity: { duration: 0.7 }, scale: { duration: 0.7 } };
+
   return (
     <motion.div
       className="tech-bubble"
       initial={{ opacity: 0, scale: 0.5 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        y: [0, -12, 0], // Floating animation
-      }}
-      transition={{
-        opacity: { duration: 0.7, delay },
-        scale: { duration: 0.7, delay },
-        y: {
-          duration: Math.random() * 2 + 3, // Randomize duration for natural feel
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: delay + Math.random(),
-        }
-      }}
-      whileHover={{ scale: 1.15, zIndex: 10 }}
+      animate={animateProps}
+      transition={transitionProps}
+      whileHover={{ scale: 1.1, zIndex: 30 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
-      style={{
-        ...style,
-        cursor: url ? 'pointer' : 'default'
-      }}
+      style={style}
     >
-      {/* Tooltip with LiquidGlass effect */}
       <AnimatePresence>
-        {isHovered && description && (
+        {isHovered && description && isFloating && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -64,56 +88,29 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
             className="absolute -top-14 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
           >
              <LiquidGlass
-                width={description.length * 8 + 20}
-                height={35}
-                positioning="relative"
-                style={{ 
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-                }}
-                aberrationIntensity={0.2}
-                elasticity={0.3}
-                blurAmount={6}
-                saturation={120}
-                displacementScale={15}
-                mode='shader'
+                width={description.length * 8 + 20} height={35}
+                positioning="relative" style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                aberrationIntensity={0.2} elasticity={0.3} blurAmount={6} saturation={120} displacementScale={15} mode='shader'
             >
-                <span className="text-white text-xs font-medium px-2 py-1 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
-                {description}
-                </span>
+                <span className="text-white text-xs font-medium px-2 py-1 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">{description}</span>
             </LiquidGlass>
           </motion.div>
         )}
       </AnimatePresence>
-      
       <LiquidGlass
-        width={size}
-        height={size}
-        positioning="relative"
-        style={{
-          borderRadius: '50%', // Perfect circle
-          cursor: 'pointer',
-        }}
+        width={size} height={size}
+        positioning="relative" style={{ borderRadius: '50%', cursor: 'pointer' }}
         className="hover:bg-white/10"
-        aberrationIntensity={0.8}
-        elasticity={0.2}
-        blurAmount={8}
-        saturation={130}
-        displacementScale={20}
+        aberrationIntensity={isFloating ? 0.8 : 0} 
+        elasticity={isFloating ? 0.2 : 0} 
+        blurAmount={isFloating ? 8 : 0} 
+        saturation={isFloating ? 130 : 100} 
+        displacementScale={isFloating ? 20 : 0} 
         mode='shader'
       >
         <img
-          src={logo}
-          alt={alt}
-          style={{
-            width: '55%',
-            height: '55%',
-            objectFit: 'contain',
-            transition: 'filter 0.3s ease',
-            filter: isHovered ? 'brightness(1.1)' : 'brightness(1)'
-          }}
+          src={logo} alt={alt}
+          style={{ width: '55%', height: '55%', objectFit: 'contain', transition: 'filter 0.3s ease', filter: isHovered ? 'brightness(1.1)' : 'brightness(1)' }}
         />
       </LiquidGlass>
     </motion.div>
@@ -122,112 +119,63 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
 
 // Main component for the technology sphere
 const TechSphere: React.FC = () => {
-  const bubbles: TechBubbleProps[] = [
-    { 
-      logo: '/react-logo.png', 
-      size: 80, 
-      style: { top: '8%', left: '15%' }, // Moved slightly further
-      alt: 'React', 
-      delay: 0.2,
-      url: 'https://reactjs.org',
-      description: 'React.js',
-    },
-    { 
-      logo: '/tensorflow-logo.png', 
-      size: 75, 
-      style: { top: '40%', left: '10%' }, // Moved slightly further
-      alt: 'TensorFlow', 
-      delay: 0.4,
-      url: 'https://tensorflow.org',
-      description: 'TensorFlow',
-    },
-    { 
-      logo: '/python-logo.png', 
-      size: 85, 
-      style: { bottom: '15%', left: '15%' }, // Moved slightly further
-      alt: 'Python', 
-      delay: 0.6,
-      url: 'https://python.org',
-      description: 'Python',
-    },
-    { 
-      logo: '/js-logo.png', 
-      size: 70, 
-      style: { top: '12%', right: '18%' }, // Moved slightly further
-      alt: 'JavaScript', 
-      delay: 0.3,
-      url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-      description: 'JavaScript',
-    },
-    { 
-      logo: '/vite.svg', 
-      size: 75, 
-      style: { top: '45%', right: '15%' }, // Moved slightly further
-      alt: 'Vite', 
-      delay: 0.5,
-      url: 'https://vitejs.dev',
-      description: 'Vite',
-    },
-    { 
-      logo: '/react-logo.png', 
-      size: 65, 
-      style: { bottom: '18%', right: '18%' }, // Moved slightly further
-      alt: 'React Native', 
-      delay: 0.7,
-      url: 'https://reactnative.dev',
-      description: 'React Native',
-    },
+  const isMobile = useIsMobile();
+  const { width: portraitWidth, height: portraitHeight } = useResponsivePortrait();
+  const containerClassName = isMobile ? 'tech-sphere-container is-mobile' : 'tech-sphere-container is-desktop';
+
+  const bubbles: Omit<TechBubbleProps, 'isFloating'>[] = [
+    { logo: '/react-logo.png', size: 80, style: { top: '8%', left: 'clamp(5%, 15%, 25%)' }, alt: 'React', delay: 0.2, url: 'https://reactjs.org', description: 'React.js' },
+    { logo: '/tensorflow-logo.png', size: 75, style: { top: '40%', left: 'clamp(0%, 10%, 20%)' }, alt: 'TensorFlow', delay: 0.4, url: 'https://tensorflow.org', description: 'TensorFlow' },
+    { logo: '/python-logo.png', size: 85, style: { bottom: '15%', left: 'clamp(5%, 15%, 25%)' }, alt: 'Python', delay: 0.6, url: 'https://python.org', description: 'Python' },
+    { logo: '/js-logo.png', size: 70, style: { top: '12%', right: 'clamp(5%, 18%, 30%)' }, alt: 'JavaScript', delay: 0.3, url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript', description: 'JavaScript' },
+    { logo: '/vite.svg', size: 75, style: { top: '45%', right: 'clamp(0%, 15%, 25%)' }, alt: 'Vite', delay: 0.5, url: 'https://vitejs.dev', description: 'Vite' },
+    { logo: '/react-logo.png', size: 65, style: { bottom: '18%', right: 'clamp(5%, 18%, 30%)' }, alt: 'React Native', delay: 0.7, url: 'https://reactnative.dev', description: 'React Native' },
   ];
 
   return (
-    <div className="tech-sphere-container">
-      {/* Central Portrait with LiquidGlass Effect */}
+    <div className={containerClassName}>
+      {/* Central Portrait */}
       <div className="central-portrait-container">
         <motion.div
           className="relative"
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
+          animate={{ opacity: 1, scale: 1, width: portraitWidth, height: portraitHeight }}
+          transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
         >
           <LiquidGlass
-            width={350}
-            height={500}
-            positioning="relative"
-            style={{
-              borderRadius: '24px',
-            }}
-            elasticity={0.2}
-            blurAmount={10}
-            saturation={140}
-            aberrationIntensity={0.4}
-            displacementScale={40}
-            mode='shader'
+            width={portraitWidth} height={portraitHeight}
+            positioning="relative" style={{ borderRadius: '24px' }}
+            elasticity={0.2} blurAmount={10} saturation={140} aberrationIntensity={0.4} displacementScale={40} mode='shader'
           >
             <img
-              src="/Subject.png"
-              alt="Patrick Adrianus"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center top',
-                borderRadius: '24px', // Keep border radius consistent with the container
-                transform: 'scale(0.92)', // Apply the scale to create the gap
-                transition: 'transform 0.3s ease-out',
-              }}
+              src="/Subject.png" alt="Patrick Adrianus"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', borderRadius: '24px', transform: 'scale(0.85)', transition: 'transform 0.3s ease-out' }}
             />
           </LiquidGlass>
         </motion.div>
       </div>
 
-      {/* Floating Tech Bubbles */}
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="relative w-full h-full">
-            {bubbles.map((bubble, index) => (
-                <TechBubble key={index} {...bubble} />
-            ))}
-        </div>
-      </div>
+      {/* Render bubbles based on screen size */}
+      {isMobile ? (
+        <motion.div 
+          className="mobile-bubbles-scroll-container"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          {bubbles.map((bubble, index) => (
+            <div key={index} className="mobile-bubble-item">
+              <TechBubble {...bubble} size={70} style={{}} isFloating={false} />
+            </div>
+          ))}
+        </motion.div>
+      ) : (
+        <>
+          {bubbles.map((bubble, index) => (
+            <TechBubble key={index} {...bubble} isFloating={true} />
+          ))}
+        </>
+      )}
     </div>
   );
 };
