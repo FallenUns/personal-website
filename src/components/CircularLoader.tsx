@@ -176,23 +176,6 @@ const CircularLoader: React.FC = () => {
           </motion.span>
         </motion.div>
       </motion.div>
-      
-      {/* Progress bar at the bottom */}
-      <motion.div 
-        className="w-64 h-2 bg-white/20 rounded-full overflow-hidden"
-        initial={{ width: 0 }}
-        animate={{ width: 256 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <motion.div
-          className="h-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full"
-          style={{
-            filter: 'drop-shadow(0 0 8px rgba(164, 139, 250, 0.6))'
-          }}
-          animate={{ width: `${validProgress}%` }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        />
-      </motion.div>
     </motion.div>
   );
 };

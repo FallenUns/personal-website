@@ -598,7 +598,6 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                     width: '100%',
                     height: '100%',
                     borderRadius: `${cornerRadius}px`,
-                    boxShadow: actualOverLight ? "0px 16px 70px rgba(0, 0, 0, 0.75)" : "0px 12px 40px rgba(0, 0, 0, 0.25)",
                     backdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
                     WebkitBackdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
                     filter: `url(#${id})`,
@@ -627,7 +626,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                         borderRadius: `${cornerRadius}px`,
                         background: `
                             radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-                            radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+                            radial-gradient(circle at 75% 75%, rgba(209, 94, 94, 0.06) 0%, transparent 50%),
                             radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 70%)
                         `,
                         opacity: actualOverLight ? 0.8 : 0.6,

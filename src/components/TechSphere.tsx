@@ -74,11 +74,11 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
           cursor: 'pointer',
         }}
         className="hover:bg-white/10"
-        aberrationIntensity={0.5}
+        aberrationIntensity={1.2}
         elasticity={0.2}
         blurAmount={12}
         saturation={150}
-        displacementScale={35}
+        displacementScale={25}
         mode='shader'
       >
         <img 
@@ -164,9 +164,6 @@ const TechSphere: React.FC = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          style={{
-            filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.3))',
-          }}
         >
           <LiquidGlass
               width={300}
@@ -178,6 +175,7 @@ const TechSphere: React.FC = () => {
               elasticity={0.2}
               blurAmount={12}
               saturation={150}
+              aberrationIntensity={1.5}
               displacementScale={35}
               mode='shader'
             >
