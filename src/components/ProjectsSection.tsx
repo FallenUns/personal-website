@@ -2,6 +2,7 @@ import React, { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useComponentLoader } from '../contexts/LoadingContext';
+import { navigateTo } from '../utils/router';
 import './performance.css';
 
 // Device mockup component (no changes)
@@ -125,16 +126,81 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
 };
 
 
-// Project data (no changes)
+// Project data with detailed information for project pages
 const projects = [
-  { id: 1, title: 'UI/UX Design', description: 'Modern mobile app interface design with intuitive user experience', mockupType: 'ui-ux', technologies: ['Figma', 'Adobe XD', 'Principle'], category: 'Design' },
-  { id: 2, title: 'Web Design', description: 'Responsive web application with modern design principles', mockupType: 'web', technologies: ['React', 'TypeScript', 'Tailwind'], category: 'Development' },
-  { id: 3, title: 'Landing Page', description: 'High-converting landing page with optimized user flow', mockupType: 'landing', technologies: ['Next.js', 'Framer Motion', 'CSS3'], category: 'Development' },
-  { id: 4, title: 'Mobile App', description: 'Cross-platform mobile application with native performance', mockupType: 'ui-ux', technologies: ['React Native', 'Expo', 'Firebase'], category: 'Mobile' },
-  { id: 5, title: 'E-commerce', description: 'Full-featured e-commerce platform with payment integration', mockupType: 'web', technologies: ['Next.js', 'Stripe', 'MongoDB'], category: 'Development' },
+  { 
+    id: 1, 
+    title: 'UI/UX Design', 
+    description: 'Modern mobile app interface design with intuitive user experience', 
+    mockupType: 'ui-ux', 
+    technologies: ['Figma', 'Adobe XD', 'Principle'], 
+    category: 'Design',
+    slug: 'ui-ux-design',
+    fullDescription: 'A comprehensive mobile app design project focusing on user-centered design principles and modern interface patterns.',
+    images: ['/project1-1.jpg', '/project1-2.jpg', '/project1-3.jpg'],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: ['Responsive Design', 'User Research', 'Prototyping', 'Usability Testing']
+  },
+  { 
+    id: 2, 
+    title: 'Web Design', 
+    description: 'Responsive web application with modern design principles', 
+    mockupType: 'web', 
+    technologies: ['React', 'TypeScript', 'Tailwind'], 
+    category: 'Development',
+    slug: 'web-design',
+    fullDescription: 'A modern web application built with React and TypeScript, featuring responsive design and optimal performance.',
+    images: ['/project2-1.jpg', '/project2-2.jpg', '/project2-3.jpg'],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: ['React Framework', 'TypeScript', 'Responsive Design', 'Performance Optimization']
+  },
+  { 
+    id: 3, 
+    title: 'Landing Page', 
+    description: 'High-converting landing page with optimized user flow', 
+    mockupType: 'landing', 
+    technologies: ['Next.js', 'Framer Motion', 'CSS3'], 
+    category: 'Development',
+    slug: 'landing-page',
+    fullDescription: 'A high-converting landing page designed to maximize user engagement and conversion rates.',
+    images: ['/project3-1.jpg', '/project3-2.jpg', '/project3-3.jpg'],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: ['Next.js Framework', 'Smooth Animations', 'SEO Optimized', 'Conversion Focused']
+  },
+  { 
+    id: 4, 
+    title: 'Mobile App', 
+    description: 'Cross-platform mobile application with native performance', 
+    mockupType: 'ui-ux', 
+    technologies: ['React Native', 'Expo', 'Firebase'], 
+    category: 'Mobile',
+    slug: 'mobile-app',
+    fullDescription: 'A cross-platform mobile application delivering native performance across iOS and Android platforms.',
+    images: ['/project4-1.jpg', '/project4-2.jpg', '/project4-3.jpg'],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: ['Cross-platform', 'Native Performance', 'Real-time Data', 'Push Notifications']
+  },
+  { 
+    id: 5, 
+    title: 'E-commerce', 
+    description: 'Full-featured e-commerce platform with payment integration', 
+    mockupType: 'web', 
+    technologies: ['Next.js', 'Stripe', 'MongoDB'], 
+    category: 'Development',
+    slug: 'ecommerce-platform',
+    fullDescription: 'A complete e-commerce solution with secure payment processing and inventory management.',
+    images: ['/project5-1.jpg', '/project5-2.jpg', '/project5-3.jpg'],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: ['Payment Integration', 'Inventory Management', 'User Authentication', 'Admin Dashboard']
+  },
 ];
 
-// ProjectCard component (no changes)
+// ProjectCard component with navigation functionality
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
   const cardHeight = 380; // Reduced from 480px to 380px
 
@@ -150,6 +216,18 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
     mode: 'shader' as const,
   }), [cardWidth, cardHeight]);
 
+  // Handle project card click - navigate to project detail page
+  const handleProjectClick = () => {
+    // Navigate using the router utility
+    navigateTo(`/projects/${project.slug}`);
+  };
+
+  // Handle external link clicks (prevent navigation to project detail)
+  const handleExternalLinkClick = (e: React.MouseEvent, url: string) => {
+    e.stopPropagation(); // Prevent card click from firing
+    window.open(url, '_blank');
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -158,6 +236,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
       transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
       className="group cursor-pointer flex-shrink-0"
+      onClick={handleProjectClick}
     >
       <motion.div
         whileHover={{ scale: 1.02, y: -5, transition: { duration: 0.3, ease: "easeOut" } }}
@@ -194,6 +273,29 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                       {tech}
                     </motion.span>
                   ))}
+                </div>
+                {/* Quick action buttons */}
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {project.liveUrl && project.liveUrl !== '#' && (
+                    <motion.button
+                      onClick={(e) => handleExternalLinkClick(e, project.liveUrl)}
+                      className="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded border border-green-500/30 hover:bg-green-500/30 transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Live Demo
+                    </motion.button>
+                  )}
+                  {project.githubUrl && project.githubUrl !== '#' && (
+                    <motion.button
+                      onClick={(e) => handleExternalLinkClick(e, project.githubUrl)}
+                      className="text-xs px-2 py-1 bg-gray-500/20 text-gray-300 rounded border border-gray-500/30 hover:bg-gray-500/30 transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      GitHub
+                    </motion.button>
+                  )}
                 </div>
               </div>
               <motion.div className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300" whileHover={{ scale: 1.1, rotate: 45 }} whileTap={{ scale: 0.9 }}>

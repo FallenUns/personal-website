@@ -8,7 +8,12 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
-  // Performance optimizations
+  server: {
+    hmr: {
+      overlay: false
+    }
+  },
+  // Handle client-side routing for production
   build: {
     target: 'esnext',
     minify: 'terser',
@@ -27,11 +32,6 @@ export default defineConfig({
         drop_console: true,
         drop_debugger: true
       }
-    }
-  },
-  server: {
-    hmr: {
-      overlay: false
     }
   },
   optimizeDeps: {
