@@ -1,5 +1,5 @@
 // src/components/TechSphere.tsx
-import React, { useMemo } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import './TechSphere.css';
@@ -13,20 +13,9 @@ interface TechBubbleProps {
   delay: number;
   url?: string;
   description?: string;
-  optimizedProps?: {
-    positioning: "relative";
-    style: { borderRadius: string };
-    elasticity: number;
-    saturation: number;
-    aberrationIntensity: number;
-    displacementScale: number;
-    blurAmount: number;
-    mode: "shader";
-    overLight: "auto";
-  };
 }
 
-const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, url, description, optimizedProps }) => {
+const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, url, description}) => {
   const [isHovered, setIsHovered] = React.useState(false);
 
   const handleClick = () => {
@@ -79,15 +68,18 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
       <LiquidGlass
         width={size}
         height={size}
-        positioning={optimizedProps?.positioning || "relative"}
-        style={optimizedProps?.style || { borderRadius: '50%' }}
-        elasticity={optimizedProps?.elasticity || 0.15}
-        blurAmount={isHovered ? (optimizedProps?.blurAmount || 6) + 2 : (optimizedProps?.blurAmount || 6)}
-        displacementScale={isHovered ? (optimizedProps?.displacementScale || 60) + 20 : (optimizedProps?.displacementScale || 60)}
-        mode={optimizedProps?.mode || "shader"}
-        saturation={optimizedProps?.saturation || 150}
-        aberrationIntensity={optimizedProps?.aberrationIntensity || 1.5}
-        overLight={optimizedProps?.overLight || "auto"}
+        positioning="relative"
+        style={{ 
+          borderRadius: '99px', 
+          cursor: 'pointer',
+        }}
+        className="hover:bg-white/10"
+        aberrationIntensity={0.5}
+        elasticity={0.2}
+        blurAmount={12}
+        saturation={150}
+        displacementScale={35}
+        mode='shader'
       >
         <img 
           src={logo} 
@@ -106,32 +98,6 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
 
 // Main component for the technology sphere
 const TechSphere: React.FC = () => {
-  // Optimized props for tech bubble liquid glass effects
-  const techBubbleOptimizedProps = useMemo(() => ({
-    positioning: "relative" as const,
-    style: { borderRadius: '50%' },
-    elasticity: 0.15,
-    saturation: 150,
-    aberrationIntensity: 1.5,
-    displacementScale: 60,
-    blurAmount: 6,
-    mode: 'shader' as const,
-    overLight: "auto" as const
-  }), []);
-
-  // Optimized props for portrait liquid glass effects
-  const portraitOptimizedProps = useMemo(() => ({
-    width: 320,
-    height: 480,
-    positioning: "relative" as const,
-    style: { borderRadius: '24px' },
-    elasticity: 0.3,
-    blurAmount: 8,
-    displacementScale: 150,
-    mode: "shader" as const,
-    saturation: 150,
-  }), []);
-
   const bubbles = [
     { 
       logo: '/react-logo.png', 
@@ -141,7 +107,6 @@ const TechSphere: React.FC = () => {
       delay: 0.2,
       url: 'https://reactjs.org',
       description: 'React - A JavaScript library for building user interfaces',
-      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/tensorflow-logo.png', 
@@ -151,7 +116,6 @@ const TechSphere: React.FC = () => {
       delay: 0.4,
       url: 'https://tensorflow.org',
       description: 'TensorFlow - Machine Learning platform',
-      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/python-logo.png', 
@@ -161,7 +125,6 @@ const TechSphere: React.FC = () => {
       delay: 0.6,
       url: 'https://python.org',
       description: 'Python - Programming language for data science & AI',
-      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/js-logo.png', 
@@ -171,7 +134,6 @@ const TechSphere: React.FC = () => {
       delay: 0.3,
       url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
       description: 'JavaScript - The language of the web',
-      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/vite.svg', 
@@ -181,7 +143,6 @@ const TechSphere: React.FC = () => {
       delay: 0.5,
       url: 'https://vitejs.dev',
       description: 'Vite - Next generation frontend tooling',
-      optimizedProps: techBubbleOptimizedProps
     },
     { 
       logo: '/react-logo.png', 
@@ -191,7 +152,6 @@ const TechSphere: React.FC = () => {
       delay: 0.7,
       url: 'https://reactnative.dev',
       description: 'React Native - Build mobile apps with React',
-      optimizedProps: techBubbleOptimizedProps
     },
   ];
 
@@ -209,8 +169,18 @@ const TechSphere: React.FC = () => {
           }}
         >
           <LiquidGlass
-            {...portraitOptimizedProps}
-          >
+              width={300}
+              height={450}
+              positioning="relative"
+              style={{ 
+                borderRadius: '24px', 
+              }}
+              elasticity={0.2}
+              blurAmount={12}
+              saturation={150}
+              displacementScale={35}
+              mode='shader'
+            >
             <img
               src="/Subject.png"
               alt="Patrick Adrianus"

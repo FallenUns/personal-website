@@ -589,7 +589,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 </>
             )}
 
-            {/* Layer 1: Filtered Background */}
+            {/* Layer 1: Filtered Background with Frosted Effect */}
             <div
                 style={{
                     position: 'absolute',
@@ -602,6 +602,9 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                     backdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
                     WebkitBackdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
                     filter: `url(#${id})`,
+                    background: actualOverLight 
+                        ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.12) 100%)'
+                        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.08) 100%)',
                     overflow: 'hidden',
                     zIndex: 1,
                     transform: 'translateZ(0)',
@@ -613,6 +616,26 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                     WebkitBackfaceVisibility: 'hidden',
                 }}
             >
+                {/* Frosted glass texture overlay */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: `${cornerRadius}px`,
+                        background: `
+                            radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+                            radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+                            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 70%)
+                        `,
+                        opacity: actualOverLight ? 0.8 : 0.6,
+                        mixBlendMode: 'overlay',
+                        pointerEvents: 'none',
+                    }}
+                />
+                
                 <GlassFilter
                     id={id}
                     width={elementWidth}

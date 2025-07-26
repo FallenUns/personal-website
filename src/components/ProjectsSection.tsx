@@ -145,7 +145,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
     style: { borderRadius: '24px' },
     elasticity: 0.1,
     saturation: 150,
-    displacementScale: 150,
+    displacementScale: 110,
     blurAmount: 8,
     mode: 'shader' as const,
   }), [cardWidth, cardHeight]);

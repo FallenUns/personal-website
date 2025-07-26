@@ -307,7 +307,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                 elasticity={isNavbarPressed ? 0.3 : 0.1}
                 saturation={150}
                 aberrationIntensity={isNavbarPressed ? 2 : 1}
-                displacementScale={isNavbarPressed ? 80 : 50}
+                displacementScale={isNavbarPressed ? 60 : 25}
                 blurAmount={isNavbarPressed ? 8 : 5}
                 mode='shader'
               />

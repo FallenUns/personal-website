@@ -98,7 +98,7 @@ const HeroSection: React.FC = () => {
                 elasticity={0.2}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={50}
+                displacementScale={35}
                 mode='shader'
                 onClick={() => scrollToSection('contact')}
             >
@@ -121,7 +121,7 @@ const HeroSection: React.FC = () => {
                 elasticity={0.2}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={50}
+                displacementScale={35}
                 mode='shader'
                 onClick={() => {
                   try {
@@ -184,11 +184,11 @@ const HeroSection: React.FC = () => {
         <div className="flex justify-center items-center space-x-8 text-white/80 text-sm font-medium">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">WEB DESIGN</span>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">ML & AI</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">APP DESIGN</span>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">DEPLOYMENT</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -196,11 +196,11 @@ const HeroSection: React.FC = () => {
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">WEB FLOW</span>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">WEB DESIGN</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">BRANDING</span>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">RESEARCH</span>
           </div>
         </div>
       </motion.div>

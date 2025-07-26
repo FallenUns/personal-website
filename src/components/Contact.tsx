@@ -76,7 +76,7 @@ const Contact: React.FC = () => {
                 elasticity={0.1}
                 blurAmount={8}
                 saturation={150}
-                displacementScale={50}
+                displacementScale={30}
                 mode='shader'
                 onClick={() => {
                   window.location.href = 'mailto:patrickadrianus04@gmail.com';
@@ -97,7 +97,7 @@ const Contact: React.FC = () => {
                 elasticity={0.2}
                 blurAmount={12}
                 saturation={150}
-                displacementScale={15}
+                displacementScale={30}
                 mode='shader'
                 onClick={() => {
                   window.open('https://linkedin.com/in/patrick-adrianus', '_blank');
