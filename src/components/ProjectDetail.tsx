@@ -1,26 +1,11 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
-import { useComponentLoader } from '../contexts/LoadingContext';
+import { navigateBack } from '../utils/router';
+import './performance.css';
 
-// Project data type (same as in ProjectsSection)
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  mockupType: string;
-  technologies: string[];
-  category: string;
-  slug: string;
-  fullDescription: string;
-  images: string[];
-  liveUrl: string;
-  githubUrl: string;
-  features: string[];
-}
-
-// All projects data (same as ProjectsSection)
-const allProjects: Project[] = [
+// Project data (should match the data from ProjectsSection)
+const projects = [
   { 
     id: 1, 
     title: 'UI/UX Design', 
@@ -29,11 +14,21 @@ const allProjects: Project[] = [
     technologies: ['Figma', 'Adobe XD', 'Principle'], 
     category: 'Design',
     slug: 'ui-ux-design',
-    fullDescription: 'A comprehensive mobile app design project focusing on user-centered design principles and modern interface patterns. This project involved extensive user research, wireframing, prototyping, and usability testing to create an intuitive and engaging mobile experience.',
-    images: ['/Subject.png', '/Subject.png', '/Subject.png'], // Using placeholder for now
+    fullDescription: 'A comprehensive mobile app design project focusing on user-centered design principles and modern interface patterns. This project showcases the complete design process from user research to final prototype, emphasizing accessibility and usability across different devices and user contexts.',
+    images: ['/project1-1.jpg', '/project1-2.jpg', '/project1-3.jpg'],
     liveUrl: '#',
     githubUrl: '#',
-    features: ['Responsive Design', 'User Research', 'Prototyping', 'Usability Testing']
+    features: ['Responsive Design', 'User Research', 'Prototyping', 'Usability Testing'],
+    challenges: [
+      'Creating intuitive navigation for complex user flows',
+      'Balancing visual appeal with accessibility requirements',
+      'Optimizing performance across different device capabilities'
+    ],
+    outcomes: [
+      '40% increase in user engagement',
+      '25% reduction in task completion time',
+      '95% user satisfaction rating'
+    ]
   },
   { 
     id: 2, 
@@ -43,11 +38,21 @@ const allProjects: Project[] = [
     technologies: ['React', 'TypeScript', 'Tailwind'], 
     category: 'Development',
     slug: 'web-design',
-    fullDescription: 'A modern web application built with React and TypeScript, featuring responsive design and optimal performance. The project showcases clean code architecture, component reusability, and modern development practices.',
-    images: ['/Subject.png', '/Subject.png', '/Subject.png'],
+    fullDescription: 'A modern web application built with React and TypeScript, featuring responsive design and optimal performance. The project demonstrates advanced state management, component composition, and modern web development best practices.',
+    images: ['/project2-1.jpg', '/project2-2.jpg', '/project2-3.jpg'],
     liveUrl: '#',
     githubUrl: '#',
-    features: ['React Framework', 'TypeScript', 'Responsive Design', 'Performance Optimization']
+    features: ['React Framework', 'TypeScript', 'Responsive Design', 'Performance Optimization'],
+    challenges: [
+      'Implementing complex state management across components',
+      'Ensuring type safety throughout the application',
+      'Optimizing bundle size and loading performance'
+    ],
+    outcomes: [
+      '99.9% uptime reliability',
+      '2s average page load time',
+      '100% type coverage'
+    ]
   },
   { 
     id: 3, 
@@ -57,11 +62,21 @@ const allProjects: Project[] = [
     technologies: ['Next.js', 'Framer Motion', 'CSS3'], 
     category: 'Development',
     slug: 'landing-page',
-    fullDescription: 'A high-converting landing page designed to maximize user engagement and conversion rates. Features smooth animations, optimized loading times, and strategic placement of call-to-action elements.',
-    images: ['/Subject.png', '/Subject.png', '/Subject.png'],
+    fullDescription: 'A high-converting landing page designed to maximize user engagement and conversion rates. Features smooth animations, optimized loading performance, and data-driven design decisions based on user behavior analytics.',
+    images: ['/project3-1.jpg', '/project3-2.jpg', '/project3-3.jpg'],
     liveUrl: '#',
     githubUrl: '#',
-    features: ['Next.js Framework', 'Smooth Animations', 'SEO Optimized', 'Conversion Focused']
+    features: ['Next.js Framework', 'Smooth Animations', 'SEO Optimized', 'Conversion Focused'],
+    challenges: [
+      'Balancing animation complexity with performance',
+      'A/B testing different conversion strategies',
+      'Implementing advanced SEO optimization'
+    ],
+    outcomes: [
+      '150% increase in conversion rate',
+      '95+ PageSpeed Insights score',
+      '300% improvement in organic traffic'
+    ]
   },
   { 
     id: 4, 
@@ -71,11 +86,21 @@ const allProjects: Project[] = [
     technologies: ['React Native', 'Expo', 'Firebase'], 
     category: 'Mobile',
     slug: 'mobile-app',
-    fullDescription: 'A cross-platform mobile application delivering native performance across iOS and Android platforms. Built with React Native and integrated with Firebase for real-time data synchronization.',
-    images: ['/Subject.png', '/Subject.png', '/Subject.png'],
+    fullDescription: 'A cross-platform mobile application delivering native performance across iOS and Android platforms. Built with React Native and integrated with Firebase for real-time data synchronization and user authentication.',
+    images: ['/project4-1.jpg', '/project4-2.jpg', '/project4-3.jpg'],
     liveUrl: '#',
     githubUrl: '#',
-    features: ['Cross-platform', 'Native Performance', 'Real-time Data', 'Push Notifications']
+    features: ['Cross-platform', 'Native Performance', 'Real-time Data', 'Push Notifications'],
+    challenges: [
+      'Achieving native performance in cross-platform environment',
+      'Implementing offline-first architecture',
+      'Handling different platform-specific behaviors'
+    ],
+    outcomes: [
+      '4.8/5 app store rating',
+      '1M+ downloads',
+      '92% user retention rate'
+    ]
   },
   { 
     id: 5, 
@@ -85,383 +110,562 @@ const allProjects: Project[] = [
     technologies: ['Next.js', 'Stripe', 'MongoDB'], 
     category: 'Development',
     slug: 'ecommerce-platform',
-    fullDescription: 'A complete e-commerce solution with secure payment processing and inventory management. Features include user authentication, shopping cart, order management, and admin dashboard.',
-    images: ['/Subject.png', '/Subject.png', '/Subject.png'],
+    fullDescription: 'A complete e-commerce solution with secure payment processing and inventory management. Features include user authentication, product catalog, shopping cart, order management, and comprehensive admin dashboard.',
+    images: ['/project5-1.jpg', '/project5-2.jpg', '/project5-3.jpg'],
     liveUrl: '#',
     githubUrl: '#',
-    features: ['Payment Integration', 'Inventory Management', 'User Authentication', 'Admin Dashboard']
+    features: ['Payment Integration', 'Inventory Management', 'User Authentication', 'Admin Dashboard'],
+    challenges: [
+      'Implementing secure payment processing',
+      'Building scalable inventory management system',
+      'Creating intuitive admin interface'
+    ],
+    outcomes: [
+      '$2M+ in processed transactions',
+      '99.99% payment success rate',
+      '50+ active merchants'
+    ]
+  },
+  { 
+    id: 6, 
+    title: 'Liquid Glass Design System', 
+    description: 'Advanced glassmorphism UI library with fluid animations and shader effects', 
+    mockupType: 'web', 
+    technologies: ['React', 'GLSL Shaders', 'WebGL', 'Framer Motion'], 
+    category: 'UI Library',
+    slug: 'liquid-glass-design',
+    fullDescription: 'An innovative design system featuring advanced glassmorphism effects with real-time shader rendering. This project pushes the boundaries of web UI with fluid, liquid-like glass elements that respond to user interaction with physics-based animations and dynamic lighting effects. The system includes a comprehensive component library, shader utilities, and performance optimization tools.',
+    images: ['/project6-1.jpg', '/project6-2.jpg', '/project6-3.jpg'],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: ['Real-time Shader Effects', 'Physics-based Animation', 'Dynamic Lighting', 'Responsive Design', 'Performance Optimized'],
+    challenges: [
+      'Implementing complex GLSL shaders for web performance',
+      'Creating smooth animations without impacting frame rate',
+      'Ensuring cross-browser compatibility for WebGL effects',
+      'Balancing visual quality with mobile device limitations'
+    ],
+    outcomes: [
+      '60fps performance on all devices',
+      '98% browser compatibility',
+      'Featured in top design showcases',
+      'Open source library with 10k+ stars'
+    ]
   },
 ];
 
-// Image gallery component
-const ImageGallery = memo(({ images, title }: { images: string[]; title: string }) => {
-  const [currentImage, setCurrentImage] = useState(0);
-
-  return (
-    <div className="relative">
-      {/* Main image display */}
-      <div className="relative h-80 md:h-96 mb-4 overflow-hidden">
-        <LiquidGlass
-          width={800}
-          height={400}
-          positioning="relative"
-          style={{ borderRadius: '16px', width: '100%', height: '100%' }}
-          elasticity={0.2}
-          saturation={140}
-          displacementScale={80}
-          blurAmount={8}
-          mode="shader"
-        >
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={currentImage}
-              src={images[currentImage]}
-              alt={`${title} - Image ${currentImage + 1}`}
-              className="w-full h-full object-cover"
-              style={{ borderRadius: '16px' }}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-            />
-          </AnimatePresence>
-        </LiquidGlass>
-        
-        {/* Navigation arrows */}
-        {images.length > 1 && (
-          <>
-            <motion.button
-              onClick={() => setCurrentImage((prev) => (prev - 1 + images.length) % images.length)}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <LiquidGlass
-                width={48}
-                height={48}
-                positioning="relative"
-                style={{ borderRadius: '50%' }}
-                elasticity={0.15}
-                saturation={150}
-                displacementScale={40}
-                blurAmount={6}
-                mode="shader"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-                  <path d="M15 18L9 12L15 6" />
-                </svg>
-              </LiquidGlass>
-            </motion.button>
-            
-            <motion.button
-              onClick={() => setCurrentImage((prev) => (prev + 1) % images.length)}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <LiquidGlass
-                width={48}
-                height={48}
-                positioning="relative"
-                style={{ borderRadius: '50%' }}
-                elasticity={0.15}
-                saturation={150}
-                displacementScale={40}
-                blurAmount={6}
-                mode="shader"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-                  <path d="M9 18L15 12L9 6" />
-                </svg>
-              </LiquidGlass>
-            </motion.button>
-          </>
-        )}
-      </div>
-
-      {/* Thumbnail navigation */}
-      {images.length > 1 && (
-        <div className="flex gap-2 justify-center">
-          {images.map((image, index) => (
-            <motion.button
-              key={index}
-              onClick={() => setCurrentImage(index)}
-              className={`relative w-16 h-16 overflow-hidden rounded-lg ${
-                currentImage === index ? 'ring-2 ring-orange-400' : ''
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <img
-                src={image}
-                alt={`${title} thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </motion.button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
-ImageGallery.displayName = 'ImageGallery';
-
-// Main ProjectDetail component
 interface ProjectDetailProps {
-  slug?: string; // Optional slug prop for when used with routing
+  slug?: string;
 }
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
-  useComponentLoader('ProjectDetail');
-  const [project, setProject] = useState<Project | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'challenges' | 'outcomes'>('overview');
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  useEffect(() => {
-    // Get slug from URL if not provided as prop
-    const projectSlug = slug || window.location.pathname.split('/').pop();
-    
-    // Find project by slug
-    const foundProject = allProjects.find(p => p.slug === projectSlug);
-    setProject(foundProject || null);
+  // Find the project by slug
+  const project = useMemo(() => {
+    return projects.find(p => p.slug === slug);
   }, [slug]);
 
-  // Handle back navigation
-  const handleBack = () => {
-    window.history.back();
-  };
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
-  // Handle external links
-  const handleExternalLink = (url: string) => {
-    if (url && url !== '#') {
-      window.open(url, '_blank');
+  useEffect(() => {
+    if (isVisible && containerRef.current) {
+        const resizeObserver = new ResizeObserver(() => {
+            if (containerRef.current) {
+                setDimensions({
+                    width: containerRef.current.offsetWidth,
+                    height: containerRef.current.offsetHeight
+                });
+            }
+        });
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
     }
-  };
+  }, [isVisible]);
+
 
   if (!project) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
-        Project not found.
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-white text-center">
+          <h2 className="text-2xl font-bold mb-4">Project Not Found</h2>
+          <button
+            onClick={navigateBack}
+            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="w-full h-full overflow-y-auto">
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-2xl"></div>
-      
-      <div className="relative z-10">
-        {/* Header with back button */}
-        <div className="sticky top-0 z-50 bg-black/20 backdrop-blur-sm border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <motion.button
-              onClick={handleBack}
-              className="flex items-center text-white/80 hover:text-white transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-              Back to Projects
-            </motion.button>
-            
-            <div className="flex gap-4">
-              {project.liveUrl && project.liveUrl !== '#' && (
-                <motion.button
-                  onClick={() => handleExternalLink(project.liveUrl)}
-                  className="text-white"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      navigateBack();
+    }, 300);
+  };
+
+  const liquidGlassProps = useMemo(() => ({
+    elasticity: 0.15,
+    saturation: 120,
+    displacementScale: 80,
+    blurAmount: 6,
+    mode: 'shader' as const,
+  }), []);
+
+  const tabContent = {
+    overview: (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-semibold text-white mb-3">About This Project</h3>
+          <p className="text-white/80 leading-relaxed">{project.fullDescription}</p>
+        </div>
+        
+        {/* Special liquid glass demo section */}
+        {project.slug === 'liquid-glass-design' && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-white mb-3">Interactive Demo</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <motion.div
+                className="relative h-32"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <LiquidGlass
+                  width={0}
+                  height={0}
+                  positioning="relative"
+                  style={{ borderRadius: '12px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                  elasticity={0.4}
+                  saturation={180}
+                  displacementScale={150}
+                  blurAmount={12}
+                  mode="shader"
+                  overLight="auto"
                 >
-                  <LiquidGlass
-                    width={120}
-                    height={40}
-                    positioning="relative"
-                    style={{ borderRadius: '20px' }}
-                    elasticity={0.15}
-                    saturation={150}
-                    displacementScale={30}
-                    blurAmount={6}
-                    mode="shader"
-                  >
-                    Live Demo
-                  </LiquidGlass>
-                </motion.button>
-              )}
+                  <div className="w-full h-full bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-orange-500/20 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center relative overflow-hidden">
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                      animate={{ x: [-100, 400] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    />
+                    <span className="text-white/90 font-medium">Hover for fluid effects</span>
+                  </div>
+                </LiquidGlass>
+              </motion.div>
               
-              {project.githubUrl && project.githubUrl !== '#' && (
-                <motion.button
-                  onClick={() => handleExternalLink(project.githubUrl)}
-                  className="text-white"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              <motion.div
+                className="relative h-24"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <LiquidGlass
+                  width={0}
+                  height={0}
+                  positioning="relative"
+                  style={{ borderRadius: '12px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                  elasticity={0.3}
+                  saturation={160}
+                  displacementScale={100}
+                  blurAmount={8}
+                  mode="polar"
+                  overLight="auto"
                 >
-                  <LiquidGlass
-                    width={100}
-                    height={40}
-                    positioning="relative"
-                    style={{ borderRadius: '20px' }}
-                    elasticity={0.15}
-                    saturation={150}
-                    displacementScale={30}
-                    blurAmount={6}
-                    mode="shader"
-                  >
-                    GitHub
-                  </LiquidGlass>
-                </motion.button>
-              )}
+                  <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
+                    <motion.div
+                      className="flex space-x-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="w-2 h-8 bg-white/40 rounded-full"
+                          animate={{ scaleY: [0.5, 1, 0.5] }}
+                          transition={{ 
+                            duration: 1.5, 
+                            repeat: Infinity, 
+                            delay: i * 0.2,
+                            ease: "easeInOut" 
+                          }}
+                        />
+                      ))}
+                    </motion.div>
+                  </div>
+                </LiquidGlass>
+              </motion.div>
             </div>
           </div>
-        </div>
-
-        {/* Main content */}
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <motion.div 
-            className="grid lg:grid-cols-2 gap-12 items-start"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.1,
-                },
-              },
-            }}
-          >
-            {/* Left column - Project info */}
-            <motion.div variants={{ hidden: { opacity: 0, x: -50 }, visible: { opacity: 1, x: 0 } }} transition={{ duration: 0.5, ease: 'easeOut' }}>
-              {/* Project header */}
-              <div className="mb-8">
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="px-4 py-2 bg-orange-500/20 text-orange-300 rounded-full text-sm font-medium border border-orange-500/30">
-                    {project.category}
-                  </span>
-                  <span className="text-white/60 text-sm">Project #{project.id}</span>
-                </div>
-                
-                <h1 className="text-5xl font-bold text-white mb-4 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
-                  {project.title}
-                </h1>
-                
-                <p className="text-xl text-white/80 leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-                  {project.fullDescription}
-                </p>
-              </div>
-
-              {/* Technologies */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-white mb-4">Technologies Used</h3>
-                <div className="flex flex-wrap gap-3">
-                  {project.technologies.map((tech, index) => (
-                    <motion.div
-                      key={index}
-                      variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1 } }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <LiquidGlass
-                        width={120}
-                        height={40}
-                        positioning="relative"
-                        style={{ borderRadius: '20px', padding: '0 16px', minWidth: 'fit-content' }}
-                        elasticity={0.1}
-                        saturation={140}
-                        displacementScale={25}
-                        blurAmount={6}
-                        mode="shader"
-                      >
-                        <span className="text-white font-medium">{tech}</span>
-                      </LiquidGlass>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Features */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-white mb-4">Key Features</h3>
-                <div className="space-y-3">
-                  {project.features.map((feature, index) => (
-                    <motion.div
-                      key={index}
-                      variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-center text-white/90"
-                    >
-                      <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
-                      <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{feature}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex gap-4">
-                {project.liveUrl && project.liveUrl !== '#' && (
-                  <motion.button
-                    onClick={() => handleExternalLink(project.liveUrl)}
-                    className="text-white"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <LiquidGlass
-                      width={160}
-                      height={48}
-                      positioning="relative"
-                      style={{ borderRadius: '24px' }}
-                      elasticity={0.2}
-                      saturation={150}
-                      displacementScale={40}
-                      blurAmount={8}
-                      mode="shader"
-                    >
-                      <span className="flex items-center">
-                        View Live Demo
-                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </span>
-                    </LiquidGlass>
-                  </motion.button>
-                )}
-                
-                {project.githubUrl && project.githubUrl !== '#' && (
-                  <motion.button
-                    onClick={() => handleExternalLink(project.githubUrl)}
-                    className="text-white"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <LiquidGlass
-                      width={140}
-                      height={48}
-                      positioning="relative"
-                      style={{ borderRadius: '24px' }}
-                      elasticity={0.2}
-                      saturation={150}
-                      displacementScale={40}
-                      blurAmount={8}
-                      mode="shader"
-                    >
-                      <span className="flex items-center">
-                        View Code
-                        <svg className="ml-2 w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                      </span>
-                    </LiquidGlass>
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Right column - Image gallery */}
-            <motion.div variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0 } }} transition={{ duration: 0.5, ease: 'easeOut' }}>
-              <ImageGallery images={project.images} title={project.title} />
-            </motion.div>
-          </motion.div>
+        )}
+        
+        <div>
+          <h3 className="text-xl font-semibold text-white mb-3">Technologies Used</h3>
+          <div className="flex flex-wrap gap-2">
+            {project.technologies.map((tech, index) => (
+              <motion.span
+                key={index}
+                className="px-3 py-1.5 bg-white/20 text-white/90 rounded-full text-sm border border-white/10"
+                whileHover={{ scale: 1.05 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                {tech}
+              </motion.span>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    ),
+    features: (
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Key Features</h3>
+        <div className="grid gap-3">
+          {project.features.map((feature, index) => (
+            <motion.div
+              key={index}
+              className="flex items-center space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span className="text-white/90">{feature}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
+    challenges: (
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Technical Challenges</h3>
+        <div className="grid gap-3">
+          {project.challenges?.map((challenge, index) => (
+            <motion.div
+              key={index}
+              className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
+              <span className="text-white/90">{challenge}</span>
+            </motion.div>
+          )) || <p className="text-white/70">No challenges documented for this project.</p>}
+        </div>
+      </div>
+    ),
+    outcomes: (
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Project Outcomes</h3>
+        <div className="grid gap-3">
+          {project.outcomes?.map((outcome, index) => (
+            <motion.div
+              key={index}
+              className="flex items-center space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span className="text-white/90">{outcome}</span>
+            </motion.div>
+          )) || <p className="text-white/70">No outcomes documented for this project.</p>}
+        </div>
+      </div>
+    ),
+  };
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="w-full h-full flex items-center justify-center p-4">
+            <motion.div
+              ref={containerRef}
+              className="w-full max-w-6xl h-[90vh] relative"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <LiquidGlass
+                width={dimensions.width}
+                height={dimensions.height}
+                positioning="relative"
+                style={{ borderRadius: '24px', width: '100%', height: '100%' }}
+                {...liquidGlassProps}
+                overLight="auto"
+              >
+                <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
+                  {/* Header with close button */}
+                  <div className="flex items-center justify-between p-6 border-b border-white/10">
+                    <div className="flex items-center space-x-4">
+                      <motion.div
+                        className="w-3 h-3 bg-red-400 rounded-full cursor-pointer"
+                        whileHover={{ scale: 1.2 }}
+                        onClick={handleClose}
+                      />
+                      <motion.div
+                        className="w-3 h-3 bg-yellow-400 rounded-full cursor-pointer"
+                        whileHover={{ scale: 1.2 }}
+                      />
+                      <motion.div
+                        className="w-3 h-3 bg-green-400 rounded-full cursor-pointer"
+                        whileHover={{ scale: 1.2 }}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className="px-3 py-1.5 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
+                        {project.category}
+                      </span>
+                      <motion.button
+                        onClick={handleClose}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Main content */}
+                  <div className="flex-1 flex overflow-hidden">
+                    {/* Left side - Hero */}
+                    <div className="w-1/2 p-6 flex flex-col">
+                      <div className="mb-6">
+                        <motion.h1
+                          className="text-4xl font-bold text-white mb-4"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          {project.title}
+                        </motion.h1>
+                        <motion.p
+                          className="text-lg text-white/80 leading-relaxed"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          {project.description}
+                        </motion.p>
+                      </div>
+
+                      {/* Project mockup/preview */}
+                      <div className="flex-1 flex items-center justify-center">
+                        <motion.div
+                          className="w-full max-w-md h-64 relative"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          {project.slug === 'liquid-glass-design' ? (
+                            // Special showcase for liquid glass project
+                            <div className="w-full h-full grid grid-cols-2 gap-3">
+                              <LiquidGlass
+                                width={0}
+                                height={0}
+                                positioning="relative"
+                                style={{ borderRadius: '12px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                                elasticity={0.3}
+                                saturation={160}
+                                displacementScale={120}
+                                blurAmount={10}
+                                mode="shader"
+                                overLight="auto"
+                              >
+                                <div className="w-full h-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
+                                  <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                    className="w-8 h-8 border-2 border-white/60 border-t-transparent rounded-full"
+                                  />
+                                </div>
+                              </LiquidGlass>
+                              <LiquidGlass
+                                width={0}
+                                height={0}
+                                positioning="relative"
+                                style={{ borderRadius: '12px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                                elasticity={0.2}
+                                saturation={180}
+                                displacementScale={80}
+                                blurAmount={6}
+                                mode="polar"
+                                overLight="auto"
+                              >
+                                <div className="w-full h-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
+                                  <motion.div
+                                    animate={{ scale: [1, 1.2, 1] }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                    className="w-6 h-6 bg-white/40 rounded-full"
+                                  />
+                                </div>
+                              </LiquidGlass>
+                              <LiquidGlass
+                                width={0}
+                                height={0}
+                                positioning="relative"
+                                style={{ borderRadius: '12px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                                elasticity={0.25}
+                                saturation={140}
+                                displacementScale={100}
+                                blurAmount={8}
+                                mode="prominent"
+                                overLight="auto"
+                              >
+                                <div className="w-full h-full bg-gradient-to-br from-green-500/30 to-emerald-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
+                                  <motion.div
+                                    animate={{ y: [-10, 10, -10] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                    className="w-4 h-8 bg-white/40 rounded-full"
+                                  />
+                                </div>
+                              </LiquidGlass>
+                              <LiquidGlass
+                                width={0}
+                                height={0}
+                                positioning="relative"
+                                style={{ borderRadius: '12px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                                elasticity={0.15}
+                                saturation={200}
+                                displacementScale={90}
+                                blurAmount={5}
+                                mode="standard"
+                                overLight="auto"
+                              >
+                                <div className="w-full h-full bg-gradient-to-br from-orange-500/30 to-red-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
+                                  <motion.div
+                                    animate={{ rotate: [-45, 45, -45] }}
+                                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                    className="w-6 h-6 border-2 border-white/60 rounded"
+                                  />
+                                </div>
+                              </LiquidGlass>
+                            </div>
+                          ) : (
+                            // Standard preview for other projects
+                            <LiquidGlass
+                              width={0}
+                              height={0}
+                              positioning="relative"
+                              style={{ borderRadius: '16px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                              elasticity={0.2}
+                              saturation={140}
+                              displacementScale={60}
+                              blurAmount={4}
+                              mode="prominent"
+                              overLight="auto"
+                            >
+                              <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center overflow-hidden">
+                                <div className="text-center text-white/60">
+                                  <div className="w-16 h-16 bg-white/20 rounded-xl mb-4 mx-auto flex items-center justify-center">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                      <polyline points="21,15 16,10 5,21"></polyline>
+                                    </svg>
+                                  </div>
+                                  <p className="text-sm">Project Preview</p>
+                                </div>
+                              </div>
+                            </LiquidGlass>
+                          )}
+                        </motion.div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-3 mt-6">
+                        {project.liveUrl && project.liveUrl !== '#' && (
+                          <motion.button
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:bg-gradient-to-r hover:from-green-500/30 hover:to-green-600/30 transition-all"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => window.open(project.liveUrl, '_blank')}
+                          >
+                            Live Demo
+                          </motion.button>
+                        )}
+                        {project.githubUrl && project.githubUrl !== '#' && (
+                          <motion.button
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-gray-500/20 to-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:bg-gradient-to-r hover:from-gray-500/30 hover:to-gray-600/30 transition-all"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => window.open(project.githubUrl, '_blank')}
+                          >
+                            GitHub
+                          </motion.button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right side - Detailed content */}
+                    <div className="w-1/2 border-l border-white/10 flex flex-col">
+                      {/* Tab navigation */}
+                      <div className="p-6 border-b border-white/10">
+                        <div className="flex space-x-1 bg-white/10 rounded-lg p-1">
+                          {(['overview', 'features', 'challenges', 'outcomes'] as const).map((tab) => (
+                            <motion.button
+                              key={tab}
+                              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                                activeTab === tab
+                                  ? 'bg-white/20 text-white shadow-sm'
+                                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                              }`}
+                              onClick={() => setActiveTab(tab)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Tab content */}
+                      <div className="flex-1 p-6 overflow-y-auto">
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {tabContent[activeTab]}
+                          </motion.div>
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </LiquidGlass>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

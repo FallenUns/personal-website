@@ -76,7 +76,7 @@ const HeroSection: React.FC = () => {
         </div>
       )}
       
-      <section id="about" className="min-h-screen flex flex-col lg:flex-row items-center px-6 sm:px-12 md:px-20 lg:px-32 pt-20 relative">
+      <section id="about" className="h-screen flex flex-col lg:flex-row items-center px-6 sm:px-12 md:px-20 lg:px-32 pt-20 relative">
       <div className="flex flex-col lg:flex-row items-center justify-between w-full">
         {/* Left side - Text content */}
         <motion.div
@@ -208,12 +208,12 @@ const HeroSection: React.FC = () => {
           duration: 0.8, 
           ease: 'easeOut',
           delay: isLoading ? 0 : 0.7
-        }}
+        }} 
         className="w-full flex justify-center mt-8 lg:hidden"
       >
         <div className="relative flex items-center justify-center">
           <LiquidGlass
-            width={250}
+            width={230}
             height={300}
             positioning="relative"
             style={{ 
@@ -263,7 +263,7 @@ const HeroSection: React.FC = () => {
               width={50}
               height={50}
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '20px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -297,7 +297,7 @@ const HeroSection: React.FC = () => {
               width={50}
               height={50}
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '20px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -331,7 +331,7 @@ const HeroSection: React.FC = () => {
               width={50}
               height={50}
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '20px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -365,7 +365,7 @@ const HeroSection: React.FC = () => {
               width={50}
               height={50}
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '20px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -399,7 +399,7 @@ const HeroSection: React.FC = () => {
               width={45}
               height={45}
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '20px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -432,7 +432,7 @@ const HeroSection: React.FC = () => {
               width={45}
               height={45}
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '20px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -512,15 +512,15 @@ const HeroSection: React.FC = () => {
             whileHover={{ scale: 1.1 }}
           >
             <LiquidGlass
-              width={70} // Increased size
-              height={70} // Increased size
+              width={70}
+              height={70}
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '24px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
               saturation={140}
-              displacementScale={25}
+              displacementScale={20}
               mode='shader'
             >
               <img src="/react-logo.png" alt="React" className="w-9 h-9" />
@@ -549,7 +549,7 @@ const HeroSection: React.FC = () => {
               width={70} // Increased size
               height={70} // Increased size
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '24px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -583,7 +583,7 @@ const HeroSection: React.FC = () => {
               width={70} // Increased size
               height={70} // Increased size
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '24px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -617,7 +617,7 @@ const HeroSection: React.FC = () => {
               width={70} // Increased size
               height={70} // Increased size
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '24px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -652,7 +652,7 @@ const HeroSection: React.FC = () => {
               width={70} // Increased size
               height={70} // Increased size
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '24px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}
@@ -685,7 +685,7 @@ const HeroSection: React.FC = () => {
               width={70} // Increased size
               height={70} // Increased size
               positioning="relative"
-              style={{ borderRadius: '50%' }}
+              style={{ borderRadius: '24px' }}
               aberrationIntensity={0.2}
               elasticity={0.3}
               blurAmount={6}

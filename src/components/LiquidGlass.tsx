@@ -554,7 +554,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 scaleY: smoothScaleY,
                 scale: smoothClickScale,
                 boxShadow: actualOverLight
-                  ? "0px 16px 70px rgba(0, 0, 0, 0.75), 0px 4px 20px rgba(0, 0, 0, 0.1), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)"
+                  ? "0px 16px 70px rgba(75, 75, 75, 0.70), 0px 2px 8px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)"
                   : "0px 12px 40px rgba(0, 0, 0, 0.25)",
                 transition: 'box-shadow 0.3s ease-out'
             }}

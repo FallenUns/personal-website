@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
@@ -19,11 +21,11 @@ import './components/performance.css';
 // Function to get the background color based on the hour
 const getLoaderBackgroundColor = (hour: number) => {
   if (hour >= 5 && hour < 8) { // Dawn
-    return 'rgb(247, 170, 107)';
+    return 'rgb(100, 60, 120)';
   } else if (hour >= 8 && hour < 17) { // Day
-    return 'rgb(64, 121, 196)';
+    return 'rgb(22, 43, 70)';
   } else if (hour >= 17 && hour < 20) { // Dusk
-    return 'rgb(62, 29, 93)';
+    return 'rgb(20, 32, 57)';
   } else { // Night
     return 'rgb(0, 17, 82)';
   }
@@ -242,13 +244,15 @@ const AppContent: React.FC = () => {
         <AnimatePresence>
           {isProjectDetail && (
             <motion.div
-              className="fixed inset-0 z-[9998]"
+              className="fixed inset-0 z-[9998] p-8 flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              <ProjectDetail slug={projectSlug || undefined} />
+              <div className="w-full h-full">
+                <ProjectDetail slug={projectSlug || undefined} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -35,7 +35,7 @@ const AssistantIcon: React.FC<AssistantIconProps> = ({ onClick, isThinking = fal
       style={{ 
         cursor: onClick ? 'pointer' : 'default',
         position: 'relative',
-        zIndex: 10,
+        zIndex: 20,
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
       }}

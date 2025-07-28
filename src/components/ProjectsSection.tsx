@@ -198,23 +198,52 @@ const projects = [
     githubUrl: '#',
     features: ['Payment Integration', 'Inventory Management', 'User Authentication', 'Admin Dashboard']
   },
+  { 
+    id: 6, 
+    title: 'Liquid Glass Design System', 
+    description: 'Advanced glassmorphism UI library with fluid animations and shader effects', 
+    mockupType: 'web', 
+    technologies: ['React', 'GLSL Shaders', 'WebGL', 'Framer Motion'], 
+    category: 'UI Library',
+    slug: 'liquid-glass-design',
+    fullDescription: 'An innovative design system featuring advanced glassmorphism effects with real-time shader rendering. This project pushes the boundaries of web UI with fluid, liquid-like glass elements that respond to user interaction with physics-based animations and dynamic lighting effects.',
+    images: ['/project6-1.jpg', '/project6-2.jpg', '/project6-3.jpg'],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: ['Real-time Shader Effects', 'Physics-based Animation', 'Dynamic Lighting', 'Responsive Design', 'Performance Optimized'],
+    challenges: [
+      'Implementing complex GLSL shaders for web performance',
+      'Creating smooth animations without impacting frame rate',
+      'Ensuring cross-browser compatibility for WebGL effects',
+      'Balancing visual quality with mobile device limitations'
+    ],
+    outcomes: [
+      '60fps performance on all devices',
+      '98% browser compatibility',
+      'Featured in top design showcases',
+      'Open source library with 10k+ stars'
+    ]
+  },
 ];
 
 // ProjectCard component with navigation functionality
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
   const cardHeight = 380; // Reduced from 480px to 380px
+  
+  // Special liquid glass configuration for the liquid glass project
+  const isLiquidGlassProject = project.slug === 'liquid-glass-design';
 
   const optimizedProps = useMemo(() => ({
     width: cardWidth,
     height: cardHeight,
     positioning: "relative" as const,
     style: { borderRadius: '24px' },
-    elasticity: 0.1,
-    saturation: 150,
-    displacementScale: 110,
-    blurAmount: 8,
-    mode: 'shader' as const,
-  }), [cardWidth, cardHeight]);
+    elasticity: isLiquidGlassProject ? 0.2 : 0.1,
+    saturation: isLiquidGlassProject ? 180 : 150,
+    displacementScale: isLiquidGlassProject ? 140 : 110,
+    blurAmount: isLiquidGlassProject ? 12 : 8,
+    mode: isLiquidGlassProject ? 'shader' as const : 'shader' as const,
+  }), [cardWidth, cardHeight, isLiquidGlassProject]);
 
   // Handle project card click - navigate to project detail page
   const handleProjectClick = () => {
@@ -244,10 +273,19 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
       >
         <LiquidGlass {...optimizedProps} overLight="auto">
           <div className="w-full h-full flex flex-col relative p-6 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-400/20 to-transparent rounded-full blur-xl"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400/20 to-transparent rounded-full blur-xl"></div>
-            </div>
+            {/* Enhanced background effects for liquid glass project */}
+            {isLiquidGlassProject ? (
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/30 to-transparent rounded-full blur-xl"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/30 to-transparent rounded-full blur-xl"></div>
+                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-gradient-to-r from-pink-400/20 to-transparent rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+              </div>
+            ) : (
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-400/20 to-transparent rounded-full blur-xl"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400/20 to-transparent rounded-full blur-xl"></div>
+              </div>
+            )}
             <div className="relative z-10 mb-4">
               <div className="flex items-start justify-between mb-3">
                 <h3 className="text-xl font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">{project.title}</h3>
@@ -256,14 +294,48 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
               <p className="text-sm text-white/70 leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{project.description}</p>
             </div>
             <div className="flex-1 flex items-center justify-center mb-4 relative">
-              <div className="relative w-full h-32 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
-                <div className="absolute inset-4 flex items-center justify-center">
-                  <DeviceMockup type={project.mockupType} color="bg-white/30" />
+              {isLiquidGlassProject ? (
+                // Special liquid glass showcase
+                <div className="relative w-full h-32 grid grid-cols-3 gap-2">
+                  <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
+                    <div className="absolute inset-2 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-lg flex items-center justify-center">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                        className="w-4 h-4 border border-white/60 border-t-transparent rounded-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
+                    <div className="absolute inset-2 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-lg flex items-center justify-center">
+                      <motion.div
+                        animate={{ scale: [1, 1.3, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-3 h-3 bg-white/50 rounded-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
+                    <div className="absolute inset-2 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-lg flex items-center justify-center">
+                      <motion.div
+                        animate={{ y: [-4, 4, -4] }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-2 h-6 bg-white/50 rounded-full"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="absolute top-3 left-3 w-2 h-2 bg-green-400/60 rounded-full animate-pulse"></div>
-                <div className="absolute top-3 right-3 w-2 h-2 bg-orange-400/60 rounded-full animate-pulse delay-300"></div>
-                <div className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full animate-pulse delay-700"></div>
-              </div>
+              ) : (
+                // Standard mockup for other projects
+                <div className="relative w-full h-32 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <DeviceMockup type={project.mockupType} color="bg-white/30" />
+                  </div>
+                  <div className="absolute top-3 left-3 w-2 h-2 bg-green-400/60 rounded-full animate-pulse"></div>
+                  <div className="absolute top-3 right-3 w-2 h-2 bg-orange-400/60 rounded-full animate-pulse delay-300"></div>
+                  <div className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full animate-pulse delay-700"></div>
+                </div>
+              )}
             </div>
             <div className="relative z-10 flex items-end justify-between">
               <div className="flex-1">
