@@ -21,11 +21,11 @@ import './components/performance.css';
 // Function to get the background color based on the hour
 const getLoaderBackgroundColor = (hour: number) => {
   if (hour >= 5 && hour < 8) { // Dawn
-    return 'rgb(100, 60, 120)';
+    return 'rgb(139, 75, 48)';
   } else if (hour >= 8 && hour < 17) { // Day
-    return 'rgb(22, 43, 70)';
+    return 'rgb(65, 105, 165)';
   } else if (hour >= 17 && hour < 20) { // Dusk
-    return 'rgb(20, 32, 57)';
+    return 'rgb(62, 29, 93)';
   } else { // Night
     return 'rgb(0, 17, 82)';
   }

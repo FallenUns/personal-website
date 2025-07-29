@@ -5,7 +5,7 @@ import LiquidGlass from './LiquidGlass';
 import './TechSphere.css';
 
 // Hook to check if the viewport is mobile-sized
-const useIsMobile = (breakpoint = 768) => {
+const useIsMobile = (breakpoint = 1024) => { // Changed breakpoint to 1024px for lg
     const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
 
     useEffect(() => {
@@ -26,7 +26,10 @@ const useResponsivePortrait = () => {
         const updateSize = () => {
             if (window.innerWidth < 768) { 
                 setSize({ width: 250, height: 360 });
-            } else {
+            } else if (window.innerWidth < 1024) {
+                 setSize({ width: 280, height: 400 });
+            }
+            else {
                 setSize({ width: 320, height: 460 });
             }
         };
@@ -72,14 +75,14 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
       initial={{ opacity: 0, scale: 0.5 }}
       animate={animateProps}
       transition={transitionProps}
-      whileHover={{ scale: 1.1, zIndex: 30 }}
+      whileHover={{ scale: 1.15, zIndex: 30 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
       style={style}
     >
       <AnimatePresence>
-        {isHovered && description && isFloating && (
+        {isHovered && description && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -101,16 +104,16 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
         width={size} height={size}
         positioning="relative" style={{ borderRadius: '50%', cursor: 'pointer' }}
         className="hover:bg-white/10"
-        aberrationIntensity={isFloating ? 0.8 : 0} 
-        elasticity={isFloating ? 0.2 : 0} 
-        blurAmount={isFloating ? 8 : 0} 
-        saturation={isFloating ? 130 : 100} 
-        displacementScale={isFloating ? 20 : 0} 
+        aberrationIntensity={0.8}
+        elasticity={0.2}
+        blurAmount={8}
+        saturation={130}
+        displacementScale={30}
         mode='shader'
       >
         <img
           src={logo} alt={alt}
-          style={{ width: '55%', height: '55%', objectFit: 'contain', transition: 'filter 0.3s ease', filter: isHovered ? 'brightness(1.1)' : 'brightness(1)' }}
+          style={{ width: '55%', height: '55%', objectFit: 'contain', transition: 'filter 0.3s ease', filter: isHovered ? 'brightness(1.2) drop-shadow(0 0 5px rgba(255,255,255,0.5))' : 'brightness(1)' }}
         />
       </LiquidGlass>
     </motion.div>
@@ -124,34 +127,56 @@ const TechSphere: React.FC = () => {
   const containerClassName = isMobile ? 'tech-sphere-container is-mobile' : 'tech-sphere-container is-desktop';
 
   const bubbles: Omit<TechBubbleProps, 'isFloating'>[] = [
-    { logo: '/react-logo.png', size: 80, style: { top: '8%', left: 'clamp(5%, 15%, 25%)' }, alt: 'React', delay: 0.2, url: 'https://reactjs.org', description: 'React.js' },
-    { logo: '/tensorflow-logo.png', size: 75, style: { top: '40%', left: 'clamp(0%, 10%, 20%)' }, alt: 'TensorFlow', delay: 0.4, url: 'https://tensorflow.org', description: 'TensorFlow' },
-    { logo: '/python-logo.png', size: 85, style: { bottom: '15%', left: 'clamp(5%, 15%, 25%)' }, alt: 'Python', delay: 0.6, url: 'https://python.org', description: 'Python' },
-    { logo: '/js-logo.png', size: 70, style: { top: '12%', right: 'clamp(5%, 18%, 30%)' }, alt: 'JavaScript', delay: 0.3, url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript', description: 'JavaScript' },
-    { logo: '/vite.svg', size: 75, style: { top: '45%', right: 'clamp(0%, 15%, 25%)' }, alt: 'Vite', delay: 0.5, url: 'https://vitejs.dev', description: 'Vite' },
-    { logo: '/react-logo.png', size: 65, style: { bottom: '18%', right: 'clamp(5%, 18%, 30%)' }, alt: 'React Native', delay: 0.7, url: 'https://reactnative.dev', description: 'React Native' },
+    { logo: '/react-logo.png', size: 80, style: { top: '8%', left: '15%' }, alt: 'React', delay: 0.2, url: '[https://reactjs.org](https://reactjs.org)', description: 'React.js' },
+    { logo: '/tensorflow-logo.png', size: 75, style: { top: '40%', left: '0%' }, alt: 'TensorFlow', delay: 0.4, url: '[https://tensorflow.org](https://tensorflow.org)', description: 'TensorFlow' },
+    { logo: '/python-logo.png', size: 85, style: { bottom: '15%', left: '20%' }, alt: 'Python', delay: 0.6, url: '[https://python.org](https://python.org)', description: 'Python' },
+    { logo: '/js-logo.png', size: 70, style: { top: '12%', right: '18%' }, alt: 'JavaScript', delay: 0.3, url: '[https://developer.mozilla.org/en-US/docs/Web/JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)', description: 'JavaScript' },
+    { logo: '/vite.svg', size: 75, style: { top: '45%', right: '5%' }, alt: 'Vite', delay: 0.5, url: '[https://vitejs.dev](https://vitejs.dev)', description: 'Vite' },
+    { logo: '/react-logo.png', size: 65, style: { bottom: '18%', right: '22%' }, alt: 'React Native', delay: 0.7, url: '[https://reactnative.dev](https://reactnative.dev)', description: 'React Native' },
   ];
 
   return (
     <div className={containerClassName}>
-      {/* Central Portrait */}
+      {/* Central Portrait Container */}
       <div className="central-portrait-container">
         <motion.div
           className="relative"
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1, width: portraitWidth, height: portraitHeight }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
+          style={{ width: portraitWidth, height: portraitHeight }}
         >
-          <LiquidGlass
-            width={portraitWidth} height={portraitHeight}
-            positioning="relative" style={{ borderRadius: '24px' }}
-            elasticity={0.2} blurAmount={10} saturation={140} aberrationIntensity={0.4} displacementScale={40} mode='shader'
+          {/* Background Liquid Glass */}
+          <motion.div 
+            className="absolute inset-0"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1, ease: 'easeInOut' }}
           >
-            <img
-              src="/Subject.png" alt="Patrick Adrianus"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', borderRadius: '24px', transform: 'scale(0.85)', transition: 'transform 0.3s ease-out' }}
+            <LiquidGlass
+              width={portraitWidth} height={portraitHeight}
+              positioning="absolute" style={{ borderRadius: '24px' }}
+              elasticity={0.1} blurAmount={15} saturation={120} aberrationIntensity={0.5} displacementScale={80} mode='shader'
             />
-          </LiquidGlass>
+          </motion.div>
+          
+          {/* Portrait Image */}
+          <motion.img
+            src="/Subject.png" alt="Patrick Adrianus"
+            initial={{ clipPath: 'inset(0% 50% 0% 50%)' }}
+            animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover', 
+              objectPosition: 'center top', 
+              borderRadius: '24px', 
+              position: 'relative', // Ensure it's on top of the absolute background
+              zIndex: 10,
+              boxShadow: '0 10px 30px -5px rgba(0,0,0,0.3)',
+            }}
+          />
         </motion.div>
       </div>
 

@@ -229,6 +229,7 @@ const projects = [
 // ProjectCard component with navigation functionality
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
   const cardHeight = 380; // Reduced from 480px to 380px
+  const [isHovered, setIsHovered] = useState(false);
   
   // Special liquid glass configuration for the liquid glass project
   const isLiquidGlassProject = project.slug === 'liquid-glass-design';
@@ -266,6 +267,8 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
       className="group cursor-pointer flex-shrink-0"
       onClick={handleProjectClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <motion.div
         whileHover={{ scale: 1.02, y: -5, transition: { duration: 0.3, ease: "easeOut" } }}
@@ -341,7 +344,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
               <div className="flex-1">
                 <div className="flex flex-wrap gap-2 mb-3">
                   {project.technologies.slice(0, 3).map((tech, i) => (
-                    <motion.span key={i} className="text-xs px-3 py-1.5 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5" whileHover={{ scale: 1.05 }}>
+                    <motion.span key={i} className="text-xs px-3 py-1.5 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative" whileHover={{ scale: 1.05 }}>
                       {tech}
                     </motion.span>
                   ))}
@@ -370,10 +373,44 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                   )}
                 </div>
               </div>
-              <motion.div className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300" whileHover={{ scale: 1.1, rotate: 45 }} whileTap={{ scale: 0.9 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                  <path d="M7 17L17 7" /><path d="M7 7L17 7L17 17" />
-                </svg>
+              <motion.div 
+                className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300" 
+                animate={{ 
+                  scale: isHovered ? 1.1 : 1, 
+                  rotate: isHovered ? 45 : 0 
+                }}
+                transition={{ 
+                  duration: 0.3, 
+                  ease: "easeOut" 
+                }}
+                whileTap={{ scale: 0.9 }}
+                style={{ 
+                  transformOrigin: "center" 
+                }}
+              >
+                <motion.svg 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="text-white transition-colors duration-300"
+                  animate={{ 
+                    rotate: isHovered ? [0, 5, -5, 0] : 0
+                  }}
+                  transition={{ 
+                    duration: isHovered ? 0.6 : 0.3, 
+                    ease: "easeInOut",
+                    repeat: isHovered ? Infinity : 0,
+                    repeatDelay: isHovered ? 2 : 0
+                  }}
+                >
+                  <path d="M7 17L17 7" />
+                  <path d="M7 7L17 7L17 17" />
+                </motion.svg>
               </motion.div>
             </div>
           </div>
