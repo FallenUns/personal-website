@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { TimeProvider } from './contexts/TimeContext';
 import { useAssetPreloader, useCriticalResourceLoader } from './hooks/useAssetPreloader';
+import { useMobileDetection } from './utils/mobileDetection';
 import GooeyBackground from './components/GooeyBackground';
 import HeroSection from './components/HeroSection';
 import ProjectsSection from './components/ProjectsSection';
@@ -13,6 +14,7 @@ import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
 import FloatingAssistant from './components/FloatingAssistant';
+import MobileComingSoon from './components/MobileComingSoon';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
 import { getCurrentPath, isProjectDetailPage, getProjectSlug } from './utils/router';
@@ -35,6 +37,7 @@ const getLoaderBackgroundColor = (hour: number) => {
 // App content component that uses the loading hooks
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();
+  const isMobile = useMobileDetection();
   const [currentRoute, setCurrentRoute] = useState(() => {
     return getCurrentPath();
   });
@@ -209,6 +212,9 @@ const AppContent: React.FC = () => {
 
   return (
     <>
+      {/* Show mobile coming soon screen for mobile devices */}
+      {isMobile && <MobileComingSoon />}
+      
       {/* Render main content always - it stays in the background */}
       <TimeProvider hour={currentTime} isDarkMode={isDarkMode}>
         <AnimatePresence>
