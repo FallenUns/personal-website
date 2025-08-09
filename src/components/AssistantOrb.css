@@ -20,12 +20,14 @@
 .ai-orb-instructions {
   user-select: none;
   pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
 .ai-orb-button {
   user-select: none;
   outline: none;
   font-family: inherit;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .ai-orb-button:focus {

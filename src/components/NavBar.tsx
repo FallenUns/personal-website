@@ -120,7 +120,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   });
 
   // -- NEW: Scroll spy setup with better offset --
-  const sectionIds = ['about', 'projects', 'contact'];
+  const sectionIds = ['about', 'projects', 'experience', 'contact'];
   const activeSection = useScrollSpy(sectionIds, { offset: 100 }); // Reduced offset for better accuracy
 
   // Improved scroll function
@@ -210,6 +210,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   const navLinks = [
     { id: 'about', label: 'About' },
     { id: 'projects', label: 'Projects' },
+    { id: 'experience', label: 'Experience' },
     { id: 'contact', label: 'Contact' }
   ];
 

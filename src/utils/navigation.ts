@@ -17,6 +17,6 @@ export const scrollToSection = (sectionId: string): void => {
 };
 // Validate section ID
 export const isValidSection = (sectionId: string): boolean => {
-  const validSections = ['about', 'projects', 'contact'];
+  const validSections = ['about', 'projects', 'experience', 'contact'];
   return validSections.includes(sectionId.toLowerCase());
 };

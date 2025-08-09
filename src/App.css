@@ -1,6 +1,29 @@
 /* src/App.css */
 @import "tailwindcss";
 
+/* Global text shadow enhancements */
+/* Ensure all text content has shadows */
+body, #root {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Component-specific text shadow overrides */
+.hero-text {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.nav-text {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.card-text {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.tooltip-text {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
 /* Add this to the end of src/App.css */
 
 /* Custom utility to hide scrollbars */

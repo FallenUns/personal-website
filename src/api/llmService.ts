@@ -85,6 +85,7 @@ Always be helpful and enthusiastic, but stay strictly within your designated rol
             const sectionNames = {
               'projects': 'projects section where you can see Patrick\'s work and portfolio',
               'about': 'about section where you can learn more about Patrick and download his CV',
+              'experience': 'professional experience and roles timeline',
               'contact': 'contact section where you can get in touch with Patrick'
             };
             const sectionName = sectionNames[command.value as keyof typeof sectionNames] || command.value;

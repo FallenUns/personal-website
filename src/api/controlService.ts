@@ -99,7 +99,7 @@ class WebsiteControlService {
             };
           }
           
-          const validSections = ['about', 'projects', 'contact'];
+          const validSections = ['about', 'projects', 'experience', 'contact'];
           const sectionId = command.value.toLowerCase();
           
           console.log('Navigation command - section:', sectionId);
@@ -107,7 +107,7 @@ class WebsiteControlService {
           if (!validSections.includes(sectionId)) {
             return {
               success: false,
-              message: `Invalid section "${command.value}". Available sections: About, Projects, Contact.`
+              message: `Invalid section "${command.value}". Available sections: About, Projects, Experience, Contact.`
             };
           }
           
@@ -203,12 +203,20 @@ class WebsiteControlService {
       return { type: 'navigateToSection', value: 'projects' };
     }
     
+    // Experience section patterns
+    if (lowerInput.includes('experience section') || lowerInput.includes('go to experience') || lowerInput.includes('navigate to experience') ||
+        (lowerInput.includes('show') && lowerInput.includes('experience')) ||
+        lowerInput.startsWith('experience')) {
+      console.log('🎯 Detected experience navigation command');
+      return { type: 'navigateToSection', value: 'experience' };
+    }
+
     // About section patterns
     if ((lowerInput.includes('show') && (lowerInput.includes('cv') || lowerInput.includes('resume'))) ||
         lowerInput.includes('go to about') || lowerInput.includes('navigate to about') ||
         lowerInput.includes('about section') || lowerInput.includes('about me') ||
         lowerInput.includes('who are you') || lowerInput.includes('tell me about') ||
-        lowerInput.includes('background') || lowerInput.includes('experience') ||
+        lowerInput.includes('background') ||
         lowerInput.includes('skills') || lowerInput.includes('download cv') ||
         lowerInput.includes('download resume') || lowerInput.includes('learn more about')) {
       console.log('🎯 Detected about navigation command');
@@ -251,6 +259,7 @@ class WebsiteControlService {
     const sectionNames: { [key: string]: string } = {
       'about': 'About',
       'projects': 'Projects',
+      'experience': 'Experience',
       'contact': 'Contact'
     };
     return sectionNames[sectionId] || sectionId;

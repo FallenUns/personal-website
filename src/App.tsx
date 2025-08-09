@@ -9,6 +9,7 @@ import { useMobileDetection } from './utils/mobileDetection';
 import GooeyBackground from './components/GooeyBackground';
 import HeroSection from './components/HeroSection';
 import ProjectsSection from './components/ProjectsSection';
+import ExperienceSection from './components/ExperienceSection';
 import ProjectDetail from './components/ProjectDetail';
 import Navbar from './components/NavBar';
 import Contact from './components/Contact';
@@ -238,6 +239,7 @@ const AppContent: React.FC = () => {
               <main className="relative z-10">
                 <HeroSection />
                 <ProjectsSection />
+                <ExperienceSection />
                 <Contact />
               </main>
               

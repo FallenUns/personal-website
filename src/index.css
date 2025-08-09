@@ -145,6 +145,53 @@ body,
   color: white;
 }
 
+/* Global text shadow styles */
+/* Apply text shadows to all text elements */
+h1, h2, h3, h4, h5, h6 {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+p, span, div, a, button, label, li, td, th, input, textarea, select {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Stronger shadows for larger text */
+.text-6xl, .text-5xl, .text-4xl {
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.9);
+}
+
+.text-3xl, .text-2xl, .text-xl {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.text-lg {
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.text-base, .text-sm, .text-xs {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Apply to all elements with text content */
+* {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Override for elements that shouldn't have text shadows */
+svg, img, video, canvas, iframe {
+  text-shadow: none !important;
+}
+
+/* Special handling for buttons and interactive elements */
+button, .btn, [role="button"] {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* Navigation and menu text */
+nav *, .nav *, .menu * {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
 /* For the new dynamic border effect */
 @property --angle {
   syntax: '<angle>';
