@@ -76,7 +76,7 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
 });
 DeviceMockup.displayName = 'DeviceMockup';
 
-const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>) => {
+const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>, totalCards: number) => {
     const [layout, setLayout] = useState({
         visibleCards: 2,
         cardWidth: 500,
@@ -90,31 +90,31 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
             // All calculations are now based on the container's width for consistency
             const containerWidth = containerRef.current.clientWidth;
 
-            const buttonWidth = 56; // as per LiquidGlass width
-            const viewportMargin = 32; // 16px on each side (md:mx-4)
-            const cardGap = 24; // (md:gap-6)
+      const buttonWidth = 56; // each side nav button
+      const viewportMargin = 32; // horizontal padding inside the container
+      const cardGap = 24; // gap between cards
 
-            // Available width for the card viewport
-            const viewportWidth = containerWidth - (buttonWidth * 2) - viewportMargin;
+      // Available width strictly for cards area
+      const viewportWidthRaw = containerWidth - (buttonWidth * 2) - viewportMargin;
+      const viewportWidth = Math.max(280, viewportWidthRaw);
 
-            let visibleCards, cardWidth;
+      // Determine how many cards can fit (up to 3) given a minimum card width
+      const maxCards = Math.max(1, Math.min(3, totalCards || 1));
+      const minCard = containerWidth < 640 ? 300 : containerWidth < 1024 ? 340 : 360;
 
-            // Breakpoints now check against the container's width
-            if (containerWidth < 600) { // 1 card on small screens
-                visibleCards = 1;
-                cardWidth = Math.min(350, viewportWidth);
-            } else if (containerWidth < 900) { // 1 or 2 cards
-                visibleCards = 2;
-                cardWidth = Math.floor((viewportWidth - cardGap) / 2);
-            } else if (containerWidth < 1280) { // 2 or 3 cards
-                visibleCards = 2; // Defaulting to 2 for better spacing
-                cardWidth = Math.min(450, (viewportWidth - cardGap) / 2);
-            } else { // 3 cards on large screens
-                visibleCards = 3;
-                cardWidth = Math.floor(Math.min(480, (viewportWidth - (cardGap * 2)) / 3));
-            }
-            
-            setLayout({ visibleCards, cardWidth, viewportWidth });
+      let computedVisible = 1;
+      for (let n = maxCards; n >= 1; n--) {
+        const needed = n * minCard + (n - 1) * cardGap;
+        if (viewportWidth >= needed) {
+          computedVisible = n;
+          break;
+        }
+      }
+
+      // Compute card width to fill the viewport evenly
+      const cardWidth = Math.floor((viewportWidth - (computedVisible - 1) * cardGap) / computedVisible);
+
+      setLayout({ visibleCards: computedVisible, cardWidth, viewportWidth });
         };
 
         updateLayout();
@@ -122,7 +122,7 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
         return () => window.removeEventListener('resize', updateLayout);
     }, [containerRef]);
 
-    return layout;
+  return layout;
 };
 
 
@@ -430,7 +430,7 @@ const ProjectsSection: React.FC = () => {
   const sliderContainerRef = useRef<HTMLDivElement>(null);
 
   // Single, correct call to the hook with the ref
-  const { visibleCards, cardWidth, viewportWidth } = useResponsiveCards(sliderContainerRef);
+  const { visibleCards, cardWidth, viewportWidth } = useResponsiveCards(sliderContainerRef, projects.length);
 
   const totalCards = projects.length;
   const totalPages = Math.ceil(totalCards / visibleCards);
@@ -443,6 +443,7 @@ const ProjectsSection: React.FC = () => {
     const startIndex = currentPage * visibleCards;
     return projects.slice(startIndex, startIndex + visibleCards);
   };
+  const visibleProjects = getVisibleProjects();
   
   const isPrevDisabled = currentPage === 0;
   const isNextDisabled = currentPage >= totalPages - 1;
@@ -498,8 +499,13 @@ const ProjectsSection: React.FC = () => {
                   className="flex gap-4 md:gap-6 justify-center items-start"
                   style={{ minHeight: '420px' }}
               >
-                  {getVisibleProjects().map((project, index) => (
-                      <ProjectCard key={project.id} project={project} index={index} cardWidth={cardWidth} />
+                  {visibleProjects.map((project, index) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        index={index}
+                        cardWidth={cardWidth}
+                      />
                   ))}
               </motion.div>
           </div>

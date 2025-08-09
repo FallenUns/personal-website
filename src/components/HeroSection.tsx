@@ -99,36 +99,36 @@ const HeroSection: React.FC = () => {
             </div>
             
             {/* Main Title */}
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
-              Hello! I'm Patrick
+            <h1 className="text-5xl md:text-6xl font-semibold mb-4 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
+              Hello! I'm <span className="font-bold"> Patrick Adrianus </span>
             </h1>
             
             {/* Subtitle with decorative element */}
             <div className="flex items-center mb-6">
               <div className="w-18 h-0.5 bg-white/60 mr-4"></div>
               <span className="text-lg font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-                Data Scientist ✦
+                Data Scientist ✦ Full-Stack Developer
               </span>
             </div>
             
             {/* Description */}
             <p className="text-base text-white/90 max-w-xl mb-6 [text-shadow:0_1px_4px_rgba(0,0,0,1)]">
-              Hello! I'm Patrick, I'm a <span className="font-semibold">UX leader, design thinker, product designer,</span> experience strategist, generative artist & human-loving introvert
+            Hello! I’m Patrick, a <span className="font-semibold">Data Scientist</span> who loves building projects from apps and data solutions to creative tools and always experimenting with new technologies and development frameworks to turn fresh ideas into real-world impact.
             </p>
             
             {/* Key Points */}
             <div className="mb-8 space-y-2">
               <div className="flex items-center text-white/90">
                 <span className="text-green-400 mr-3">✓</span>
-                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Product must be authentic</span>
+                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">End‑to‑end model deployment</span>
               </div>
               <div className="flex items-center text-white/90">
                 <span className="text-green-400 mr-3">✓</span>
-                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Solve pain points elegantly</span>
+                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Storytelling with data</span>
               </div>
               <div className="flex items-center text-white/90">
                 <span className="text-green-400 mr-3">✓</span>
-                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">User testing, feedback, and validation</span>
+                <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">User‑centric collaboration</span>
               </div>
             </div>
             <div className="flex space-x-4">
@@ -723,7 +723,7 @@ const HeroSection: React.FC = () => {
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">DEPLOYEMENT</span>
+            <span className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">DEPLOYMENT</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>

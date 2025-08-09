@@ -213,7 +213,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   };
 
   const liquidGlassProps = useMemo(() => ({
-    elasticity: 0.15,
+    elasticity: 0.1,
     saturation: 120,
     displacementScale: 80,
     blurAmount: 6,
@@ -390,7 +390,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] bg-black/30"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -399,7 +399,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
           <div className="w-full h-full flex items-center justify-center p-4">
             <motion.div
               ref={containerRef}
-              className="w-full max-w-6xl h-[90vh] relative"
+        className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl h-[min(85vh,800px)] relative"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
@@ -452,7 +452,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                   {/* Main content */}
                   <div className="flex-1 flex overflow-hidden">
                     {/* Left side - Hero */}
-                    <div className="w-1/2 p-6 flex flex-col">
+                    <div className="w-1/2 p-6 flex flex-col overflow-y-auto">
                       <div className="mb-6">
                         <motion.h1
                           className="text-4xl font-bold text-white mb-4"
