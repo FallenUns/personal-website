@@ -1,0 +1,536 @@
+import React, { memo, useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import LiquidGlass from './LiquidGlass';
+import { navigateBack } from '../utils/router';
+import './performance.css';
+
+type Link = { label: string; url: string };
+type Category = 'Data Science' | 'Full‑Stack' | 'Research' | 'Other';
+
+type Experience = {
+  id: string;
+  role: string;
+  company: string;
+  start: { year: number; month: number };
+  end?: { year: number; month: number };
+  location?: string;
+  category: Category;
+  skills: string[];
+  highlights: string[];
+  achievements?: string[];
+  links?: Link[];
+  fullDescription?: string;
+  responsibilities?: string[];
+  technologies?: string[];
+  impact?: string[];
+};
+
+// Experience data - this should match the data from ExperienceSection
+const experiences: Experience[] = [
+  {
+    id: 'urban-waste-1',
+    role: 'Summer Intern',
+    company: 'Urban Waste',
+    start: { year: 2022, month: 12 },
+    end: { year: 2023, month: 2 },
+    location: 'Melbourne, Victoria, Australia · Hybrid',
+    category: 'Full‑Stack',
+    skills: [
+      'Python',
+      'ERP System Management',
+      'Data Integration',
+      'Problem Solving',
+      'Cross-Functional Collaboration'
+    ],
+    highlights: [
+      'Collaborated with IT, finance, and operations to identify ERP requirements and challenges',
+      'Researched best practices in ERP system management to improve efficiency and compliance',
+      'Assisted in designing internal system architecture with focus on data integration and UX',
+      'Developed and tested ERP system modules to align with business processes',
+      'Created documentation, user manuals, and training materials for smooth adoption',
+      'Monitored and optimized the system post-implementation based on user feedback'
+    ],
+    achievements: [
+      'Contributed to successful development and rollout of an internal ERP management system',
+      'Improved cross-departmental communication and workflow efficiency',
+      'Gained hands-on experience in ERP system design, testing, and optimization'
+    ],
+    links: [
+      { label: 'Company Website', url: 'https://urbanwaste.com.au' }
+    ],
+    fullDescription: 'During my summer internship at Urban Waste, I had the opportunity to work on a comprehensive ERP system project that would transform how the company managed its operations. This role provided invaluable experience in enterprise software development and cross-functional collaboration in a real-world business environment.',
+    responsibilities: [
+      'Analyzed current business processes and identified areas for ERP integration',
+      'Collaborated with stakeholders across IT, finance, and operations departments',
+      'Designed system architecture focusing on data integration and user experience',
+      'Developed and rigorously tested ERP modules using Python and related technologies',
+      'Created comprehensive documentation and training materials for end users',
+      'Provided ongoing support and optimization based on user feedback and system performance'
+    ],
+    technologies: [
+      'Python for backend development and data processing',
+      'ERP frameworks and integration tools',
+      'Database design and management',
+      'API development for system integration',
+      'Documentation tools and user training platforms'
+    ],
+    impact: [
+      'Successfully contributed to the development and deployment of a company-wide ERP system',
+      'Improved operational efficiency by streamlining cross-departmental workflows',
+      'Enhanced data integrity and reporting capabilities across the organization',
+      'Reduced manual processes and increased automation in daily operations',
+      'Established foundation for future system scalability and improvements'
+    ]
+  }
+];
+
+const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const formatPeriod = (start: Experience['start'], end?: Experience['end']) => {
+  const startStr = `${monthNames[start.month-1]} ${start.year}`;
+  const endStr = end ? `${monthNames[end.month-1]} ${end.year}` : 'Present';
+  return `${startStr} — ${endStr}`;
+};
+
+const diffMonths = (start: Experience['start'], end?: Experience['end']) => {
+  const s = new Date(start.year, start.month-1, 1);
+  const e = end ? new Date(end.year, end.month-1, 1) : new Date();
+  return (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth());
+};
+
+const Tag: React.FC<{ text: string }> = ({ text }) => (
+  <span className="text-xs px-2.5 py-1 bg-white/10 text-white/85 rounded-full backdrop-blur-sm border border-white/10">
+    {text}
+  </span>
+);
+
+interface ExperienceDetailProps {
+  slug?: string;
+}
+
+const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'responsibilities' | 'achievements' | 'impact'>('overview');
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // Find the experience by slug
+  const experience = useMemo(() => {
+    return experiences.find(exp => exp.id === slug);
+  }, [slug]);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    if (isVisible && containerRef.current) {
+      const resizeObserver = new ResizeObserver(() => {
+        if (containerRef.current) {
+          setDimensions({
+            width: containerRef.current.offsetWidth,
+            height: containerRef.current.offsetHeight
+          });
+        }
+      });
+      resizeObserver.observe(containerRef.current);
+      return () => resizeObserver.disconnect();
+    }
+  }, [isVisible]);
+
+  if (!experience) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-white text-center">
+          <h2 className="text-2xl font-bold mb-4">Experience Not Found</h2>
+          <button
+            onClick={navigateBack}
+            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      navigateBack();
+    }, 300);
+  };
+
+  const liquidGlassProps = useMemo(() => ({
+    elasticity: 0.05,
+    saturation: 120,
+    displacementScale: 80,
+    blurAmount: 6,
+    mode: 'shader' as const,
+  }), []);
+
+  const period = formatPeriod(experience.start, experience.end);
+  const durationMonths = diffMonths(experience.start, experience.end);
+  const durationStr = durationMonths >= 12 ? `${(durationMonths/12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`;
+
+  const tabContent = {
+    overview: (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-semibold text-white mb-3">About This Role</h3>
+          <p className="text-white/80 leading-relaxed">
+            {experience.fullDescription || 
+             `During my time as ${experience.role} at ${experience.company}, I gained valuable experience in ${experience.category.toLowerCase()} development and contributed to various projects that enhanced my technical and professional skills.`}
+          </p>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold text-white mb-3">Key Highlights</h3>
+          <div className="grid gap-3">
+            {experience.highlights.map((highlight, index) => (
+              <motion.div
+                key={index}
+                className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-white/90 text-sm leading-relaxed">{highlight}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold text-white mb-3">Skills & Technologies</h3>
+          <div className="flex flex-wrap gap-2">
+            {experience.skills.map((skill, index) => (
+              <motion.span
+                key={index}
+                className="px-3 py-1.5 bg-white/20 text-white/90 rounded-full text-sm border border-white/10"
+                whileHover={{ scale: 1.05 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                {skill}
+              </motion.span>
+            ))}
+          </div>
+        </div>
+      </div>
+    ),
+    responsibilities: (
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Key Responsibilities</h3>
+        <div className="grid gap-3">
+          {(experience.responsibilities || experience.highlights).map((responsibility, index) => (
+            <motion.div
+              key={index}
+              className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+              <span className="text-white/90">{responsibility}</span>
+            </motion.div>
+          ))}
+        </div>
+        
+        {experience.technologies && (
+          <div className="mt-6">
+            <h4 className="text-lg font-semibold text-white mb-3">Technologies & Tools</h4>
+            <div className="grid gap-3">
+              {experience.technologies.map((tech, index) => (
+                <motion.div
+                  key={index}
+                  className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 + 0.3 }}
+                >
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-white/90">{tech}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    ),
+    achievements: (
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Key Achievements</h3>
+        <div className="grid gap-3">
+          {experience.achievements?.map((achievement, index) => (
+            <motion.div
+              key={index}
+              className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
+              <span className="text-white/90">{achievement}</span>
+            </motion.div>
+          )) || <p className="text-white/70">No specific achievements documented for this role.</p>}
+        </div>
+      </div>
+    ),
+    impact: (
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Impact & Outcomes</h3>
+        <div className="grid gap-3">
+          {experience.impact?.map((impact, index) => (
+            <motion.div
+              key={index}
+              className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
+              <span className="text-white/90">{impact}</span>
+            </motion.div>
+          )) || (
+            <div className="space-y-3">
+              <p className="text-white/70 mb-4">Key outcomes from this role:</p>
+              {experience.achievements?.map((achievement, index) => (
+                <motion.div
+                  key={index}
+                  className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-white/90">{achievement}</span>
+                </motion.div>
+              )) || <p className="text-white/70">Professional growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  };
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          className="fixed inset-0 z-[9999] bg-black/30"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="w-full h-full flex items-center justify-center p-4">
+            <motion.div
+              ref={containerRef}
+              className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl h-[min(85vh,800px)] relative"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <LiquidGlass
+                width={dimensions.width}
+                height={dimensions.height}
+                positioning="relative"
+                style={{ borderRadius: '24px', width: '100%', height: '100%' }}
+                {...liquidGlassProps}
+                overLight="auto"
+              >
+                <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
+                  {/* Header with close button */}
+                  <div className="flex items-center justify-between p-6 border-b border-white/10">
+                    <div className="flex items-center space-x-4">
+                      <motion.div
+                        className="w-3 h-3 bg-red-400 rounded-full cursor-pointer"
+                        whileHover={{ scale: 1.2 }}
+                        onClick={handleClose}
+                      />
+                      <motion.div
+                        className="w-3 h-3 bg-yellow-400 rounded-full cursor-pointer"
+                        whileHover={{ scale: 1.2 }}
+                      />
+                      <motion.div
+                        className="w-3 h-3 bg-green-400 rounded-full cursor-pointer"
+                        whileHover={{ scale: 1.2 }}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className="px-3 py-1.5 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
+                        {experience.category}
+                      </span>
+                      <motion.button
+                        onClick={handleClose}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Main content */}
+                  <div className="flex-1 flex overflow-hidden">
+                    {/* Left side - Hero */}
+                    <div className="w-1/2 p-6 flex flex-col overflow-y-auto">
+                      <div className="mb-6">
+                        <motion.h1
+                          className="text-4xl font-bold text-white mb-2"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          {experience.role}
+                        </motion.h1>
+                        <motion.h2
+                          className="text-2xl text-white/90 mb-2"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.25 }}
+                        >
+                          {experience.company}
+                        </motion.h2>
+                        {experience.location && (
+                          <motion.p
+                            className="text-white/70 mb-4"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                          >
+                            {experience.location}
+                          </motion.p>
+                        )}
+                        <motion.div
+                          className="flex items-center space-x-4 text-white/80"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.35 }}
+                        >
+                          <span className="text-lg font-medium">{period}</span>
+                          <span className="text-sm text-white/60">({durationStr})</span>
+                        </motion.div>
+                      </div>
+
+                      {/* Experience visual/stats */}
+                      <div className="flex-1 flex items-center justify-center">
+                        <motion.div
+                          className="w-full max-w-md"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          <LiquidGlass
+                            width={0}
+                            height={0}
+                            positioning="relative"
+                            style={{ borderRadius: '16px', width: '100%', height: '200px', minWidth: '100%', minHeight: '200px' }}
+                            elasticity={0.2}
+                            saturation={140}
+                            displacementScale={60}
+                            blurAmount={4}
+                            mode="prominent"
+                            overLight="auto"
+                          >
+                            <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex flex-col items-center justify-center p-6">
+                              <motion.div
+                                className="text-center"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.6 }}
+                              >
+                                <div className="text-3xl font-bold text-white mb-2">{experience.skills.length}</div>
+                                <div className="text-white/70 text-sm mb-4">Skills Developed</div>
+                                <div className="flex flex-wrap gap-1 justify-center">
+                                  {experience.skills.slice(0, 3).map((skill, index) => (
+                                    <span key={index} className="text-xs px-2 py-1 bg-white/20 text-white/80 rounded-full">
+                                      {skill}
+                                    </span>
+                                  ))}
+                                  {experience.skills.length > 3 && (
+                                    <span className="text-xs px-2 py-1 bg-white/20 text-white/80 rounded-full">
+                                      +{experience.skills.length - 3} more
+                                    </span>
+                                  )}
+                                </div>
+                              </motion.div>
+                            </div>
+                          </LiquidGlass>
+                        </motion.div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-3 mt-6">
+                        {experience.links?.map((link, index) => (
+                          <motion.button
+                            key={index}
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-blue-600/30 transition-all"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => window.open(link.url, '_blank')}
+                          >
+                            {link.label}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right side - Detailed content */}
+                    <div className="w-1/2 border-l border-white/10 flex flex-col">
+                      {/* Tab navigation */}
+                      <div className="p-6 border-b border-white/10">
+                        <div className="flex space-x-1 bg-white/10 rounded-lg p-1">
+                          {(['overview', 'responsibilities', 'achievements', 'impact'] as const).map((tab) => (
+                            <motion.button
+                              key={tab}
+                              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                                activeTab === tab
+                                  ? 'bg-white/20 text-white shadow-sm'
+                                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                              }`}
+                              onClick={() => setActiveTab(tab)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Tab content */}
+                      <div className="flex-1 p-6 overflow-y-auto">
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {tabContent[activeTab]}
+                          </motion.div>
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </LiquidGlass>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+export default memo(ExperienceDetail);

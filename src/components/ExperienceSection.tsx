@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
+import { navigateTo } from '../utils/router';
 
 type Link = { label: string; url: string };
 type Category = 'Data Science' | 'Full‑Stack' | 'Research' | 'Other';
@@ -22,48 +23,35 @@ type Experience = {
 
 const experiences: Experience[] = [
   {
-    id: 'ds-1',
-    role: 'Data Scientist',
-    company: 'Your Company',
-    start: { year: 2023, month: 2 },
-    // Present role
-    location: 'Remote',
-    category: 'Data Science',
-    skills: ['Python', 'TensorFlow', 'Pandas', 'Docker', 'GCP'],
-    highlights: [
-      'Built and deployed ML models end‑to‑end (training → serving → monitoring)',
-      'Drove experimentation (A/B, offline metrics) that improved KPIs',
-      'Partnered with product and engineering to ship user‑impacting features'
-    ],
-    achievements: [
-      'Reduced inference latency by 35% with optimized preprocessing',
-      'Introduced model monitoring dashboard; cut drift incidents by 50%'
-    ],
-    links: [
-      { label: 'Case Study', url: '#' }
-    ]
-  },
-  {
-    id: 'fs-1',
-    role: 'Full‑Stack Developer',
-    company: 'Another Company',
-    start: { year: 2021, month: 5 },
-    end: { year: 2023, month: 1 },
-    location: 'Hybrid',
+    id: 'urban-waste-1',
+    role: 'Summer Intern',
+    company: 'Urban Waste',
+    start: { year: 2022, month: 12 },
+    end: { year: 2023, month: 2 },
+    location: 'Melbourne, Victoria, Australia · Hybrid',
     category: 'Full‑Stack',
-    skills: ['React', 'TypeScript', 'Node.js', 'REST', 'CI/CD'],
+    skills: [
+      'Python',
+      'ERP System Management',
+      'Data Integration',
+      'Problem Solving',
+      'Cross-Functional Collaboration'
+    ],
     highlights: [
-      'Developed responsive web apps with strong UX and performance',
-      'Designed and maintained APIs, improved developer experience',
-      'Led features end‑to‑end across frontend and backend'
+      'Collaborated with IT, finance, and operations to identify ERP requirements and challenges',
+      'Researched best practices in ERP system management to improve efficiency and compliance',
+      'Assisted in designing internal system architecture with focus on data integration and UX',
+      'Developed and tested ERP system modules to align with business processes',
+      'Created documentation, user manuals, and training materials for smooth adoption',
+      'Monitored and optimized the system post-implementation based on user feedback'
     ],
     achievements: [
-      'Cut page load by 40% through code‑splitting and caching',
-      'Built internal component library adopted by 3 teams'
+      'Contributed to successful development and rollout of an internal ERP management system',
+      'Improved cross-departmental communication and workflow efficiency',
+      'Gained hands-on experience in ERP system design, testing, and optimization'
     ],
     links: [
-      { label: 'Live Site', url: '#' },
-      { label: 'GitHub', url: '#' }
+      { label: 'Company Website', url: 'https://urbanwaste.com.au' }
     ]
   }
 ];
@@ -91,12 +79,13 @@ const ExperienceItem: React.FC<{
   exp: Experience;
   index: number;
   cardWidth: number;
-  expanded: boolean;
-  onToggle: () => void;
-}> = ({ exp, index, cardWidth, expanded, onToggle }) => {
+  onViewDetails: () => void;
+}> = ({ exp, index, cardWidth, onViewDetails }) => {
   const period = formatPeriod(exp.start, exp.end);
   const durationMonths = diffMonths(exp.start, exp.end);
   const durationStr = durationMonths >= 12 ? `${(durationMonths/12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`;
+
+  const [isHovered, setIsHovered] = React.useState(false);
 
   return (
     <div className="relative w-full">
@@ -120,13 +109,16 @@ const ExperienceItem: React.FC<{
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -10% 0px' }}
           transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.08 }}
-          className="w-full"
+          className="w-full group cursor-pointer"
+          onClick={onViewDetails}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           <LiquidGlass
             width={cardWidth}
-            height={300}
+            height={320}
             positioning="relative"
-            style={{ borderRadius: '18px', width: '100%', minHeight: '300px' }}
+            style={{ borderRadius: '18px', width: '100%', minHeight: '320px' }}
             elasticity={0.12}
             saturation={150}
             aberrationIntensity={1.2}
@@ -134,76 +126,75 @@ const ExperienceItem: React.FC<{
             blurAmount={6}
             mode='shader'
           >
-            <div className="p-8 md:p-10 text-white">
+            <div className="p-6 md:p-8 text-white h-full flex flex-col">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
                   <h3 className="text-lg md:text-xl font-semibold [text-shadow:0_2px_5px_rgba(0,0,0,0.8)]">{exp.role}</h3>
                   <div className="text-white/80 text-sm">{exp.company}{exp.location ? ` • ${exp.location}` : ''}</div>
                 </div>
                 <div className="text-white/70 text-xs md:text-sm text-right">
-                  <div>{period}</div>
-                  <div className="text-white/60">{durationStr}</div>
+                  <div className="flex items-center gap-2">
+                    <span>{period}</span>
+                    <span className="text-white/60">({durationStr})</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Tag text={exp.category} />
-                {exp.skills.slice(0, 5).map((s) => (
-                  <Tag key={s} text={s} />
-                ))}
+              {/* Brief summary - Only show 1 key highlight */}
+              <div className="flex-1 mb-4">
+                <p className="text-white/90 text-sm leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+                  {exp.highlights[0]}
+                </p>
               </div>
 
-              {/* Highlights (brief) */}
-              <ul className="list-disc list-inside space-y-2 text-white/90 mb-4">
-                {(expanded ? exp.highlights : exp.highlights.slice(0, 2)).map((h, i) => (
-                  <li key={i} className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{h}</li>
-                ))}
-              </ul>
-
-              {/* Expandable details */}
-              <motion.div
-                initial={false}
-                animate={{ height: expanded ? 'auto' : 0, opacity: expanded ? 1 : 0 }}
-                transition={{ duration: 0.3 }}
-                style={{ overflow: 'hidden' }}
-              >
-                {!!exp.achievements?.length && (
-                  <div className="mt-4">
-                    <div className="text-white/70 text-sm mb-2">Key Achievements</div>
-                    <ul className="list-disc list-inside space-y-2 text-white/90">
-                      {exp.achievements.map((a, i) => (
-                        <li key={i} className="[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{a}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {!!exp.links?.length && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {exp.links.map((l, i) => (
-                      <a
-                        key={i}
-                        href={l.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs px-3 py-1.5 bg-white/10 text-white rounded-full border border-white/10 hover:bg-white/20 transition-colors"
-                      >
-                        {l.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-
-              {/* Toggle */}
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={onToggle}
-                  className="text-xs px-3 py-1.5 bg-white/10 text-white/90 rounded-full border border-white/10 hover:bg-white/20 transition-colors"
+              {/* Bottom section with tags and arrow button */}
+              <div className="flex items-center justify-between mt-4">
+                {/* Tags - Only show category and top 3 skills */}
+                <div className="flex flex-wrap gap-2">
+                  <Tag text={exp.category} />
+                  {exp.skills.slice(0, 3).map((s) => (
+                    <Tag key={s} text={s} />
+                  ))}
+                </div>
+                <motion.div 
+                  className="p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300" 
+                  animate={{ 
+                    scale: isHovered ? 1.1 : 1, 
+                    rotate: isHovered ? 45 : 0 
+                  }}
+                  transition={{ 
+                    duration: 0.3, 
+                    ease: "easeOut" 
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                  style={{ 
+                    transformOrigin: "center" 
+                  }}
                 >
-                  {expanded ? 'Show less' : 'Show more'}
-                </button>
+                  <motion.svg 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="text-white transition-colors duration-300"
+                    animate={{ 
+                      rotate: isHovered ? [0, 5, -5, 0] : 0
+                    }}
+                    transition={{ 
+                      duration: isHovered ? 0.6 : 0.3, 
+                      ease: "easeInOut",
+                      repeat: isHovered ? Infinity : 0,
+                      repeatDelay: isHovered ? 2 : 0
+                    }}
+                  >
+                    <path d="M7 17L17 7" />
+                    <path d="M7 7L17 7L17 17" />
+                  </motion.svg>
+                </motion.div>
               </div>
             </div>
           </LiquidGlass>
@@ -237,8 +228,6 @@ const ExperienceSection: React.FC = () => {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  const [expandedId, setExpandedId] = React.useState<string | null>(null);
-
   const sorted = React.useMemo(() => {
     return [...experiences].sort((a, b) => {
       const aEnd = a.end ? new Date(a.end.year, a.end.month-1, 1).getTime() : Number.POSITIVE_INFINITY;
@@ -259,6 +248,10 @@ const ExperienceSection: React.FC = () => {
     }
     return Math.max(300, containerWidth - 24);
   }, [containerWidth, isMdUp]);
+
+  const handleViewDetails = (experienceId: string) => {
+    navigateTo(`/experience/${experienceId}`);
+  };
 
   return (
     <motion.section
@@ -302,8 +295,7 @@ const ExperienceSection: React.FC = () => {
               exp={exp}
               index={idx}
               cardWidth={computedCardWidth}
-              expanded={expandedId === exp.id}
-              onToggle={() => setExpandedId(prev => prev === exp.id ? null : exp.id)}
+              onViewDetails={() => handleViewDetails(exp.id)}
             />)
           )}
         </div>

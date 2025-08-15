@@ -391,7 +391,7 @@ const HeroSection: React.FC = () => {
               ease: "easeInOut",
               delay: 2
             }}
-            onMouseEnter={(e) => handleTechHover('Machine Learning', e)}
+            onMouseEnter={(e) => handleTechHover('R', e)}
             onMouseLeave={handleTechLeave}
             whileHover={{ scale: 1.15 }}
           >
@@ -407,11 +407,11 @@ const HeroSection: React.FC = () => {
               displacementScale={18}
               mode='shader'
             >
-              <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"></div>
+              <img src="/r-logo.png" alt="R" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
 
-          {/* Web Dev Sphere - Bottom Right */}
+          {/* SQL Sphere - Bottom Right */}
           <motion.div
             className="absolute cursor-pointer"
             style={{ bottom: '22%', right: '-22%' }}
@@ -424,7 +424,7 @@ const HeroSection: React.FC = () => {
               repeat: Infinity, 
               ease: "linear"
             }}
-            onMouseEnter={(e) => handleTechHover('Web Development', e)}
+            onMouseEnter={(e) => handleTechHover('SQL', e)}
             onMouseLeave={handleTechLeave}
             whileHover={{ scale: 1.15 }}
           >
@@ -440,7 +440,7 @@ const HeroSection: React.FC = () => {
               displacementScale={18}
               mode='shader'
             >
-              <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-cyan-500 rounded-full"></div>
+              <img src="/sql-logo.png" alt="SQL" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
         </div>
@@ -644,7 +644,7 @@ const HeroSection: React.FC = () => {
               ease: "easeInOut",
               delay: 2
             }}
-            onMouseEnter={(e) => handleTechHover('Machine Learning', e)}
+            onMouseEnter={(e) => handleTechHover('R', e)}
             onMouseLeave={handleTechLeave}
             whileHover={{ scale: 1.15 }}
           >
@@ -660,7 +660,7 @@ const HeroSection: React.FC = () => {
               displacementScale={25}
               mode='shader'
             >
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"></div>
+             <img src="/r-logo.png" alt="R" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
 
@@ -677,7 +677,7 @@ const HeroSection: React.FC = () => {
               repeat: Infinity, 
               ease: "linear"
             }}
-            onMouseEnter={(e) => handleTechHover('Web Development', e)}
+            onMouseEnter={(e) => handleTechHover('SQL', e)}
             onMouseLeave={handleTechLeave}
             whileHover={{ scale: 1.15 }}
           >
@@ -694,7 +694,7 @@ const HeroSection: React.FC = () => {
               mode='shader'
               overLight="auto"
             >
-              <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-cyan-500 rounded-full"></div>
+               <img src="/sql-logo.png" alt="SQL" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
         </div>

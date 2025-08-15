@@ -135,21 +135,19 @@ const projects = [
     category: 'UI Library',
     slug: 'liquid-glass-design',
     fullDescription: 'An innovative design system featuring advanced glassmorphism effects with real-time shader rendering. This project pushes the boundaries of web UI with fluid, liquid-like glass elements that respond to user interaction with physics-based animations and dynamic lighting effects. The system includes a comprehensive component library, shader utilities, and performance optimization tools.',
-    images: ['/project6-1.jpg', '/project6-2.jpg', '/project6-3.jpg'],
     liveUrl: '#',
     githubUrl: '#',
-    features: ['Real-time Shader Effects', 'Physics-based Animation', 'Dynamic Lighting', 'Responsive Design', 'Performance Optimized'],
+    features: ['Real-time Shader Effects', 'Physics-based Animation', 'Dynamic Lighting', 'Responsive Design'],
     challenges: [
       'Implementing complex GLSL shaders for web performance',
       'Creating smooth animations without impacting frame rate',
       'Ensuring cross-browser compatibility for WebGL effects',
-      'Balancing visual quality with mobile device limitations'
+      'Balancing visual quality with mobile device limitations',
+      'Performance still needs improvement especially when rendering a large dimension'
     ],
     outcomes: [
-      '60fps performance on all devices',
+      '>30fps performance',
       '98% browser compatibility',
-      'Featured in top design showcases',
-      'Open source library with 10k+ stars'
     ]
   },
 ];
@@ -213,7 +211,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   };
 
   const liquidGlassProps = useMemo(() => ({
-    elasticity: 0.1,
+    elasticity: 0.05,
     saturation: 120,
     displacementScale: 80,
     blurAmount: 6,

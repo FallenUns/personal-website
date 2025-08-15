@@ -10,6 +10,7 @@ import GooeyBackground from './components/GooeyBackground';
 import HeroSection from './components/HeroSection';
 import ProjectsSection from './components/ProjectsSection';
 import ExperienceSection from './components/ExperienceSection';
+import ExperienceDetail from './components/ExperienceDetail';
 import ProjectDetail from './components/ProjectDetail';
 import Navbar from './components/NavBar';
 import Contact from './components/Contact';
@@ -18,7 +19,7 @@ import FloatingAssistant from './components/FloatingAssistant';
 import MobileComingSoon from './components/MobileComingSoon';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
-import { getCurrentPath, isProjectDetailPage, getProjectSlug } from './utils/router';
+import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug } from './utils/router';
 import './components/performance.css';
 
 // Function to get the background color based on the hour
@@ -57,6 +58,10 @@ const AppContent: React.FC = () => {
   const isProjectDetail = isProjectDetailPage(currentRoute);
   const projectSlug = getProjectSlug(currentRoute);
 
+  // Check if current route is an experience detail page
+  const isExperienceDetail = isExperienceDetailPage(currentRoute);
+  const experienceSlug = getExperienceSlug(currentRoute);
+
   // Register critical resource loaders
   useCriticalResourceLoader();
   useAssetPreloader({
@@ -71,12 +76,12 @@ const AppContent: React.FC = () => {
 
   // Prevent scrolling during loading
   useEffect(() => {
-    if (isLoading || isProjectDetail) {
+    if (isLoading || isProjectDetail || isExperienceDetail) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [isLoading, isProjectDetail]);
+  }, [isLoading, isProjectDetail, isExperienceDetail]);
 
   const [isAuto, setIsAuto] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => {
@@ -260,6 +265,23 @@ const AppContent: React.FC = () => {
             >
               <div className="w-full h-full">
                 <ProjectDetail slug={projectSlug || undefined} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Experience Detail Overlay - Only shows when on experience route */}
+        <AnimatePresence>
+          {isExperienceDetail && (
+            <motion.div
+              className="fixed inset-0 z-[9998] p-8 flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <div className="w-full h-full">
+                <ExperienceDetail slug={experienceSlug || undefined} />
               </div>
             </motion.div>
           )}

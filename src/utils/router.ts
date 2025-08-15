@@ -28,3 +28,14 @@ export const getProjectSlug = (path: string) => {
   }
   return null;
 };
+
+export const isExperienceDetailPage = (path: string) => {
+  return path.startsWith('/experience/') && path !== '/experience/';
+};
+
+export const getExperienceSlug = (path: string) => {
+  if (isExperienceDetailPage(path)) {
+    return path.split('/').pop() || null;
+  }
+  return null;
+};
