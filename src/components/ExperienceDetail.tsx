@@ -98,12 +98,6 @@ const diffMonths = (start: Experience['start'], end?: Experience['end']) => {
   return (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth());
 };
 
-const Tag: React.FC<{ text: string }> = ({ text }) => (
-  <span className="text-xs px-2.5 py-1 bg-white/10 text-white/85 rounded-full backdrop-blur-sm border border-white/10">
-    {text}
-  </span>
-);
-
 interface ExperienceDetailProps {
   slug?: string;
 }

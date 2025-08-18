@@ -230,6 +230,50 @@ const AppContent: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
+              {/* Work in Progress Banner */}
+              <motion.div
+                className="fixed top-0 left-0 right-0 z-[100] bg-gradient-to-r from-orange-500/10 to-yellow-500/10 backdrop-blur-md border-b border-orange-400/20"
+                initial={{ y: -100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 1, ease: "easeOut" }}
+              >
+                <div className="max-w-7xl mx-auto px-4 py-2">
+                  <div className="flex items-center justify-center gap-3 text-sm">
+                    <motion.div
+                      className="w-2 h-2 bg-orange-400 rounded-full"
+                      animate={{ 
+                        opacity: [0.5, 1, 0.5],
+                        scale: [0.8, 1.2, 0.8]
+                      }}
+                      transition={{ 
+                        duration: 2, 
+                        repeat: Infinity, 
+                        ease: "easeInOut" 
+                      }}
+                    />
+                    <span className="text-white/80 font-medium">
+                      🚧 Work in Progress
+                    </span>
+                    <span className="text-white/60 hidden sm:inline">
+                      • Some projects and experience details may not be completely accurate
+                    </span>
+                    <motion.div
+                      className="w-2 h-2 bg-orange-400 rounded-full"
+                      animate={{ 
+                        opacity: [0.5, 1, 0.5],
+                        scale: [0.8, 1.2, 0.8]
+                      }}
+                      transition={{ 
+                        duration: 2, 
+                        repeat: Infinity, 
+                        ease: "easeInOut",
+                        delay: 1
+                      }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
               <GooeyBackground hour={currentTime} />
               
               <Navbar
@@ -241,7 +285,7 @@ const AppContent: React.FC = () => {
                 onToggleAuto={handleToggleAuto}
               />
               
-              <main className="relative z-10">
+              <main className="relative z-10 pt-8">
                 <HeroSection />
                 <ProjectsSection />
                 <ExperienceSection />
