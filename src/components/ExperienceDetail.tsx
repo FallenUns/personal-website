@@ -28,6 +28,129 @@ type Experience = {
 // Experience data - this should match the data from ExperienceSection
 const experiences: Experience[] = [
   {
+    id: 'ios-hackathon-2024',
+    role: 'Hackathon Participant',
+    company: 'RMIT iOS Hackathon',
+    start: { year: 2024, month: 7 },
+    end: { year: 2024, month: 7 },
+    location: 'Melbourne, Victoria, Australia',
+    category: 'Research',
+    skills: [
+      'Swift',
+      'Xcode',
+      'iOS Development',
+      'Mental Health Technology',
+      'Team Collaboration',
+      'Rapid Prototyping',
+      'Healthcare Solutions'
+    ],
+    highlights: [
+      'Participated in RMIT\'s first Apple iOS Hackathon hosted by School of Health and Biomedical Sciences',
+      'Collaborated with Northern Health and Bilue as industry partners over 2 intensive days (July 16-17, 2024)',
+      'Developed "Cliniwatch" app prototype addressing mental health crisis prevention and management',
+      'Worked alongside brilliant teammates Hanan Bsaiso and Yuki Gunawardena from various STEM disciplines',
+      'Focused on solving "How can mental health problems be addressed before they become a crisis?"',
+      'Applied Swift/Xcode skills in Apple iOS ecosystem to create healthcare technology solutions',
+      'Engaged with mentors from Apple, RMIT STEM College, Northern Health, and Bilue throughout the event',
+      'Connected and collaborated with peers from across different STEM disciplines for the first time'
+    ],
+    achievements: [
+      'Team "Cliniwatch" app prototype received special mention for its potential in mental health management',
+      'Successfully built functional prototype addressing real-world healthcare challenges in just 2 days',
+      'Enhanced collaborative problem-solving and rapid development skills under tight deadlines',
+      'Gained valuable experience in healthcare technology intersection and crisis prevention solutions',
+      'Strengthened Swift/Xcode technical capabilities through intensive hands-on development',
+      'Developed cross-functional teamwork skills working with peers from diverse STEM backgrounds'
+    ],
+    fullDescription: 'An incredible experience participating in RMIT\'s inaugural Apple iOS Hackathon, where our team tackled the critical challenge of mental health crisis prevention. Working alongside amazing teammates Hanan Bsaiso and Yuki Gunawardena, we developed "Cliniwatch" - an innovative app prototype that earned special recognition for its potential impact. This intensive 2-day event showcased the power of collaborative innovation in healthcare technology.',
+    responsibilities: [
+      'Collaborated in a cross-disciplinary team to conceptualize and develop the "Cliniwatch" app prototype',
+      'Applied Swift and Xcode development skills to build functional iOS application features',
+      'Participated in rapid prototyping sessions focusing on mental health crisis prevention solutions',
+      'Engaged with industry mentors from Apple, Northern Health, and Bilue for guidance and feedback',
+      'Contributed to team presentations and demo sessions showcasing our healthcare technology solution'
+    ],
+    technologies: [
+      'Swift Programming Language',
+      'Xcode IDE',
+      'iOS SDK',
+      'UI/UX Design Principles',
+      'Healthcare Technology Integration',
+      'Rapid Prototyping Methodologies'
+    ],
+    impact: [
+      'Developed a prototype with real potential for mental health management applications',
+      'Gained recognition from industry professionals and academic mentors',
+      'Enhanced technical skills in iOS development and healthcare technology',
+      'Built valuable professional networks across STEM disciplines and industry partners'
+    ],
+    links: [
+      { label: 'RMIT STEM College', url: 'https://www.rmit.edu.au/about/schools-colleges/science-engineering-health/school-of-science' }
+    ]
+  },
+  {
+    id: 'apple-foundation-2024',
+    role: 'Program Participant',
+    company: 'Apple Foundation Program',
+    start: { year: 2024, month: 2 },
+    end: { year: 2024, month: 2 },
+    location: 'RMIT University, Melbourne',
+    category: 'Research',
+    skills: [
+      'Swift UI',
+      'iOS Development',
+      'Xcode',
+      'Mobile App Prototyping',
+      'User Experience Design',
+      'Team Collaboration',
+      'Presentation Skills'
+    ],
+    highlights: [
+      'Completed comprehensive Apple Foundation Program at RMIT University throughout February 2024',
+      'Designed and built "Chemica" iOS app prototype using Swift and Xcode from concept to completion',
+      'Worked closely with dedicated mentors Steph Worladge and Beck Storer throughout the program',
+      'Received guidance and teaching from John Gallaugher on mobile app development best practices',
+      'Gained hands-on experience with cutting-edge Apple technology and development frameworks',
+      'Developed technical skills in Swift UI, mobile app prototyping, and user experience design',
+      'Participated in prototype presentations, peer reviews, and collaborative development sessions',
+      'Applied innovative thinking and teamwork principles to solve real-world problems through mobile technology'
+    ],
+    achievements: [
+      'Successfully completed Apple Foundation Program with comprehensive technical certification',
+      'Built fully functional "Chemica" app prototype demonstrating end-to-end development skills',
+      'Gained not just technical skills but learned the importance of teamwork and innovative thinking',
+      'Enhanced capabilities in Swift UI, building prototypes, and user interface/experience design',
+      'Developed strong foundation in mobile app development lifecycle and industry best practices',
+      'Built lasting mentorship relationships that continue to inspire professional growth and excellence'
+    ],
+    fullDescription: 'A transformative month-long journey through the Apple Foundation Program at RMIT University, where I gained hands-on experience with cutting-edge technology while solving real-world problems. Under the mentorship of Steph Worladge, Beck Storer, and John Gallaugher, I developed "Chemica" - a comprehensive iOS app prototype that showcased my growing expertise in Swift UI and mobile development.',
+    responsibilities: [
+      'Designed and developed "Chemica" iOS app prototype from initial concept to final implementation',
+      'Participated in comprehensive Swift UI and Xcode training sessions throughout the program',
+      'Collaborated with industry mentors to refine mobile app development skills and best practices',
+      'Engaged in peer review sessions and collaborative problem-solving exercises',
+      'Presented app prototype to mentors and fellow participants for feedback and evaluation'
+    ],
+    technologies: [
+      'Swift Programming Language',
+      'Swift UI Framework',
+      'Xcode Development Environment',
+      'iOS App Architecture',
+      'User Interface Design',
+      'Mobile App Prototyping Tools',
+      'Version Control Systems'
+    ],
+    impact: [
+      'Gained comprehensive foundation in Apple iOS development ecosystem',
+      'Built lasting mentorship relationships with industry professionals',
+      'Developed both technical expertise and essential soft skills in teamwork and innovation',
+      'Created a portfolio-worthy app prototype demonstrating end-to-end development capabilities'
+    ],
+    links: [
+      { label: 'RMIT University', url: 'https://www.rmit.edu.au' }
+    ]
+  },
+  {
     id: 'urban-waste-1',
     role: 'Summer Intern',
     company: 'Urban Waste',
@@ -55,9 +178,6 @@ const experiences: Experience[] = [
       'Improved cross-departmental communication and workflow efficiency',
       'Gained hands-on experience in ERP system design, testing, and optimization'
     ],
-    links: [
-      { label: 'Company Website', url: 'https://urbanwaste.com.au' }
-    ],
     fullDescription: 'During my summer internship at Urban Waste, I had the opportunity to work on a comprehensive ERP system project that would transform how the company managed its operations. This role provided invaluable experience in enterprise software development and cross-functional collaboration in a real-world business environment.',
     responsibilities: [
       'Analyzed current business processes and identified areas for ERP integration',
@@ -80,6 +200,9 @@ const experiences: Experience[] = [
       'Enhanced data integrity and reporting capabilities across the organization',
       'Reduced manual processes and increased automation in daily operations',
       'Established foundation for future system scalability and improvements'
+    ],
+    links: [
+      { label: 'Company Website', url: 'https://urbanwaste.com.au' }
     ]
   }
 ];
@@ -95,7 +218,8 @@ const formatPeriod = (start: Experience['start'], end?: Experience['end']) => {
 const diffMonths = (start: Experience['start'], end?: Experience['end']) => {
   const s = new Date(start.year, start.month-1, 1);
   const e = end ? new Date(end.year, end.month-1, 1) : new Date();
-  return (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth());
+  // Add 1 to make it inclusive of both start and end months
+  return (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth()) + 1;
 };
 
 interface ExperienceDetailProps {
@@ -338,39 +462,24 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                 overLight="auto"
               >
                 <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
-                  {/* Header with close button */}
+                  {/* Header */}
                   <div className="flex items-center justify-between p-6 border-b border-white/10">
-                    <div className="flex items-center space-x-4">
-                      <motion.div
-                        className="w-3 h-3 bg-red-400 rounded-full cursor-pointer"
-                        whileHover={{ scale: 1.2 }}
-                        onClick={handleClose}
-                      />
-                      <motion.div
-                        className="w-3 h-3 bg-yellow-400 rounded-full cursor-pointer"
-                        whileHover={{ scale: 1.2 }}
-                      />
-                      <motion.div
-                        className="w-3 h-3 bg-green-400 rounded-full cursor-pointer"
-                        whileHover={{ scale: 1.2 }}
-                      />
-                    </div>
                     <div className="flex items-center space-x-3">
                       <span className="px-3 py-1.5 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
                         {experience.category}
                       </span>
-                      <motion.button
-                        onClick={handleClose}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </motion.button>
                     </div>
+                    <motion.button
+                      onClick={handleClose}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </motion.button>
                   </div>
 
                   {/* Main content */}

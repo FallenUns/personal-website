@@ -412,39 +412,24 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                 overLight="auto"
               >
                 <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
-                  {/* Header with close button */}
+                  {/* Header */}
                   <div className="flex items-center justify-between p-6 border-b border-white/10">
-                    <div className="flex items-center space-x-4">
-                      <motion.div
-                        className="w-3 h-3 bg-red-400 rounded-full cursor-pointer"
-                        whileHover={{ scale: 1.2 }}
-                        onClick={handleClose}
-                      />
-                      <motion.div
-                        className="w-3 h-3 bg-yellow-400 rounded-full cursor-pointer"
-                        whileHover={{ scale: 1.2 }}
-                      />
-                      <motion.div
-                        className="w-3 h-3 bg-green-400 rounded-full cursor-pointer"
-                        whileHover={{ scale: 1.2 }}
-                      />
-                    </div>
                     <div className="flex items-center space-x-3">
                       <span className="px-3 py-1.5 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
                         {project.category}
                       </span>
-                      <motion.button
-                        onClick={handleClose}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </motion.button>
                     </div>
+                    <motion.button
+                      onClick={handleClose}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </motion.button>
                   </div>
 
                   {/* Main content */}

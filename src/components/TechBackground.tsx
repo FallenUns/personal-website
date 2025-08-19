@@ -86,8 +86,8 @@ const TechBackground: React.FC<TechBackgroundProps> = ({ hour }) => {
 
     const move = () => {
       if (interactiveRef.current) {
-        pos.curX += (pos.tgX - pos.curX) / 20;
-        pos.curY += (pos.tgY - pos.curY) / 20;
+        pos.curX += (pos.tgX - pos.curX) / 8;
+        pos.curY += (pos.tgY - pos.curY) / 8;
         interactiveRef.current.style.transform = `translate3d(${Math.round(
           pos.curX
         )}px, ${Math.round(pos.curY)}px, 0)`;
@@ -98,7 +98,7 @@ const TechBackground: React.FC<TechBackgroundProps> = ({ hour }) => {
     const handleMouseMove = throttle((event: MouseEvent) => {
       pos.tgX = event.clientX;
       pos.tgY = event.clientY;
-    }, 16);
+    }, 8);
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     animationFrameRef.current = requestAnimationFrame(move);

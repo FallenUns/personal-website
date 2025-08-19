@@ -23,6 +23,84 @@ type Experience = {
 
 const experiences: Experience[] = [
   {
+    id: 'ios-hackathon-2024',
+    role: 'Hackathon Participant',
+    company: 'RMIT iOS Hackathon',
+    start: { year: 2024, month: 7 },
+    end: { year: 2024, month: 7 },
+    location: 'Melbourne, Victoria, Australia',
+    category: 'Research',
+    skills: [
+      'Swift',
+      'Xcode',
+      'iOS Development',
+      'Mental Health Technology',
+      'Team Collaboration',
+      'Rapid Prototyping',
+      'Healthcare Solutions'
+    ],
+    highlights: [
+      'Participated in RMIT\'s first Apple iOS Hackathon hosted by School of Health and Biomedical Sciences',
+      'Collaborated with Northern Health and Bilue as industry partners over 2 intensive days (July 16-17, 2024)',
+      'Developed "Cliniwatch" app prototype addressing mental health crisis prevention and management',
+      'Worked alongside brilliant teammates Hanan Bsaiso and Yuki Gunawardena from various STEM disciplines',
+      'Focused on solving "How can mental health problems be addressed before they become a crisis?"',
+      'Applied Swift/Xcode skills in Apple iOS ecosystem to create healthcare technology solutions',
+      'Engaged with mentors from Apple, RMIT STEM College, Northern Health, and Bilue throughout the event',
+      'Connected and collaborated with peers from across different STEM disciplines for the first time'
+    ],
+    achievements: [
+      'Team "Cliniwatch" app prototype received special mention for its potential in mental health management',
+      'Successfully built functional prototype addressing real-world healthcare challenges in just 2 days',
+      'Enhanced collaborative problem-solving and rapid development skills under tight deadlines',
+      'Gained valuable experience in healthcare technology intersection and crisis prevention solutions',
+      'Strengthened Swift/Xcode technical capabilities through intensive hands-on development',
+      'Developed cross-functional teamwork skills working with peers from diverse STEM backgrounds'
+    ],
+    links: [
+      { label: 'RMIT STEM College', url: 'https://www.rmit.edu.au/about/schools-colleges/science-engineering-health/school-of-science' }
+    ]
+  },
+  {
+    id: 'apple-foundation-2024',
+    role: 'Program Participant',
+    company: 'Apple Foundation Program',
+    start: { year: 2024, month: 2 },
+    end: { year: 2024, month: 2 },
+    location: 'RMIT University, Melbourne',
+    category: 'Research',
+    skills: [
+      'Swift UI',
+      'iOS Development',
+      'Xcode',
+      'Mobile App Prototyping',
+      'User Experience Design',
+      'Team Collaboration',
+      'Presentation Skills'
+    ],
+    highlights: [
+      'Completed comprehensive Apple Foundation Program at RMIT University throughout February 2024',
+      'Designed and built "Chemica" iOS app prototype using Swift and Xcode from concept to completion',
+      'Worked closely with dedicated mentors Steph Worladge and Beck Storer throughout the program',
+      'Received guidance and teaching from John Gallaugher on mobile app development best practices',
+      'Gained hands-on experience with cutting-edge Apple technology and development frameworks',
+      'Developed technical skills in Swift UI, mobile app prototyping, and user experience design',
+      'Participated in prototype presentations, peer reviews, and collaborative development sessions',
+      'Applied innovative thinking and teamwork principles to solve real-world problems through mobile technology'
+    ],
+    achievements: [
+      'Successfully completed Apple Foundation Program with comprehensive technical certification',
+      'Built fully functional "Chemica" app prototype demonstrating end-to-end development skills',
+      'Gained not just technical skills but learned the importance of teamwork and innovative thinking',
+      'Enhanced capabilities in Swift UI, building prototypes, and user interface/experience design',
+      'Developed strong foundation in mobile app development lifecycle and industry best practices',
+      'Built lasting mentorship relationships that continue to inspire professional growth and excellence'
+    ],
+    links: [
+      { label: 'RMIT University', url: 'https://www.rmit.edu.au' }
+    ]
+  },
+  {
     id: 'urban-waste-1',
     role: 'Summer Intern',
     company: 'Urban Waste',
@@ -66,7 +144,8 @@ const formatPeriod = (start: Experience['start'], end?: Experience['end']) => {
 const diffMonths = (start: Experience['start'], end?: Experience['end']) => {
   const s = new Date(start.year, start.month-1, 1);
   const e = end ? new Date(end.year, end.month-1, 1) : new Date();
-  return (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth());
+  // Add 1 to make it inclusive of both start and end months
+  return (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth()) + 1;
 };
 
 const Tag: React.FC<{ text: string; index?: number }> = ({ text, index = 0 }) => (
@@ -464,7 +543,7 @@ const ExperienceSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            Professional Experience
+            Experiences
           </motion.h2>
           
           <motion.p

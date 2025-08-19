@@ -22,16 +22,16 @@ import { scrollToSection } from './utils/navigation';
 import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug } from './utils/router';
 import './components/performance.css';
 
-// Function to get the background color based on the hour - matching tech background
+// Function to get the background color based on the hour
 const getLoaderBackgroundColor = (hour: number) => {
   if (hour >= 5 && hour < 8) { // Dawn
-    return 'linear-gradient(135deg, rgb(25, 35, 55), rgb(45, 25, 65))';
+    return 'rgb(139, 75, 48)';
   } else if (hour >= 8 && hour < 17) { // Day
-    return 'linear-gradient(135deg, rgb(15, 25, 45), rgb(25, 35, 55))';
+    return 'rgb(65, 105, 165)';
   } else if (hour >= 17 && hour < 20) { // Dusk
-    return 'linear-gradient(135deg, rgb(20, 20, 40), rgb(40, 20, 60))';
+    return 'rgb(62, 29, 93)';
   } else { // Night
-    return 'linear-gradient(135deg, rgb(8, 15, 30), rgb(15, 8, 35))';
+    return 'rgb(0, 17, 82)';
   }
 };
 
@@ -290,8 +290,8 @@ const AppContent: React.FC = () => {
               
               <main className="relative z-10 pt-8">
                 <HeroSection />
-                <ProjectsSection />
                 <ExperienceSection />
+                <ProjectsSection />
                 <Contact />
               </main>
               
@@ -343,7 +343,7 @@ const AppContent: React.FC = () => {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            style={{ background: loaderBackgroundColor }}
+            style={{ backgroundColor: loaderBackgroundColor }}
           >
             <CircularLoader />
           </motion.div>

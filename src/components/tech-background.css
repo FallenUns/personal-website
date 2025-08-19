@@ -303,19 +303,21 @@
 /* Interactive glow element */
 .interactive-glow {
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: 250px;
+  height: 250px;
   background: radial-gradient(circle, 
-    rgba(var(--accent), 0.15) 0%, 
-    rgba(var(--accent), 0.05) 50%, 
+    rgba(var(--accent), 0.25) 0%, 
+    rgba(var(--accent), 0.12) 40%, 
+    rgba(var(--accent), 0.06) 70%, 
     transparent 100%
   );
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
-  top: -100px;
-  left: -100px;
+  top: -125px;
+  left: -125px;
   mix-blend-mode: screen;
+  filter: blur(1px);
 }
 
 /* Responsive adjustments */
@@ -329,10 +331,10 @@
   }
   
   .interactive-glow {
-    width: 150px;
-    height: 150px;
-    top: -75px;
-    left: -75px;
+    width: 180px;
+    height: 180px;
+    top: -90px;
+    left: -90px;
   }
 }
 
@@ -347,10 +349,10 @@
   }
   
   .interactive-glow {
-    width: 100px;
-    height: 100px;
-    top: -50px;
-    left: -50px;
+    width: 120px;
+    height: 120px;
+    top: -60px;
+    left: -60px;
   }
 }
 
