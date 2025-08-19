@@ -65,12 +65,15 @@ const AppContent: React.FC = () => {
   // Register critical resource loaders
   useCriticalResourceLoader();
   useAssetPreloader({
-       images: [
+    images: [
       '/vite.svg',
       '/react-logo.png',
       '/python-logo.png',
       '/js-logo.png',
-      '/tensorflow-logo.png'
+      '/tensorflow-logo.png',
+      '/Subject.png',
+      '/r-logo.png',
+      '/sql-logo.png'
     ],
   });
 
