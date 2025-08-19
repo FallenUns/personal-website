@@ -1,0 +1,378 @@
+/* src/components/tech-background.css */
+
+/* Keyframes for tech elements */
+@keyframes float {
+  0%, 100% {
+    transform: translate(var(--x), var(--y)) rotate(var(--rotation)) translateZ(0);
+  }
+  25% {
+    transform: translate(calc(var(--x) + 20px), calc(var(--y) - 15px)) rotate(calc(var(--rotation) + 90deg)) translateZ(0);
+  }
+  50% {
+    transform: translate(calc(var(--x) + 10px), calc(var(--y) + 20px)) rotate(calc(var(--rotation) + 180deg)) translateZ(0);
+  }
+  75% {
+    transform: translate(calc(var(--x) - 15px), calc(var(--y) + 10px)) rotate(calc(var(--rotation) + 270deg)) translateZ(0);
+  }
+}
+
+@keyframes floatAround {
+  0% {
+    transform: translate(0, 0) translateZ(0);
+  }
+  25% {
+    transform: translate(var(--drift-x), calc(var(--drift-y) * -0.5)) translateZ(0);
+  }
+  50% {
+    transform: translate(calc(var(--drift-x) * 0.7), var(--drift-y)) translateZ(0);
+  }
+  75% {
+    transform: translate(calc(var(--drift-x) * -0.5), calc(var(--drift-y) * 0.8)) translateZ(0);
+  }
+  100% {
+    transform: translate(0, 0) translateZ(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes drift {
+  0%, 100% {
+    transform: translate(0, 0) translateZ(0);
+  }
+  25% {
+    transform: translate(var(--drift), calc(var(--drift) * -0.5)) translateZ(0);
+  }
+  50% {
+    transform: translate(calc(var(--drift) * 0.5), var(--drift)) translateZ(0);
+  }
+  75% {
+    transform: translate(calc(var(--drift) * -0.5), calc(var(--drift) * 0.5)) translateZ(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(var(--accent), 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(var(--accent), 0.6);
+  }
+}
+
+@keyframes gridShift {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(40px, 40px);
+  }
+}
+
+/* Main background container */
+.tech-bg {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-bg1), var(--color-bg2));
+  top: 0;
+  left: 0;
+  z-index: 0;
+  will-change: auto;
+  contain: layout style paint;
+}
+
+/* Grid pattern overlay */
+.grid-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120%;
+  height: 120%;
+  background-image: 
+    linear-gradient(rgba(var(--grid), 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--grid), 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: gridShift 60s linear infinite;
+  opacity: 0.5;
+  will-change: transform;
+}
+
+/* Tech elements container */
+.tech-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  contain: layout style paint;
+}
+
+/* Data Science & Software Development Elements */
+
+/* Function symbols */
+.function-symbol {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  will-change: transform, opacity;
+  animation: float var(--duration) ease-in-out infinite var(--delay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.function-symbol::before {
+  color: rgba(var(--secondary), 0.8);
+  font-size: calc(var(--size) * 0.6);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(var(--secondary), 0.5);
+}
+
+.function-symbol.lambda::before {
+  content: 'λ';
+}
+
+.function-symbol.fx::before {
+  content: 'f(x)';
+  font-size: calc(var(--size) * 0.4);
+}
+
+.function-symbol.def::before {
+  content: 'def';
+  font-size: calc(var(--size) * 0.35);
+}
+
+/* Green floating brackets */
+.code-bracket {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  will-change: transform, opacity;
+  animation: floatAround var(--duration) ease-in-out infinite var(--delay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.code-bracket::before {
+  content: '<';
+  color: #00ff88;
+  font-size: calc(var(--size) * 0.8);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-shadow: 0 0 15px #00ff88;
+  opacity: 0.7;
+}
+
+.code-bracket.right::before {
+  content: '>';
+}
+
+/* Neural network nodes with different orientations */
+.neural-node {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  background: radial-gradient(circle, 
+    rgba(var(--accent), 0.9) 0%, 
+    rgba(var(--accent), 0.5) 50%, 
+    transparent 100%
+  );
+  border-radius: 50%;
+  border: 2px solid rgba(var(--accent), 0.7);
+  will-change: transform, opacity;
+  animation: pulse var(--pulse) ease-in-out infinite var(--delay);
+  z-index: 2;
+}
+
+/* Connection lines for different orientations */
+.neural-node.right::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(var(--accent), 0.6), 
+    rgba(var(--accent), 0.3), 
+    transparent
+  );
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.neural-node.down::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 2px;
+  height: 60px;
+  background: linear-gradient(180deg, 
+    rgba(var(--accent), 0.6), 
+    rgba(var(--accent), 0.3), 
+    transparent
+  );
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.neural-node.left::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(270deg, 
+    rgba(var(--accent), 0.6), 
+    rgba(var(--accent), 0.3), 
+    transparent
+  );
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.neural-node.up::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 2px;
+  height: 60px;
+  background: linear-gradient(0deg, 
+    rgba(var(--accent), 0.6), 
+    rgba(var(--accent), 0.3), 
+    transparent
+  );
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.neural-node.diagonal-right::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 100%;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(135deg, 
+    rgba(var(--accent), 0.6), 
+    rgba(var(--accent), 0.3), 
+    transparent
+  );
+  transform: rotate(45deg);
+  transform-origin: 0 0;
+  z-index: 1;
+}
+
+.neural-node.diagonal-left::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 100%;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(225deg, 
+    rgba(var(--accent), 0.6), 
+    rgba(var(--accent), 0.3), 
+    transparent
+  );
+  transform: rotate(-45deg);
+  transform-origin: 100% 0;
+  z-index: 1;
+}
+
+/* Interactive glow element */
+.interactive-glow {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, 
+    rgba(var(--accent), 0.15) 0%, 
+    rgba(var(--accent), 0.05) 50%, 
+    transparent 100%
+  );
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+  top: -100px;
+  left: -100px;
+  mix-blend-mode: screen;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid-pattern {
+    background-size: 30px 30px;
+  }
+  
+  .tech-hexagon {
+    animation-duration: calc(var(--duration) * 1.5);
+  }
+  
+  .interactive-glow {
+    width: 150px;
+    height: 150px;
+    top: -75px;
+    left: -75px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-pattern {
+    background-size: 20px 20px;
+    opacity: 0.3;
+  }
+  
+  .code-bracket::before {
+    font-size: calc(var(--size) * 0.6);
+  }
+  
+  .interactive-glow {
+    width: 100px;
+    height: 100px;
+    top: -50px;
+    left: -50px;
+  }
+}
+
+/* Performance optimizations */
+.function-symbol,
+.code-bracket,
+.neural-node {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Reduce animations on devices that prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .function-symbol,
+  .code-bracket,
+  .neural-node,
+  .grid-pattern {
+    animation-duration: 100s;
+    animation-timing-function: linear;
+  }
+  
+  .interactive-glow {
+    animation: none;
+  }
+}

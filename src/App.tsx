@@ -6,7 +6,7 @@ import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { TimeProvider } from './contexts/TimeContext';
 import { useAssetPreloader, useCriticalResourceLoader } from './hooks/useAssetPreloader';
 import { useMobileDetection } from './utils/mobileDetection';
-import GooeyBackground from './components/GooeyBackground';
+import TechBackground from './components/TechBackground';
 import HeroSection from './components/HeroSection';
 import ProjectsSection from './components/ProjectsSection';
 import ExperienceSection from './components/ExperienceSection';
@@ -22,16 +22,16 @@ import { scrollToSection } from './utils/navigation';
 import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug } from './utils/router';
 import './components/performance.css';
 
-// Function to get the background color based on the hour
+// Function to get the background color based on the hour - matching tech background
 const getLoaderBackgroundColor = (hour: number) => {
   if (hour >= 5 && hour < 8) { // Dawn
-    return 'rgb(139, 75, 48)';
+    return 'linear-gradient(135deg, rgb(25, 35, 55), rgb(45, 25, 65))';
   } else if (hour >= 8 && hour < 17) { // Day
-    return 'rgb(65, 105, 165)';
+    return 'linear-gradient(135deg, rgb(15, 25, 45), rgb(25, 35, 55))';
   } else if (hour >= 17 && hour < 20) { // Dusk
-    return 'rgb(62, 29, 93)';
+    return 'linear-gradient(135deg, rgb(20, 20, 40), rgb(40, 20, 60))';
   } else { // Night
-    return 'rgb(0, 17, 82)';
+    return 'linear-gradient(135deg, rgb(8, 15, 30), rgb(15, 8, 35))';
   }
 };
 
@@ -277,7 +277,7 @@ const AppContent: React.FC = () => {
                 </div>
               </motion.div>
 
-              <GooeyBackground hour={currentTime} />
+              <TechBackground hour={currentTime} />
               
               <Navbar
                 time={currentTime}
@@ -343,7 +343,7 @@ const AppContent: React.FC = () => {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            style={{ backgroundColor: loaderBackgroundColor }}
+            style={{ background: loaderBackgroundColor }}
           >
             <CircularLoader />
           </motion.div>
