@@ -77,18 +77,18 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
 DeviceMockup.displayName = 'DeviceMockup';
 
 const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>, totalCards: number) => {
-    const [layout, setLayout] = useState({
-        visibleCards: 2,
-        cardWidth: 500,
-        viewportWidth: 1200
-    });
+  const [layout, setLayout] = useState({
+    visibleCards: 2,
+    cardWidth: 500,
+    viewportWidth: 1200
+  });
 
-    useEffect(() => {
-        const updateLayout = () => {
-            if (!containerRef.current) return;
+  useEffect(() => {
+    const updateLayout = () => {
+      if (!containerRef.current) return;
 
-            // All calculations are now based on the container's width for consistency
-            const containerWidth = containerRef.current.clientWidth;
+      // Base all calcs on the container width
+      const containerWidth = containerRef.current.clientWidth;
 
       const buttonWidth = 56; // each side nav button
       const viewportMargin = 32; // horizontal padding inside the container
@@ -98,7 +98,7 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
       const viewportWidthRaw = containerWidth - (buttonWidth * 2) - viewportMargin;
       const viewportWidth = Math.max(280, viewportWidthRaw);
 
-      // Determine how many cards can fit (up to 3) given a minimum card width
+      // How many cards can fit (up to 3) given a minimum card width
       const maxCards = Math.max(1, Math.min(3, totalCards || 1));
       const minCard = containerWidth < 640 ? 300 : containerWidth < 1024 ? 340 : 360;
 
@@ -111,20 +111,34 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
         }
       }
 
-      // Compute card width to fill the viewport evenly
-      const cardWidth = Math.floor((viewportWidth - (computedVisible - 1) * cardGap) / computedVisible);
+      // Compute base card width to fill the viewport evenly
+      const baseCardWidth = Math.floor((viewportWidth - (computedVisible - 1) * cardGap) / computedVisible);
 
-      setLayout({ visibleCards: computedVisible, cardWidth, viewportWidth });
-        };
+      // NEW: clamp single-card width and shrink viewport to match
+      const SINGLE_CARD_MAX = 520;  // <- tweak to taste
+      const SINGLE_CARD_MIN = minCard; // keep your existing min size
+      const finalCardWidth =
+        computedVisible === 1
+          ? Math.max(SINGLE_CARD_MIN, Math.min(SINGLE_CARD_MAX, baseCardWidth))
+          : baseCardWidth;
 
-        updateLayout();
-        window.addEventListener('resize', updateLayout);
-        return () => window.removeEventListener('resize', updateLayout);
-    }, [containerRef]);
+      const finalViewportWidth =
+        computedVisible === 1 ? finalCardWidth : viewportWidth;
+
+      setLayout({
+        visibleCards: computedVisible,
+        cardWidth: finalCardWidth,
+        viewportWidth: finalViewportWidth
+      });
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, [containerRef, totalCards]);
 
   return layout;
 };
-
 
 // Project data with detailed information for project pages
 const projects = [
@@ -420,7 +434,6 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
   );
 });
 ProjectCard.displayName = 'ProjectCard';
-
 
 const ProjectsSection: React.FC = () => {
   useComponentLoader('ProjectsSection');

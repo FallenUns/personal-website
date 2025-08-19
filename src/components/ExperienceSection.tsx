@@ -192,7 +192,7 @@ const TimelineProgress: React.FC<{ progress: number }> = ({ progress }) => {
   return (
     <div className="absolute left-1/2 -translate-x-1/2 top-0 w-1 h-full bg-white/15">
       <motion.div
-        className="w-full bg-gradient-to-b from-orange-400 to-blue-500"
+        className="w-full bg-green-500"
         initial={{ height: 0 }}
         whileInView={{ height: `${progress}%` }}
         viewport={{ once: true }}
