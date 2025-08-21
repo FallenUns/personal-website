@@ -4,6 +4,7 @@ import LiquidGlass from './LiquidGlass';
 import { useComponentLoader } from '../contexts/LoadingContext';
 import { navigateTo } from '../utils/router';
 import './performance.css';
+import { projects} from '../data/projects';
 
 // Device mockup component (no changes)
 const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => {
@@ -140,106 +141,6 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
   return layout;
 };
 
-// Project data with detailed information for project pages
-const projects = [
-  { 
-    id: 1, 
-    title: 'UI/UX Design', 
-    description: 'Modern mobile app interface design with intuitive user experience', 
-    mockupType: 'ui-ux', 
-    technologies: ['Figma', 'Adobe XD', 'Principle'], 
-    category: 'Design',
-    slug: 'ui-ux-design',
-    fullDescription: 'A comprehensive mobile app design project focusing on user-centered design principles and modern interface patterns.',
-    images: ['/project1-1.jpg', '/project1-2.jpg', '/project1-3.jpg'],
-    liveUrl: '#',
-    githubUrl: '#',
-    features: ['Responsive Design', 'User Research', 'Prototyping', 'Usability Testing']
-  },
-  { 
-    id: 2, 
-    title: 'Web Design', 
-    description: 'Responsive web application with modern design principles', 
-    mockupType: 'web', 
-    technologies: ['React', 'TypeScript', 'Tailwind'], 
-    category: 'Development',
-    slug: 'web-design',
-    fullDescription: 'A modern web application built with React and TypeScript, featuring responsive design and optimal performance.',
-    images: ['/project2-1.jpg', '/project2-2.jpg', '/project2-3.jpg'],
-    liveUrl: '#',
-    githubUrl: '#',
-    features: ['React Framework', 'TypeScript', 'Responsive Design', 'Performance Optimization']
-  },
-  { 
-    id: 3, 
-    title: 'Landing Page', 
-    description: 'High-converting landing page with optimized user flow', 
-    mockupType: 'landing', 
-    technologies: ['Next.js', 'Framer Motion', 'CSS3'], 
-    category: 'Development',
-    slug: 'landing-page',
-    fullDescription: 'A high-converting landing page designed to maximize user engagement and conversion rates.',
-    images: ['/project3-1.jpg', '/project3-2.jpg', '/project3-3.jpg'],
-    liveUrl: '#',
-    githubUrl: '#',
-    features: ['Next.js Framework', 'Smooth Animations', 'SEO Optimized', 'Conversion Focused']
-  },
-  { 
-    id: 4, 
-    title: 'Mobile App', 
-    description: 'Cross-platform mobile application with native performance', 
-    mockupType: 'ui-ux', 
-    technologies: ['React Native', 'Expo', 'Firebase'], 
-    category: 'Mobile',
-    slug: 'mobile-app',
-    fullDescription: 'A cross-platform mobile application delivering native performance across iOS and Android platforms.',
-    images: ['/project4-1.jpg', '/project4-2.jpg', '/project4-3.jpg'],
-    liveUrl: '#',
-    githubUrl: '#',
-    features: ['Cross-platform', 'Native Performance', 'Real-time Data', 'Push Notifications']
-  },
-  { 
-    id: 5, 
-    title: 'E-commerce', 
-    description: 'Full-featured e-commerce platform with payment integration', 
-    mockupType: 'web', 
-    technologies: ['Next.js', 'Stripe', 'MongoDB'], 
-    category: 'Development',
-    slug: 'ecommerce-platform',
-    fullDescription: 'A complete e-commerce solution with secure payment processing and inventory management.',
-    images: ['/project5-1.jpg', '/project5-2.jpg', '/project5-3.jpg'],
-    liveUrl: '#',
-    githubUrl: '#',
-    features: ['Payment Integration', 'Inventory Management', 'User Authentication', 'Admin Dashboard']
-  },
-  { 
-    id: 6, 
-    title: 'Liquid Glass Design System', 
-    description: 'Advanced glassmorphism UI library with fluid animations and shader effects', 
-    mockupType: 'web', 
-    technologies: ['React', 'GLSL Shaders', 'WebGL', 'Framer Motion'], 
-    category: 'UI Library',
-    slug: 'liquid-glass-design',
-    fullDescription: 'An innovative design system featuring advanced glassmorphism effects with real-time shader rendering. This project pushes the boundaries of web UI with fluid, liquid-like glass elements that respond to user interaction with physics-based animations and dynamic lighting effects.',
-    images: ['/project6-1.jpg', '/project6-2.jpg', '/project6-3.jpg'],
-    liveUrl: '#',
-    githubUrl: '#',
-    features: ['Real-time Shader Effects', 'Physics-based Animation', 'Dynamic Lighting', 'Responsive Design', 'Performance Optimized'],
-    challenges: [
-      'Implementing complex GLSL shaders for web performance',
-      'Creating smooth animations without impacting frame rate',
-      'Ensuring cross-browser compatibility for WebGL effects',
-      'Balancing visual quality with mobile device limitations'
-    ],
-    outcomes: [
-      '60fps performance on all devices',
-      '98% browser compatibility',
-      'Featured in top design showcases',
-      'Open source library with 10k+ stars'
-    ]
-  },
-];
-
 // ProjectCard component with navigation functionality
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
   const cardHeight = 380; // Reduced from 480px to 380px
@@ -267,8 +168,9 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
   };
 
   // Handle external link clicks (prevent navigation to project detail)
-  const handleExternalLinkClick = (e: React.MouseEvent, url: string) => {
-    e.stopPropagation(); // Prevent card click from firing
+  const handleExternalLinkClick = (e: React.MouseEvent, url?: string) => {
+    e.stopPropagation();
+    if (!url || url === '#') return; // type-safe guard
     window.open(url, '_blank');
   };
 
