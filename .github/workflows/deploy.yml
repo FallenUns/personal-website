@@ -1,0 +1,60 @@
+name: build-and-deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Add the private SSH key so rsync/ssh can connect
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      # Make the release directory named by the commit SHA
+      - name: Create release dir on server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} \
+            "mkdir -p ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}"
+
+      # Upload the build
+      - name: Upload dist via rsync
+        run: |
+          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" dist/ \
+            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/
+
+      # Atomic swap: point /var/www/current at new release, then make html -> current
+      - name: Activate release (zero downtime)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
+            ln -sfn ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }} ${{ vars.DEPLOY_PATH }}/current && \
+            sudo rm -rf ${{ vars.DEPLOY_PATH }}/html && \
+            ln -sfn ${{ vars.DEPLOY_PATH }}/current ${{ vars.DEPLOY_PATH }}/html \
+          "
+
+      # Keep the last 5 releases; delete older to save space
+      - name: Purge old releases
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
+            ls -1dt ${{ vars.DEPLOY_PATH }}/releases/* | tail -n +6 | xargs -r rm -rf \
+          "
