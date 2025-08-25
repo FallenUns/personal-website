@@ -48,7 +48,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
             ln -sfn ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }} ${{ vars.DEPLOY_PATH }}/current && \
-            sudo rm -rf ${{ vars.DEPLOY_PATH }}/html && \
+            rm -rf ${{ vars.DEPLOY_PATH }}/html && \
             ln -sfn ${{ vars.DEPLOY_PATH }}/current ${{ vars.DEPLOY_PATH }}/html \
           "
 
