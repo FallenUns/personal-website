@@ -209,7 +209,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                   <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
                   <span className="text-white/90">{achievement}</span>
                 </motion.div>
-              )) || <p className="text-white/70">Professional growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
+              )) || <p className="text-white/70">Growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
             </div>
           )}
         </div>

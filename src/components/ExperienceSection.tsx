@@ -390,7 +390,7 @@ const ExperienceSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            Professional Experience Timeline
+            Experience Timeline
           </motion.h2>
           
           <motion.p
@@ -400,7 +400,7 @@ const ExperienceSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            A chronological journey through data science and full‑stack development.
+            My journey through data science and full‑stack development.
           </motion.p>
 
           {/* Experience metrics */}
