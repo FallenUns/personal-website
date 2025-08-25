@@ -68,6 +68,7 @@ const HeroSection: React.FC = () => {
             saturation={120}
             displacementScale={15}
             mode='shader'
+            overLight={false}
           >
             <span className="text-white text-xs font-medium px-2 py-1 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
               {hoveredTech}
@@ -148,6 +149,7 @@ const HeroSection: React.FC = () => {
                 saturation={150}
                 displacementScale={35}
                 mode='shader'
+                overLight={false}
                 onClick={() => scrollToSection('projects')}
             >
                 <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
@@ -171,6 +173,7 @@ const HeroSection: React.FC = () => {
                 saturation={150}
                 displacementScale={35}
                 mode='shader'
+                overLight={false}
                 onClick={() => {
                   try {
                     window.open('/resume.pdf', '_blank');
@@ -227,6 +230,7 @@ const HeroSection: React.FC = () => {
             blurAmount={8}
             saturation={150}
             displacementScale={80}
+            overLight={false}
             mode='shader'
           >
             <img
@@ -269,6 +273,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={20}
+              overLight={false}
               mode='shader'
             >
               <img src="/react-logo.png" alt="React" className="w-6 h-6" />
@@ -303,6 +308,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={20}
+              overLight={false}
               mode='shader'
             >
               <img src="/python-logo.png" alt="Python" className="w-6 h-6" />
@@ -337,6 +343,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={20}
+              overLight={false}
               mode='shader'
             >
               <img src="/js-logo.png" alt="JavaScript" className="w-6 h-6" />
@@ -371,6 +378,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={20}
+              overLight={false}
               mode='shader'
             >
               <img src="/tensorflow-logo.png" alt="TensorFlow" className="w-6 h-6" />
@@ -405,6 +413,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={18}
+              overLight={false}
               mode='shader'
             >
               <img src="/r-logo.png" alt="R" className="w-6 h-6" />
@@ -438,6 +447,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={18}
+              overLight={false}
               mode='shader'
             >
               <img src="/sql-logo.png" alt="SQL" className="w-6 h-6" />
@@ -479,6 +489,7 @@ const HeroSection: React.FC = () => {
             blurAmount={8}
             saturation={150}
             displacementScale={120}
+            overLight={false}
             mode='shader'
           >
             <img
@@ -521,6 +532,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={20}
+              overLight={false}
               mode='shader'
             >
               <img src="/react-logo.png" alt="React" className="w-9 h-9" />
@@ -555,6 +567,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={25}
+              overLight={false}
               mode='shader'
             >
               <img src="/python-logo.png" alt="Python" className="w-9 h-9" />
@@ -589,6 +602,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={25}
+              overLight={false}
               mode='shader'
             >
               <img src="/tensorflow-logo.png" alt="TensorFlow" className="w-9 h-9" />
@@ -623,6 +637,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={25}
+              overLight={false}
               mode='shader'
             >
               <img src="/js-logo.png" alt="JavaScript" className="w-9 h-9" />
@@ -658,6 +673,7 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={25}
+              overLight={false}
               mode='shader'
             >
              <img src="/r-logo.png" alt="R" className="w-9 h-9" />
@@ -691,8 +707,8 @@ const HeroSection: React.FC = () => {
               blurAmount={6}
               saturation={140}
               displacementScale={25}
+              overLight={false}
               mode='shader'
-              overLight="auto"
             >
                <img src="/sql-logo.png" alt="SQL" className="w-9 h-9" />
             </LiquidGlass>

@@ -52,6 +52,7 @@ const AssistantIcon: React.FC<AssistantIconProps> = ({ onClick, isThinking = fal
         saturation={150}
         displacementScale={50}
         mode='shader'
+        overLight={false}
       >
         <AssistantOrb isHovered={isHovered} isThinking={isThinking} />
       </LiquidGlass>

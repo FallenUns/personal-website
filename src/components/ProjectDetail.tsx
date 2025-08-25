@@ -98,7 +98,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                   displacementScale={150}
                   blurAmount={12}
                   mode="shader"
-                  overLight="auto"
+                  overLight={false}
                 >
                   <div className="w-full h-full bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-orange-500/20 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center relative overflow-hidden">
                     <motion.div
@@ -127,7 +127,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                   displacementScale={100}
                   blurAmount={8}
                   mode="polar"
-                  overLight="auto"
+                  overLight={false}
                 >
                   <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
                     <motion.div
@@ -260,7 +260,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                 positioning="relative"
                 style={{ borderRadius: '24px', width: '100%', height: '100%' }}
                 {...liquidGlassProps}
-                overLight="auto"
+                overLight={false}
               >
                 <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
                   {/* Header */}
@@ -327,7 +327,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 displacementScale={120}
                                 blurAmount={10}
                                 mode="shader"
-                                overLight="auto"
+                                overLight={false}
                               >
                                 <div className="w-full h-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
                                   <motion.div
@@ -346,8 +346,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 saturation={180}
                                 displacementScale={80}
                                 blurAmount={6}
-                                mode="polar"
-                                overLight="auto"
+                                mode="shader"
+                                overLight={false}
                               >
                                 <div className="w-full h-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
                                   <motion.div
@@ -366,8 +366,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 saturation={140}
                                 displacementScale={100}
                                 blurAmount={8}
-                                mode="prominent"
-                                overLight="auto"
+                                mode="shader"
+                                overLight={false}
                               >
                                 <div className="w-full h-full bg-gradient-to-br from-green-500/30 to-emerald-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
                                   <motion.div
@@ -386,8 +386,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 saturation={200}
                                 displacementScale={90}
                                 blurAmount={5}
-                                mode="standard"
-                                overLight="auto"
+                                mode="shader"
+                                overLight={false}
                               >
                                 <div className="w-full h-full bg-gradient-to-br from-orange-500/30 to-red-500/30 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center">
                                   <motion.div
@@ -409,8 +409,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               saturation={140}
                               displacementScale={60}
                               blurAmount={4}
-                              mode="prominent"
-                              overLight="auto"
+                              mode="shader"
+                              overLight={false}
                             >
                               <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center overflow-hidden">
                                 <div className="text-center text-white/60">

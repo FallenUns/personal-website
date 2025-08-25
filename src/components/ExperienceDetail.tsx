@@ -209,7 +209,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                   <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
                   <span className="text-white/90">{achievement}</span>
                 </motion.div>
-              )) || <p className="text-white/70">Professional growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
+              )) || <p className="text-white/70">Growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
             </div>
           )}
         </div>
@@ -242,7 +242,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                 positioning="relative"
                 style={{ borderRadius: '24px', width: '100%', height: '100%' }}
                 {...liquidGlassProps}
-                overLight="auto"
+                overLight={false}
               >
                 <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
                   {/* Header */}
@@ -325,7 +325,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                             displacementScale={60}
                             blurAmount={4}
                             mode="prominent"
-                            overLight="auto"
+                            overLight={false}
                           >
                             <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex flex-col items-center justify-center p-6">
                               <motion.div

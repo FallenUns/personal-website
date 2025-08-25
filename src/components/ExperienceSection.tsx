@@ -157,6 +157,7 @@ const ExperienceItem: React.FC<{
           displacementScale={isHovered ? 80 : 60}
           blurAmount={isHovered ? 8 : 6}
           mode='shader'
+          overLight={false}
         >
           <div className="p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
             {/* Animated background pattern */}
@@ -392,7 +393,7 @@ const ExperienceSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            My journey through data science and full-Thestack development from graduation.
+            My journey through data science and full‑stack development.
           </motion.p>
 
           {/* Experience metrics */}
