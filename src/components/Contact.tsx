@@ -81,6 +81,7 @@ const Contact: React.FC = () => {
                 onClick={() => {
                   window.location.href = 'mailto:patrickadrianus04@gmail.com';
                 }}
+                overLight={false}
               >
                 <span className="px-6 py-3 text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center justify-center h-full">
                   Email Me
@@ -102,6 +103,7 @@ const Contact: React.FC = () => {
                 onClick={() => {
                   window.open('https://linkedin.com/in/patrick-adrianus', '_blank');
                 }}
+                overLight={false}
               >
                 <span className="px-6 py-3 text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center justify-center h-full">
                   LinkedIn

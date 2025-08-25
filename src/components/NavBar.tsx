@@ -69,6 +69,7 @@ const SkyControllerDropdown: React.FC<SkyControllerDropdownProps> = memo((props)
                 aberrationIntensity={1}
                 displacementScale={90}
                 blurAmount={3}
+                overLight={false}
                 mode='shader'
               >
                 <div className="p-6 w-full text-white">
@@ -310,6 +311,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                 aberrationIntensity={isNavbarPressed ? 2 : 1}
                 displacementScale={isNavbarPressed ? 60 : 25}
                 blurAmount={isNavbarPressed ? 8 : 5}
+                overLight={false}
                 mode='shader'
               />
             </motion.div>

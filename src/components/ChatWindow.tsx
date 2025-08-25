@@ -144,10 +144,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               saturation={110}
               displacementScale={150}
               mode='shader'
-            >              <div
+              overLight={false}
+            >              
+            <div
                 ref={scrollContainerRef}
-                className="scroll-container p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full scrollbar-transparent chat-container" 
-                style={{maxHeight: '300px', textAlign: 'left'}}
+                className="scroll-container p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full scrollbar-transparent chat-container"
+                style={{ maxHeight: '300px', textAlign: 'left' }}
               >
                 <div ref={responseTextRef} className="chat-content chat-text-left" style={{textAlign: 'left', width: '100%'}}>
                   <div className="chat-text-left" style={{textAlign: 'left', width: '100%'}}>
@@ -192,6 +194,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               saturation={120}
               displacementScale={150}
               mode='shader'
+              overLight={false}
             >
               <input
                 ref={inputRef}
