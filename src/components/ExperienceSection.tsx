@@ -81,43 +81,51 @@ const ExperienceItem: React.FC<{
   ];
 
   return (
-    <div className="relative flex-shrink-0 w-80 lg:w-96 pb-12" ref={cardRef}>
-  {/* Timeline connector line - horizontal at bottom */}
-  {index > 0 && (
-    <motion.div
-      className="absolute -left-6 bottom-6 w-6 h-[2px] bg-gradient-to-r from-orange-400/70 to-blue-500/70"
-      initial={{ scaleX: 0, opacity: 0 }}
-      animate={isInView ? { scaleX: 1, opacity: 1 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      style={{ transformOrigin: 'left' }}
-    />
-  )}
+    <div className="relative flex-shrink-0 w-80 lg:w-96" ref={cardRef}>
+      {/* Timeline connector line - horizontal at bottom */}
+      {index > 0 && (
+        <motion.div
+          className="absolute -left-6 bottom-6 w-6 h-px bg-gradient-to-r from-orange-400/60 to-blue-500/60"
+          initial={{ scaleX: 0, opacity: 0 }}
+          animate={isInView ? { scaleX: 1, opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: index * 0.1 }}
+          style={{ transformOrigin: 'left' }}
+        />
+      )}
 
-  {/* Timeline dot BELOW the card */}
-  <motion.div
-    className="absolute left-1/2 -translate-x-1/2 bottom-4 z-20"
-    initial={{ scale: 0, opacity: 0 }}
-    animate={isInView ? { scale: 1, opacity: 1 } : {}}
-    transition={{ duration: 0.4, delay: index * 0.1 }}
-  >
-    <motion.div
-      className="relative w-4 h-4 bg-orange-400 rounded-full shadow-lg"
-      animate={isInView ? {
-        boxShadow: isHovered
-          ? ["0 0 0 0 rgba(251,146,60,.4)", "0 0 0 15px rgba(251,146,60,0)"]
-          : "0 0 0 0 rgba(251,146,60,.4)"
-      } : {}}
-      transition={{
-        boxShadow: { duration: isHovered ? 1.5 : 0.3, repeat: isHovered ? Infinity : 0, ease: "easeOut" }
-      }}
-    >
+      {/* Enhanced Timeline dot with pulse effect - centered at bottom */}
       <motion.div
-        className="absolute inset-0 rounded-full border-2 border-orange-300"
-        animate={isInView && isHovered ? { scale: [1, 1.8, 1], opacity: [0.8, 0, 0.8] } : {}}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-      />
-    </motion.div>
-  </motion.div>
+        className="absolute left-1/2 -translate-x-1/2 bottom-4 z-10"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={isInView ? { scale: 1, opacity: 1 } : {}}
+        transition={{ duration: 0.4, delay: index * 0.1 }}
+      >
+        <motion.div
+          className="relative w-4 h-4 bg-orange-400 rounded-full shadow-lg"
+          animate={isInView ? {
+            boxShadow: isHovered 
+              ? ["0 0 0 0 rgba(251, 146, 60, 0.4)", "0 0 0 15px rgba(251, 146, 60, 0)"]
+              : "0 0 0 0 rgba(251, 146, 60, 0.4)"
+          } : {}}
+          transition={{ 
+            boxShadow: { 
+              duration: isHovered ? 1.5 : 0.3, 
+              repeat: isHovered ? Infinity : 0,
+              ease: "easeOut"
+            }
+          }}
+        >
+          {/* Animated ring around the dot */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-orange-300"
+            animate={isInView && isHovered ? {
+              scale: [1, 1.8, 1],
+              opacity: [0.8, 0, 0.8]
+            } : {}}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </motion.div>
+      </motion.div>
 
       {/* Card */}
       <motion.div
@@ -157,7 +165,6 @@ const ExperienceItem: React.FC<{
           displacementScale={isHovered ? 80 : 60}
           blurAmount={isHovered ? 8 : 6}
           mode='shader'
-          overLight={false}
         >
           <div className="p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
             {/* Animated background pattern */}
@@ -393,7 +400,7 @@ const ExperienceSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            My journey through data science and full‑stack development.
+            A chronologicaljourney through data science and full‑stack development.
           </motion.p>
 
           {/* Experience metrics */}
@@ -438,27 +445,29 @@ const ExperienceSection: React.FC = () => {
 
         {/* Horizontal Timeline */}
         <div className="relative">
-          {/* Timeline base line - moved to bottom */}
+          {/* Timeline base line - positioned at bottom of cards */}
           <motion.div
-            className="absolute bottom-6 left-0 right-0 h-[2px] z-0 pointer-events-none
-                      bg-gradient-to-r from-transparent via-orange-400/70 to-transparent"
+            className="absolute bottom-6 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-400/60 to-transparent"
             initial={{ scaleX: 0, opacity: 0 }}
             whileInView={{ scaleX: 1, opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 1.0, ease: "easeOut", delay: 0.3 }}
+            transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
             style={{ transformOrigin: 'left' }}
           />
 
           {/* Horizontal scrollable timeline container */}
           <motion.div
-              ref={scrollContainerRef}
-              className="overflow-x-auto pb-16 pt-8 relative z-10"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(251,146,60,.5) transparent' }}
-            >
+            ref={scrollContainerRef}
+            className="overflow-x-auto pb-12 pt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(251, 146, 60, 0.5) transparent'
+            }}
+          >
             {/* Timeline items container */}
             <div className="flex gap-6 w-max pl-8 pr-8">
               {sorted.map((exp, idx) => (
@@ -485,7 +494,7 @@ const ExperienceSection: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Timeline end indicator - moved to bottom */}
+          {/* Timeline end indicator - positioned at bottom */}
           <motion.div
             className="absolute right-8 bottom-6 w-3 h-3 bg-blue-500 rounded-full shadow-lg"
             initial={{ scale: 0, opacity: 0 }}
