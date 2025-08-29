@@ -60,7 +60,7 @@ const ExperienceCard: React.FC<{
       ? `${(durationMonths / 12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs`
       : `${durationMonths} mos`);
 
-  // Enhanced transforms for smooth right-to-left flow
+  // Enhanced transforms based on card position
   const getTransforms = () => {
     switch (position) {
       case 'active':
@@ -74,30 +74,30 @@ const ExperienceCard: React.FC<{
         };
       case 'prev':
         return {
-          x: -400, // Increased distance for better separation
-          scale: 0.7,
-          opacity: 0.4,
-          rotateY: 15,
+          x: -200,
+          scale: 0.75,
+          opacity: 0.3,
+          rotateY: 45,
           zIndex: 5,
-          filter: 'blur(1px)'
+          filter: 'blur(2px)'
         };
       case 'next':
         return {
-          x: 400, // Increased distance for better separation
-          scale: 0.7,
-          opacity: 0.4,
-          rotateY: -15,
+          x: 200,
+          scale: 0.75,
+          opacity: 0.3,
+          rotateY: -45,
           zIndex: 5,
-          filter: 'blur(1px)'
+          filter: 'blur(2px)'
         };
       default:
         return {
-          x: 800, // Cards hidden off-screen to the right
+          x: 0,
           scale: 0.5,
           opacity: 0,
           rotateY: 0,
           zIndex: 1,
-          filter: 'blur(2px)'
+          filter: 'blur(4px)'
         };
     }
   };
@@ -107,7 +107,6 @@ const ExperienceCard: React.FC<{
   return (
     <motion.div
       className="absolute inset-0 w-full flex items-center justify-center"
-      initial={false} // Prevent initial animation on mount
       animate={{ 
         x: transforms.x, 
         scale: transforms.scale, 
@@ -116,15 +115,15 @@ const ExperienceCard: React.FC<{
         filter: transforms.filter
       }}
       transition={{ 
-        duration: 1.0, 
+        duration: 0.8, 
         ease: [0.25, 0.46, 0.45, 0.94],
         type: "spring",
-        damping: 30,
+        damping: 20,
         stiffness: 100
       }}
       style={{ 
         transformStyle: 'preserve-3d', 
-        perspective: '1200px',
+        perspective: '1000px',
         zIndex: transforms.zIndex
       }}
     >
@@ -309,13 +308,13 @@ const ExperienceSection: React.FC = () => {
     });
   }, []);
 
-  // Improved scroll progress tracking
+  // Fixed scroll progress tracking with better offset
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ['start start', 'end end'],
+    offset: ['start start', 'end end'], // Track full section scroll
   });
 
-  // Better scroll-to-index mapping with smoother transitions
+  // Use useTransform for smoother scroll-to-index mapping
   const activeIndexFloat = useTransform(
     scrollYProgress,
     [0, 1],
@@ -324,30 +323,19 @@ const ExperienceSection: React.FC = () => {
 
   const [activeIndex, setActiveIndex] = React.useState(0);
 
-  // Enhanced scroll progress mapping with debouncing
+  // Better scroll progress mapping
   React.useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
     const unsubscribe = activeIndexFloat.on('change', (latest) => {
-      // Clear previous timeout
-      clearTimeout(timeoutId);
+      const newIndex = Math.round(latest);
+      const clampedIndex = Math.max(0, Math.min(newIndex, sorted.length - 1));
       
-      // Debounce the index update for smoother transitions
-      timeoutId = setTimeout(() => {
-        const newIndex = Math.round(latest);
-        const clampedIndex = Math.max(0, Math.min(newIndex, sorted.length - 1));
-        
-        if (clampedIndex !== activeIndex) {
-          setActiveIndex(clampedIndex);
-          console.log('📊 Scroll progress:', latest.toFixed(3), '→ Active index:', clampedIndex);
-        }
-      }, 30); // Reduced debounce for more responsive feel
+      if (clampedIndex !== activeIndex) {
+        setActiveIndex(clampedIndex);
+        console.log('📊 Scroll progress:', latest.toFixed(3), '→ Active index:', clampedIndex);
+      }
     });
 
-    return () => {
-      clearTimeout(timeoutId);
-      unsubscribe();
-    };
+    return unsubscribe;
   }, [activeIndexFloat, activeIndex, sorted.length]);
 
   // Totals for header
@@ -378,8 +366,8 @@ const ExperienceSection: React.FC = () => {
       id="experience"
       className="relative w-full"
       ref={sectionRef}
-      // Increased scroll height for better control
-      style={{ height: `${Math.max(6, sorted.length * 3) * 100}vh` }}
+      // Ensure enough scroll height - more generous multiplier
+      style={{ height: `${Math.max(4, sorted.length * 2) * 100}vh` }}
     >
       {/* Sticky viewport */}
       <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden px-4">
@@ -475,10 +463,10 @@ const ExperienceSection: React.FC = () => {
           ))}
         </div>
 
-        {/* Cards stage with improved positioning */}
+        {/* Cards stage */}
         <div className="relative flex-1 w-full flex items-center justify-center overflow-visible" style={{ maxHeight: '480px' }}>
           <div className="relative w-[650px] h-[480px] overflow-visible">
-            {/* Render all cards with improved positioning logic */}
+            {/* Render all cards with enhanced positioning logic */}
             {sorted.map((exp, i) => {
               const isActive = i === activeIndex;
               const isPrev = i === activeIndex - 1;
@@ -492,7 +480,6 @@ const ExperienceSection: React.FC = () => {
               } else if (isNext) {
                 position = 'next';
               } else {
-                // Cards further away are hidden off-screen to the right
                 position = 'hidden';
               }
 
