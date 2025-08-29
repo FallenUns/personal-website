@@ -165,6 +165,7 @@ const ExperienceItem: React.FC<{
           displacementScale={isHovered ? 80 : 60}
           blurAmount={isHovered ? 8 : 6}
           mode='shader'
+          overLight={false}
         >
           <div className="p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
             {/* Animated background pattern */}

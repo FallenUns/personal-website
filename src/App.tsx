@@ -258,7 +258,7 @@ const AppContent: React.FC = () => {
                       🚧 Work in Progress
                     </span>
                     <span className="text-white/60 hidden sm:inline">
-                      • Some projects and experience details are not fully represented
+                      • Some projects and experience details may not be completely accurate
                     </span>
                     <motion.div
                       className="w-2 h-2 bg-orange-400 rounded-full"

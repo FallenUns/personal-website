@@ -159,6 +159,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
     displacementScale: isLiquidGlassProject ? 140 : 110,
     blurAmount: isLiquidGlassProject ? 12 : 8,
     mode: isLiquidGlassProject ? 'shader' as const : 'shader' as const,
+    overLight: false,
   }), [cardWidth, cardHeight, isLiquidGlassProject]);
 
   // Handle project card click - navigate to project detail page
@@ -396,7 +397,7 @@ const ProjectsSection: React.FC = () => {
               aria-label="Previous project"
           >
               <div className="relative">
-                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
+                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' overLight={false} />
                   <div className="absolute inset-0 flex items-center justify-center">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white"><path d="M15 18L9 12L15 6" /></svg>
                   </div>
@@ -435,7 +436,7 @@ const ProjectsSection: React.FC = () => {
               aria-label="Next project"
           >
               <div className="relative">
-                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
+                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' overLight={false} />
                   <div className="absolute inset-0 flex items-center justify-center">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white"><path d="M9 18L15 12L9 6" /></svg>
                   </div>
@@ -480,6 +481,7 @@ const ProjectsSection: React.FC = () => {
             displacementScale={150}
             blurAmount={8}
             mode="shader"
+            overLight={false}
           >
             <span className="text-white text-base font-semibold [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
               Page {currentPage + 1} of {totalPages} • {totalCards} Projects
