@@ -138,12 +138,11 @@ const ExperienceCard: React.FC<{
           positioning="relative"
           style={{ borderRadius: '18px', width: '650px', height: '480px' }}
           elasticity={0.15}
-          saturation={isActive ? 180 : 150}
-          aberrationIntensity={isActive ? 1.5 : 1.2}
-          displacementScale={isActive ? 80 : 60}
-          blurAmount={isActive ? 8 : 6}
-          mode="shader"
-          overLight={false}
+          saturation={isHovered ? 180 : 150}
+          aberrationIntensity={isHovered ? 1.5 : 1.2}
+          displacementScale={isHovered ? 80 : 60}
+          blurAmount={isHovered ? 8 : 6}
+          mode='shader'
         >
           <div className="p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
             {/* Header */}
