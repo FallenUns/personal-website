@@ -159,7 +159,7 @@ export const projects: Project[] = [
   },
   {
     id: 7,
-    title: 'Software Engineering Project — LLM Privacy Violation Detection',
+    title: 'LLM Privacy Violation Detection',
     description: 'End-to-end system to flag potential privacy violations in Stack Overflow posts using LLMs + heuristics',
     mockupType: 'paper',
     technologies: [
@@ -204,6 +204,46 @@ export const projects: Project[] = [
       'GPT-4o CoT recall up to 45.9% with lower precision',
       'High overall accuracy (≥84%) but not meaningful due to imbalance',
       'Result: viable as human-in-the-loop prefilter; not ready for full automation'
+    ]
+  },
+    {
+    id: 8,
+    title: 'Interactive Portfolio Website',
+    description: 'A personal portfolio website featuring a dynamic, time-based background, a "liquid glass" UI, and an integrated AI assistant.',
+    mockupType: 'web',
+    technologies: [
+      'React',
+      'TypeScript',
+      'Framer Motion',
+      'Three.js',
+      'GLSL Shaders',
+      'Vite',
+      'Tailwind CSS'
+    ],
+    category: 'Development',
+    slug: 'interactive-portfolio',
+    fullDescription:
+      'This is a personal portfolio website designed to showcase my skills and projects in an engaging and interactive way. The site features a unique "liquid glass" aesthetic, a dynamic background that changes with the time of day, and a conversational AI assistant to help users navigate the site and learn more about my work. The entire project is built with a modern tech stack, focusing on performance and user experience.',
+    liveUrl: 'patrickadrianus.com',
+    githubUrl: '#',
+    features: [
+      'Dynamic, time-of-day based background visuals',
+      'Custom "Liquid Glass" UI components with shader effects',
+      'Integrated AI assistant for conversational navigation and Q&A',
+      'Responsive design for desktop and tablet devices',
+      'Performance-optimized animations with Framer Motion and Three.js',
+      'Component-based architecture with React and TypeScript'
+    ],
+    challenges: [
+      'Optimizing WebGL and shader performance across different devices',
+      'Creating a seamless and intuitive conversational UI for the AI assistant',
+      'Ensuring a consistent and high-quality user experience with complex, overlapping animations',
+      'Managing application state for the dynamic background and AI assistant'
+    ],
+    outcomes: [
+      'A unique and memorable portfolio that effectively showcases my skills',
+      'A reusable "Liquid Glass" component for future projects',
+      'A deeper understanding of WebGL, GLSL shaders, and performance optimization techniques'
     ]
   }
 ];

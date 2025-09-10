@@ -173,7 +173,7 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
 
 // ProjectCard component with navigation functionality
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
-  const cardHeight = 380; // Reduced from 480px to 380px
+  const cardHeight = 380; // Increased from 340px to 380px for more height
   const [isHovered, setIsHovered] = useState(false);
   
   // Special liquid glass configuration for the liquid glass project
@@ -195,13 +195,6 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
   const handleProjectClick = () => {
     // Navigate using the router utility
     navigateTo(`/projects/${project.slug}`);
-  };
-
-  // Handle external link clicks (prevent navigation to project detail)
-  const handleExternalLinkClick = (e: React.MouseEvent, url?: string) => {
-    e.stopPropagation();
-    if (!url || url === '#') return; // type-safe guard
-    window.open(url, '_blank');
   };
 
   return (
@@ -235,14 +228,16 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400/20 to-transparent rounded-full blur-xl"></div>
               </div>
             )}
-            <div className="relative z-10 mb-4">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-xl font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">{project.title}</h3>
-                <span className="px-3 py-1.5 text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">{project.category}</span>
+            <div className="relative z-10 mb-3">
+              <div className="flex items-start justify-between mb-2 h-12 gap-3">
+                <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight pr-2">{project.title}</h3>
+                <span className="px-2 py-1 text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0">{project.category}</span>
               </div>
-              <p className="text-sm text-white/70 leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{project.description}</p>
+              <div className="h-12 overflow-hidden mb-3">
+                <p className="text-xs text-white/70 leading-[1.3] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{project.description}</p>
+              </div>
             </div>
-            <div className="flex-1 flex items-center justify-center mb-4 relative">
+            <div className="flex-1 flex items-center justify-center mb-3 relative min-h-[128px]">
               {isLiquidGlassProject ? (
                 // Special liquid glass showcase
                 <div className="relative w-full h-32 grid grid-cols-3 gap-2">
@@ -288,35 +283,12 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
             </div>
             <div className="relative z-10 flex items-end justify-between">
               <div className="flex-1">
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-1.5 mb-2">
                   {project.technologies.slice(0, 3).map((tech, i) => (
-                    <motion.span key={i} className="text-xs px-3 py-1.5 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative" whileHover={{ scale: 1.05 }}>
+                    <motion.span key={i} className="text-xs px-2 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative" whileHover={{ scale: 1.05 }}>
                       {tech}
                     </motion.span>
                   ))}
-                </div>
-                {/* Quick action buttons */}
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {project.liveUrl && project.liveUrl !== '#' && (
-                    <motion.button
-                      onClick={(e) => handleExternalLinkClick(e, project.liveUrl)}
-                      className="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded border border-green-500/30 hover:bg-green-500/30 transition-colors"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Live Demo
-                    </motion.button>
-                  )}
-                  {project.githubUrl && project.githubUrl !== '#' && (
-                    <motion.button
-                      onClick={(e) => handleExternalLinkClick(e, project.githubUrl)}
-                      className="text-xs px-2 py-1 bg-gray-500/20 text-gray-300 rounded border border-gray-500/30 hover:bg-gray-500/30 transition-colors"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      GitHub
-                    </motion.button>
-                  )}
                 </div>
               </div>
               <motion.div 
@@ -415,34 +387,34 @@ const ProjectsSection: React.FC = () => {
         </motion.div>
         
         {/* Attach the ref to this container */}
-        <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8">
+        <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8 px-4">
           {/* Left Navigation Button */}
           <motion.button
               onClick={handlePrevious}
               disabled={isPrevDisabled}
-              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 md:mx-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+              className={`z-30 flex-shrink-0 transition-opacity duration-300 mr-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
               whileHover={{ scale: isPrevDisabled ? 1 : 1.05 }}
               whileTap={{ scale: isPrevDisabled ? 1 : 0.95 }}
               aria-label="Previous project"
           >
-              <div className="relative">
+              <div className="relative w-14 h-14 flex items-center justify-center">
                   <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
                   <div className="absolute inset-0 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white"><path d="M15 18L9 12L15 6" /></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M15 18L9 12L15 6" /></svg>
                   </div>
               </div>
           </motion.button>
 
           {/* Cards Viewport */}
-          <div className="flex justify-center items-center" style={{ width: `${viewportWidth}px`}}>
+          <div className="flex justify-center items-center flex-1" style={{ maxWidth: `${viewportWidth}px`}}>
               <motion.div 
                   key={currentPage}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="flex gap-4 md:gap-6 justify-center items-start"
-                  style={{ minHeight: '420px' }}
+                  className="flex gap-4 md:gap-6 justify-center items-center"
+                  style={{ minHeight: '460px' }}
               >
                   {visibleProjects.map((project, index) => (
                       <ProjectCard
@@ -459,15 +431,15 @@ const ProjectsSection: React.FC = () => {
           <motion.button
               onClick={handleNext}
               disabled={isNextDisabled}
-              className={`z-20 flex-shrink-0 transition-opacity duration-300 mx-2 md:mx-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+              className={`z-30 flex-shrink-0 transition-opacity duration-300 ml-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
               whileHover={{ scale: isNextDisabled ? 1 : 1.05 }}
               whileTap={{ scale: isNextDisabled ? 1 : 0.95 }}
               aria-label="Next project"
           >
-              <div className="relative">
+              <div className="relative w-14 h-14 flex items-center justify-center">
                   <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
                   <div className="absolute inset-0 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white"><path d="M9 18L15 12L9 6" /></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M9 18L15 12L9 6" /></svg>
                   </div>
               </div>
           </motion.button>
