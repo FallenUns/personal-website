@@ -1,7 +1,7 @@
 // src/data/projects.ts
 
-export type ProjectCategory = 'Design' | 'Development' | 'Mobile' | 'UI Library';
-export type MockupType = 'ui-ux' | 'web' | 'landing';
+export type ProjectCategory = 'Design' | 'Development' | 'Mobile' | 'UI Library' | 'Research';
+export type MockupType = 'ui-ux' | 'web' | 'landing' | 'paper';
 
 export type Project = {
   id: number;
@@ -156,6 +156,55 @@ export const projects: Project[] = [
       'Performance still needs improvement especially when rendering a large dimension'
     ],
     outcomes: ['>30fps performance', '≈98% browser compatibility']
+  },
+  {
+    id: 7,
+    title: 'Software Engineering Project — LLM Privacy Violation Detection',
+    description: 'End-to-end system to flag potential privacy violations in Stack Overflow posts using LLMs + heuristics',
+    mockupType: 'paper',
+    technologies: [
+      'Python',
+      'FastAPI',
+      'scikit-learn',
+      'PyTorch',
+      'spaCy',
+      'Hugging Face',
+      'SQLite',
+      'Docker',
+      'PostgreSQL',
+      'React',
+      'TypeScript',
+      'Tailwind',
+      'Framer Motion'
+    ],
+    category: 'Research',
+    slug: 'software-engineering-project',
+    fullDescription:
+      'Research + production-minded pipeline that collects Stack Overflow posts (2020–2024), filters candidates with rule-based heuristics, and evaluates LLMs (GPT-4o, DeepSeek) across zero-shot, few-shot, and chain-of-thought prompts. Includes manual annotation, metrics, and a small API/dashboard for triage.',
+    images: ['/se-project-1.jpg', '/se-project-2.jpg', '/se-project-3.jpg'],
+    liveUrl: '#',
+    githubUrl: 'https://github.com/FallenUns/Detecting-Privacy-Violation-using-LLM',
+    features: [
+      '1.5M+ post extraction into SQLite + CSV',
+      'Heuristic filter (≈90+ privacy keywords) to build candidate set',
+      'Manual annotation set (2,000 rows) for ground truth',
+      'LLM eval: GPT-4o & DeepSeek with zero/few/CoT prompts',
+      'Metrics pipeline (precision/recall/F1/accuracy) + confusion matrices',
+      'Dashboard + API for reviewer triage'
+    ],
+    challenges: [
+      'High class imbalance (~7.3% positive) impacts accuracy interpretation',
+      'False positives from generic “privacy/security” language',
+      'Distinguishing placeholders vs real secrets (e.g., keys, IPs, repos)',
+      'NLI-based filtering produced excessive false positives → pivoted to rules',
+      'Runtime/cost trade-offs across prompt types and providers'
+    ],
+    outcomes: [
+      'Best F1: 32.7% (DeepSeek, few-shot); recall 46.6%',
+      'GPT-4o CoT recall up to 45.9% with lower precision',
+      'High overall accuracy (≥84%) but not meaningful due to imbalance',
+      'Result: viable as human-in-the-loop prefilter; not ready for full automation'
+    ]
   }
 ];
 

@@ -53,6 +53,36 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
       </div>
     );
   }
+
+  if (type === 'paper') {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className={`w-18 h-20 ${color} rounded border border-white/40 relative overflow-hidden shadow-lg`}>
+          {/* Paper header with title area */}
+          <div className="absolute top-1 left-1 right-1 h-2 bg-white/40 rounded-sm"></div>
+          <div className="absolute top-4 left-1 right-1 h-1 bg-white/25 rounded-sm"></div>
+          
+          {/* Abstract/content lines */}
+          <div className="absolute top-6 left-1 right-1 space-y-0.5">
+            <div className="h-0.5 bg-orange-400/60 rounded w-full"></div>
+            <div className="h-0.5 bg-white/30 rounded w-5/6"></div>
+            <div className="h-0.5 bg-white/30 rounded w-4/5"></div>
+            <div className="h-0.5 bg-white/30 rounded w-full"></div>
+            <div className="h-0.5 bg-white/30 rounded w-3/4"></div>
+          </div>
+          
+          {/* Chart/graph representation */}
+          <div className="absolute bottom-3 left-1 right-1 h-6 bg-gradient-to-t from-orange-400/40 to-orange-300/20 rounded-sm flex items-end justify-center space-x-0.5">
+            <div className="w-1 h-2 bg-orange-500/70 rounded-sm"></div>
+            <div className="w-1 h-4 bg-orange-500/70 rounded-sm"></div>
+            <div className="w-1 h-3 bg-orange-500/70 rounded-sm"></div>
+            <div className="w-1 h-5 bg-orange-500/70 rounded-sm"></div>
+            <div className="w-1 h-2 bg-orange-500/70 rounded-sm"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="flex space-x-1 items-center">
