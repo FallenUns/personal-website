@@ -428,7 +428,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                           )}
                         </motion.div>
                       </div>
-
                       {/* Action buttons */}
                       <div className="flex gap-3 mt-6">
                         {project.liveUrl && project.liveUrl !== '#' && (
@@ -443,7 +442,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                         )}
                         {project.githubUrl && project.githubUrl !== '#' && (
                           <motion.button
-                            className="flex-1 px-4 py-3 bg-gradient-to-r from-gray-500/20 to-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:bg-gradient-to-r hover:from-gray-500/30 hover:to-gray-600/30 transition-all"
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-violet-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:bg-gradient-to-r hover:from-purple-500/30 hover:to-violet-600/30 transition-all"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => window.open(project.githubUrl, '_blank')}
