@@ -39,3 +39,7 @@ export const getExperienceSlug = (path: string) => {
   }
   return null;
 };
+
+export const isBirthdayPage = (path: string) => {
+  return path === '/birthday' || window.location.hostname === 'birthday.patrickadrianus.com';
+};

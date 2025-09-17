@@ -12,6 +12,7 @@ import ProjectsSection from './components/ProjectsSection';
 import ExperienceSection from './components/ExperienceSection';
 import ExperienceDetail from './components/ExperienceDetail';
 import ProjectDetail from './components/ProjectDetail';
+import BirthdayPage from './components/BirthdayPage';
 import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
@@ -19,7 +20,7 @@ import FloatingAssistant from './components/FloatingAssistant';
 import MobileComingSoon from './components/MobileComingSoon';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
-import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug } from './utils/router';
+import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug, isBirthdayPage } from './utils/router';
 import './components/performance.css';
 
 // Function to get the background color based on the hour
@@ -62,6 +63,9 @@ const AppContent: React.FC = () => {
   const isExperienceDetail = isExperienceDetailPage(currentRoute);
   const experienceSlug = getExperienceSlug(currentRoute);
 
+  // Check if current route is the birthday page
+  const isBirthday = isBirthdayPage(currentRoute);
+
   // Register critical resource loaders
   useCriticalResourceLoader();
   useAssetPreloader({
@@ -79,12 +83,12 @@ const AppContent: React.FC = () => {
 
   // Prevent scrolling during loading
   useEffect(() => {
-    if (isLoading || isProjectDetail || isExperienceDetail) {
+    if (isLoading || isProjectDetail || isExperienceDetail || isBirthday) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [isLoading, isProjectDetail, isExperienceDetail]);
+  }, [isLoading, isProjectDetail, isExperienceDetail, isBirthday]);
 
   const [isAuto, setIsAuto] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => {
@@ -258,7 +262,7 @@ const AppContent: React.FC = () => {
                       🚧 Work in Progress
                     </span>
                     <span className="text-white/60 hidden sm:inline">
-                      • Some projects and experience details are not fully represented
+                      • Chatbots, projects and experience details are not fully completed yet.
                     </span>
                     <motion.div
                       className="w-2 h-2 bg-orange-400 rounded-full"
@@ -330,6 +334,21 @@ const AppContent: React.FC = () => {
               <div className="w-full h-full">
                 <ExperienceDetail slug={experienceSlug || undefined} />
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Birthday Page - Replaces entire content */}
+        <AnimatePresence>
+          {isBirthday && (
+            <motion.div
+              className="fixed inset-0 z-[9999]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <BirthdayPage />
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,19 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { navigateTo } from '../utils/router';
 
 const Logo: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const clickTimeoutRef = useRef<number | null>(null);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+  const handleClick = () => {
+    // Clear existing timeout
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    const newClickCount = clickCount + 1;
+    setClickCount(newClickCount);
+
+    // Secret birthday trigger: 5 clicks within 3 seconds
+    if (newClickCount >= 5) {
+      // Trigger birthday page
+      navigateTo('/birthday');
+      setClickCount(0);
+      return;
+    }
+
+    // Normal behavior: scroll to top on single click
+    if (newClickCount === 1) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // Reset click count after 3 seconds
+    clickTimeoutRef.current = setTimeout(() => {
+      setClickCount(0);
+    }, 3000);
   };
 
   return (
     <motion.button
-      onClick={scrollToTop}
+      onClick={handleClick}
       className="relative w-12 h-12 flex items-center justify-center cursor-pointer bg-transparent border-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
