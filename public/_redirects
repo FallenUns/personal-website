@@ -1,5 +1,8 @@
 # Birthday subdomain redirect
 https://birthday.patrickadrianus.com/* https://patrickadrianus.com/birthday 301!
 
+# SPA routing for birthday page
+/birthday /index.html 200
+
 # Catch-all SPA routing
 /*    /index.html   200
