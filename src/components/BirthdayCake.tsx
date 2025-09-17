@@ -85,12 +85,12 @@ const BirthdayCake: React.FC<BirthdayCakeProps> = ({ onCandlesBlown, audioEnable
       
       // Look for patterns typical of blowing sounds
       // Check for sustained audio above threshold (lowered threshold)
-      const threshold = 25; // Lowered from 50 to be more sensitive
+      const threshold = 70; // Lowered from 50 to be more sensitive
       
       // Also check for sudden increase in volume (wind-like sound)
       const volumeIncrease = average - lastAverage;
       
-      if (average > threshold || volumeIncrease > 15) {
+      if (average > threshold || volumeIncrease > 25) {
         console.log(`Blow detected! Average: ${average}, Increase: ${volumeIncrease}`);
         blowDetected = true;
         blowOutNextCandle();

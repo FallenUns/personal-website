@@ -191,28 +191,41 @@ const BirthdayPage: React.FC = () => {
           transition={{ duration: 1.2, ease: "backOut", delay: 0.3 }}
         >
           <motion.h1 
-            className="text-6xl md:text-8xl font-bold mb-4 relative"
-            style={{
-              background: 'linear-gradient(45deg, #FFD700, #FF69B4, #00CED1, #FF6347, #9370DB)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundSize: '300% 300%',
-            }}
-            animate={{
-              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            className="text-6xl md:text-8xl font-bold mb-4 relative text-white"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
           >
-            Happy Birthday!
-            <motion.div
-              className="absolute -inset-4 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 rounded-3xl blur-xl"
+            <motion.span
+              className="relative inline-block"
               animate={{
-                scale: [1, 1.1, 1],
-                opacity: [0.3, 0.6, 0.3],
+                textShadow: [
+                  '0 0 20px #FFD700, 0 0 30px #FF69B4, 0 0 40px #00CED1',
+                  '0 0 20px #FF6347, 0 0 30px #9370DB, 0 0 40px #32CD32',
+                  '0 0 20px #FF1493, 0 0 30px #00BFFF, 0 0 40px #FFD700',
+                  '0 0 20px #FFD700, 0 0 30px #FF69B4, 0 0 40px #00CED1'
+                ]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              Happy Birthday!
+            </motion.span>
+            
+            {/* Colorful glow effect behind text */}
+            <motion.div
+              className="absolute inset-0 -z-10"
+              style={{
+                background: 'linear-gradient(45deg, #FFD700, #FF69B4, #00CED1, #FF6347, #9370DB, #32CD32)',
+                backgroundSize: '300% 300%',
+                filter: 'blur(20px)',
+                opacity: 0.6,
+              }}
+              animate={{
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
               }}
               transition={{
                 duration: 3,
@@ -220,6 +233,42 @@ const BirthdayPage: React.FC = () => {
                 ease: "easeInOut",
               }}
             />
+            
+            {/* Additional sparkle effects */}
+            <motion.div
+              className="absolute -inset-8 pointer-events-none"
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.4, 0.8, 0.4],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
+            >
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-2 h-2 bg-white rounded-full"
+                  style={{
+                    left: `${20 + i * 15}%`,
+                    top: `${10 + (i % 2) * 80}%`,
+                  }}
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0, 1, 0],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    delay: i * 0.3,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+            </motion.div>
           </motion.h1>
           
           <motion.div
