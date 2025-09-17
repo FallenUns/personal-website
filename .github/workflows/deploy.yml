@@ -43,6 +43,12 @@ jobs:
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" dist/ \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/
 
+      # Upload nginx configuration
+      - name: Upload nginx config
+        run: |
+          rsync -az -e "ssh -o StrictHostKeyChecking=no" nginx.conf \
+            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/nginx.conf
+
       # Atomic swap: point /var/www/current at new release, then make html -> current
       - name: Activate release (zero downtime)
         run: |
