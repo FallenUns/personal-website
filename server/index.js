@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+require('dotenv').config(); // Load environment variables
 const app = express();
 
 // Middleware

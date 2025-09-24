@@ -1,0 +1,15 @@
+# Add these to your .gitignore file to keep environment variables secure
+
+# Environment variables - NEVER commit these
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+
+# Backup files
+*.env.backup
+.env.*
+
+# Local server data
+server/data/

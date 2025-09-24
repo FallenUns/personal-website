@@ -49,6 +49,9 @@ else
 fi
 
 echo ""
+echo "🔧 Next step: Set up secure environment variables"
+echo "   Run: ./secure-env-setup.sh"
+echo ""
 echo "🔧 Manual steps if needed:"
 echo "1. Update SSL certificate paths in $NGINX_SITES_AVAILABLE/$SITE_NAME"
 echo "2. Ensure your SSL certificates are properly installed"
