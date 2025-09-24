@@ -152,7 +152,25 @@ export const FeedbackViewer: React.FC<FeedbackViewerProps> = ({ isOpen, onClose 
                   </h3>
                 </div>
                 <div className="overflow-y-auto h-full p-4 space-y-3">
-                  {feedback.length === 0 ? (
+                  {loading ? (
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                      <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                      <p>Loading feedback...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="text-center text-red-500 py-8">
+                      <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p>{error}</p>
+                      <button 
+                        onClick={loadFeedbackData}
+                        className="mt-2 px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  ) : feedback.length === 0 ? (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                       <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
