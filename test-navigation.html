@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        button { 
+            margin: 10px; 
+            padding: 12px 24px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        .test-results { 
+            margin-top: 30px; 
+            padding: 20px; 
+            background: #f8f9fa; 
+            border-radius: 6px; 
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        h1 { color: #333; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Chatbot Navigation Test</h1>
+    <p>Test the chatbot navigation commands that should work in your website:</p>
+    
+    <div>
+        <button onclick="testCommand('projects')">Test: "projects"</button>
+        <button onclick="testCommand('about')">Test: "about"</button>
+        <button onclick="testCommand('experience')">Test: "experience"</button>
+        <button onclick="testCommand('contact')">Test: "contact"</button>
+    </div>
+    
+    <div>
+        <button onclick="testCommand('go to projects')">Test: "go to projects"</button>
+        <button onclick="testCommand('show about')">Test: "show about"</button>
+        <button onclick="testCommand('navigate to experience')">Test: "navigate to experience"</button>
+        <button onclick="testCommand('contact section')">Test: "contact section"</button>
+    </div>
+
+    <div>
+        <button onclick="testCommand('set time to 20:30')">Test: "set time to 20:30"</button>
+        <button onclick="testCommand('sunset')">Test: "sunset"</button>
+        <button onclick="testCommand('dark mode')">Test: "dark mode"</button>
+        <button onclick="testCommand('toggle auto sync')">Test: "toggle auto sync"</button>
+    </div>
+
+    <div id="results" class="test-results">
+Ready to test commands...
+    </div>
+
+    <script>
+        // Simulate the control service parsing logic
+        function parseNaturalLanguage(input) {
+            const lowerInput = input.toLowerCase().trim();
+
+            // Priority 1: Exact single-word navigation commands
+            const exactMatches = {
+                'projects': 'projects',
+                'project': 'projects', 
+                'about': 'about',
+                'experience': 'experience',
+                'contact': 'contact',
+                'contacts': 'contact'
+            };
+
+            if (exactMatches[lowerInput]) {
+                return { type: 'navigateToSection', value: exactMatches[lowerInput] };
+            }
+
+            // Priority 2: Time setting patterns
+            const timePatterns = [
+                /set time to (\d+)[:.](\d+)/,
+                /set time to (\d+(?:\.\d+)?)/,
+                /change time to (\d+)[:.](\d+)/,
+                /change time to (\d+(?:\.\d+)?)/,
+                /make it (\d+)[:.](\d+)/,
+                /make it (\d+(?:\.\d+)?)/,
+                /^(\d+)[:.](\d+)$/,
+                /^(\d+(?:\.\d+)?)$/,
+                /time (\d+)[:.](\d+)/,
+                /time (\d+(?:\.\d+)?)/,
+                /(\d+(?:\.\d+)?) o'?clock/,
+                /(\d+(?:\.\d+)?) hours?/
+            ];
+
+            for (const pattern of timePatterns) {
+                const match = lowerInput.match(pattern);
+                if (match) {
+                    let time;
+                    if (match[2] !== undefined) {
+                        const hours = parseInt(match[1]);
+                        const minutes = parseInt(match[2]);
+                        time = hours + (minutes / 60);
+                    } else {
+                        time = parseFloat(match[1]);
+                    }
+                    if (time >= 0 && time <= 23.99) {
+                        return { type: 'setTime', value: time };
+                    }
+                }
+            }
+
+            // Priority 3: Special time keywords
+            const timeKeywords = {
+                'sunrise': 6.0, 'morning': 6.0,
+                'noon': 12.0, 'midday': 12.0,
+                'sunset': 18.0, 'evening': 18.0,
+                'midnight': 0.0, 'night': 0.0
+            };
+
+            for (const [keyword, time] of Object.entries(timeKeywords)) {
+                if (lowerInput.includes(keyword)) {
+                    return { type: 'setTime', value: time };
+                }
+            }
+
+            // Priority 4: Auto-sync patterns
+            if (lowerInput.includes('toggle auto') || lowerInput.includes('switch auto') ||
+                lowerInput.includes('auto sync toggle') || lowerInput.includes('toggle sync')) {
+                return { type: 'toggleAutoSync' };
+            }
+            if (lowerInput.includes('enable auto') || lowerInput.includes('turn on auto') ||
+                lowerInput.includes('auto sync on') || lowerInput.includes('start auto sync') ||
+                lowerInput.includes('activate auto sync')) {
+                return { type: 'setAutoSync', value: true };
+            }
+            if (lowerInput.includes('disable auto') || lowerInput.includes('turn off auto') ||
+                lowerInput.includes('auto sync off') || lowerInput.includes('stop auto sync') ||
+                lowerInput.includes('deactivate auto sync')) {
+                return { type: 'setAutoSync', value: false };
+            }
+
+            // Priority 5: Dark mode patterns
+            if (lowerInput.includes('toggle dark') || lowerInput.includes('switch mode') || 
+                lowerInput.includes('toggle light') || lowerInput.includes('change theme')) {
+                return { type: 'toggleDarkMode' };
+            }
+            if (lowerInput.includes('dark mode') || lowerInput.includes('enable dark') || 
+                lowerInput.includes('turn on dark')) {
+                return { type: 'setDarkMode', value: true };
+            }
+            if (lowerInput.includes('light mode') || lowerInput.includes('enable light') || 
+                lowerInput.includes('turn on light')) {
+                return { type: 'setDarkMode', value: false };
+            }
+
+            // Priority 6: Status patterns
+            if (lowerInput.includes('status') || lowerInput.includes('current settings') || 
+                lowerInput.includes('what time') || lowerInput.includes('current time')) {
+                return { type: 'getStatus' };
+            }
+
+            // Priority 7: Navigation patterns
+            const directNavPatterns = [
+                /^(go to|navigate to|show me|take me to)\s+(projects?|about|experience|contact)$/,
+                /^(show|view|see)\s+(projects?|about|experience|contact)(\s+section)?$/
+            ];
+
+            for (const pattern of directNavPatterns) {
+                const match = lowerInput.match(pattern);
+                if (match) {
+                    const section = match[2] === 'projects' ? 'projects' : match[2];
+                    return { type: 'navigateToSection', value: section };
+                }
+            }
+
+            // Contextual navigation patterns
+            const contextualPatterns = [
+                { keywords: ['what projects', 'your projects', 'show projects', 'see projects'], section: 'projects' },
+                { keywords: ['projects section', 'go to project'], section: 'projects' },
+                { keywords: ['show experience', 'your experience', 'experience section'], section: 'experience' },
+                { keywords: ['about section', 'tell me about', 'who are you', 'your background'], section: 'about' },
+                { keywords: ['download cv', 'download resume', 'your skills'], section: 'about' },
+                { keywords: ['contact section', 'get in touch', 'reach out', 'contact you'], section: 'contact' },
+                { keywords: ['hire you', 'work together', 'collaboration'], section: 'contact' }
+            ];
+
+            for (const pattern of contextualPatterns) {
+                if (pattern.keywords.some(keyword => lowerInput.includes(keyword))) {
+                    return { type: 'navigateToSection', value: pattern.section };
+                }
+            }
+
+            return null;
+        }
+
+        function testCommand(input) {
+            const resultsEl = document.getElementById('results');
+            const command = parseNaturalLanguage(input);
+            
+            let resultText = `Testing: "${input}"\n`;
+            
+            if (command) {
+                resultText += `✅ Parsed successfully!\n`;
+                resultText += `   Type: ${command.type}\n`;
+                if (command.value !== undefined) {
+                    resultText += `   Value: ${command.value}\n`;
+                }
+                
+                // Simulate what would happen
+                switch (command.type) {
+                    case 'navigateToSection':
+                        resultText += `   Action: Would scroll to "${command.value}" section\n`;
+                        break;
+                    case 'setTime':
+                        resultText += `   Action: Would set time to ${command.value}\n`;
+                        break;
+                    case 'toggleAutoSync':
+                        resultText += `   Action: Would toggle auto-sync\n`;
+                        break;
+                    case 'setAutoSync':
+                        resultText += `   Action: Would ${command.value ? 'enable' : 'disable'} auto-sync\n`;
+                        break;
+                    case 'setDarkMode':
+                        resultText += `   Action: Would switch to ${command.value ? 'dark' : 'light'} mode\n`;
+                        break;
+                    case 'toggleDarkMode':
+                        resultText += `   Action: Would toggle dark mode\n`;
+                        break;
+                    case 'getStatus':
+                        resultText += `   Action: Would show current status\n`;
+                        break;
+                }
+                
+                resultsEl.innerHTML = `<span class="success">${resultText}</span>`;
+            } else {
+                resultText += `❌ No command detected - this won't work in the chatbot\n`;
+                resultsEl.innerHTML = `<span class="error">${resultText}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

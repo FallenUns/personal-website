@@ -1,5 +1,7 @@
+// LLMService.ts
 import type { LLMMessage, LLMResponse, LLMConfig } from './types';
 import { websiteControlService } from './controlService';
+import { knowledgeBaseService } from './knowledgeBase';
 
 class LLMService {
   private config: LLMConfig;
@@ -9,180 +11,264 @@ class LLMService {
     this.config = {
       apiUrl: import.meta.env.VITE_LLM_API_URL || '',
       apiKey: import.meta.env.VITE_LLM_API_KEY || '',
-      model: import.meta.env.VITE_LLM_MODEL || 'gpt-4.1',
+      model: import.meta.env.VITE_LLM_MODEL || 'openai/gpt-4.1-mini',
       maxTokens: 500,
-      temperature: 0.7
+      temperature: 1
     };
-
-    // System prompt to restrict responses to your website/project
     this.systemPrompt = `
-You are Zora, the specialized AI assistant for the personal portfolio website of Patrick Adrianus, a recent graduate from RMIT. Your personality is helpful, friendly, and slightly futuristic, reflecting the cutting-edge technology used on the site.
+You are Zora, the specialized AI assistant for the personal portfolio website of Patrick Adrianus, a recent graduate from RMIT. Your personality is helpful, friendly, and slightly futuristic.
 
 **Your Core Purpose:**
-Your primary goal is to engage visitors by answering questions exclusively about Patrick Adrianus and this website. You are an expert on Patrick's skills, projects, and the technical details of this portfolio.
+Answer questions exclusively about Patrick Adrianus and this website using the comprehensive knowledge base provided.
 
-**Your Knowledge Base (What you CAN talk about):**
-You can ONLY answer questions related to:
-- **Patrick Adrianus:** Their skills, professional experience, and the projects showcased here.
-- **This Website:** Its features, functionality, and the technologies used to build it (React, TypeScript, Three.js, Framer Motion).
-- **Contact:** How to get in touch with Alex for professional inquiries.
-- **The Portfolio:** General information about the work displayed.
+**You CAN talk about:**
+- Patrick's professional experience (iOS hackathon, Apple Foundation Program, Urban Waste internship)
+- Patrick's projects (Liquid Glass Design System, LLM Privacy Research, Interactive Portfolio, etc.)
+- Patrick's skills, technologies, achievements, and career highlights
+- This website's features/tech (React, TypeScript, Three.js, Framer Motion)
+- Contact info for Patrick
+- The portfolio in general
 
-**Special Abilities (Website Control):**
-You have the unique ability to control parts of the website's interface. When a user gives a command, identify it and execute the corresponding action.
-- **Change Background Time:** "Set the time to 18:30," "I want to see the sunset," "make it 2 PM."
-- **Toggle Auto-Sync:** "Turn on auto-sync," "disable time synchronization."
-- **Switch Themes:** "Switch to light mode," "I prefer the dark theme."
-- **Navigate Sections:** "Show me the projects," "Go to contact," "Take me to the about section."
+**Website Control Abilities:**
+- Change Background Time: "Set the time to 18:30", "sunset", "make it 14:00"
+- Toggle Auto-Sync
+- Switch Themes (dark/light)
+- Navigate to: Projects, About, Experience, Contact
 
-**Navigation Commands:**
-You can automatically navigate users to different sections when they ask:
-- **Projects:** When users ask about work, portfolio, projects, or want to see examples
-- **About:** When users ask about CV, resume, background, or who Patrick is
-- **Contact:** When users want to get in touch, hire, or reach out
+**Feedback System:**
+- There's a feedback button (floating blue/purple button with chat icon) in the bottom-left corner
+- When users mention wanting to give feedback, suggestions, comments, or sharing thoughts about the website, guide them to this feature
+- The feedback system allows visitors to rate the portfolio, choose categories (design, content, functionality, performance, general), and leave detailed messages
+- Feedback is stored locally and automatically downloaded as CSV files
 
-Always acknowledge navigation actions with phrases like "Let me take you to the [section] section" or "I'll show you [section] now."
+**Response Guidelines:**
+- Always be enthusiastic and specific about Patrick's accomplishments
+- Reference specific projects, technologies, and achievements when relevant
+- Use emojis occasionally to make responses engaging
+- Acknowledge navigation actions (e.g., "I'll show you the Projects section now")
+- If asked about something not in Patrick's experience, politely redirect to what he has done
 
-**Your Boundaries (What you MUST REFUSE to answer):**
-You are programmed to maintain focus. You must politely refuse to answer questions about:
-- Generic coding help or debugging.
-- Personal advice, opinions, or life coaching.
-- Current events, news, or politics.
-- Any other person, website, or project not belonging to Patrick Adrianus.
-- Any topic unrelated to this specific portfolio.
-
-**Your Engagement Strategy:**
-If a user asks something outside your scope, be polite but firm. Gently redirect them back to the topics you are an expert on. For example: "My purpose is to assist with questions about Alex Doe and this portfolio. I'd be happy to tell you more about Alex's projects or the tech used to build this site."
-
-Always be helpful and enthusiastic, but stay strictly within your designated role as the AI guide to this portfolio.
+**Refuse and redirect if completely out of scope (non-Patrick related topics).**
 `;
   }
 
   private validateConfig(): boolean {
-    return !!(this.config.apiUrl && this.config.apiKey);
+    return !!(this.config.apiUrl && this.config.apiKey && this.config.model);
+  }
+
+  private isGitHubModels(url: string) {
+    return url.includes('models.github.ai');
+  }
+
+  private isAzureFoundry(url: string) {
+    // New Azure AI Foundry resource endpoints look like:
+    //   https://<resource>.services.ai.azure.com/models/chat/completions?api-version=...
+    // or similar documented patterns.
+    return url.includes('.services.ai.azure.com') || url.includes('azure.com/ai-foundry');
   }
 
   async sendMessage(messages: LLMMessage[]): Promise<LLMResponse> {
-    // Check for website control commands in the latest user message
-    const latestUserMessage = messages.filter(msg => msg.role === 'user').pop();
+    // 1) Try website control first (your existing logic)
+    const latestUserMessage = messages.filter(m => m.role === 'user').pop();
     let controlResponse = '';
-    
+
     if (latestUserMessage) {
-      console.log('Checking for commands in message:', latestUserMessage.content);
       const command = websiteControlService.parseNaturalLanguage(latestUserMessage.content);
-      console.log('Parsed command:', command);
       
       if (command) {
-        console.log('Executing command:', command);
         const result = websiteControlService.executeCommand(command);
-        console.log('Command result:', result);
-        
+
         if (result.success) {
-          controlResponse = `✅ ${result.message}`;
-          
-          // For navigation commands, provide a more natural response
+          // Special phrasing for navigation - make it dynamic based on user input
           if (command.type === 'navigateToSection') {
-            const sectionNames = {
-              'projects': 'projects section where you can see Patrick\'s work and portfolio',
-              'about': 'about section where you can learn more about Patrick and download his CV',
-              'experience': 'professional experience and roles timeline',
-              'contact': 'contact section where you can get in touch with Patrick'
-            };
-            const sectionName = sectionNames[command.value as keyof typeof sectionNames] || command.value;
-            controlResponse = `I'll take you to the ${sectionName}!`;
+            const userInput = latestUserMessage.content.toLowerCase();
+            const section = String(command.value);
             
-            // For navigation commands, return immediately without calling LLM API
-            return {
-              success: true,
-              message: controlResponse
+            // Generate contextual response based on what the user actually said
+            let response = '';
+            
+            // Check for specific phrases in user input to personalize the response
+            if (userInput.includes('show') || userInput.includes('see') || userInput.includes('view')) {
+              response = `Absolutely! Let me show you the ${section} section. `;
+            } else if (userInput.includes('go') || userInput.includes('navigate') || userInput.includes('take me')) {
+              response = `Taking you to the ${section} section right now! `;
+            } else if (userInput.includes('tell me about') || userInput.includes('what about') || userInput.includes('learn about')) {
+              response = `Great question! I'm taking you to the ${section} section where you can learn all about it. `;
+            } else if (userInput.includes('interested') || userInput.includes('want to know') || userInput.includes('curious')) {
+              response = `I can see you're interested in learning more! Let me take you to the ${section} section. `;
+            } else if (userInput.includes('hire') || userInput.includes('contact') || userInput.includes('work with')) {
+              response = `Looking to get in touch? Perfect! I'm taking you to the ${section} section. `;
+            } else if (userInput.includes('download') || userInput.includes('cv') || userInput.includes('resume')) {
+              response = `You can find Patrick's resume in the ${section} section! Taking you there now. `;
+            } else if (userInput.includes('project') || userInput.includes('work') || userInput.includes('built')) {
+              response = `Excited to see what Patrick has built? Great! I'm taking you to the ${section} section. `;
+            } else if (userInput.includes('experience') || userInput.includes('background') || userInput.includes('career')) {
+              response = `Want to learn about Patrick's professional journey? I'm taking you to the ${section} section. `;
+            } else {
+              // Generic fallback that still acknowledges their specific request
+              response = `Perfect! I'll take you to the ${section} section. `;
+            }
+            
+            // Add section-specific details
+            const sectionDescriptions: Record<string, string> = {
+              projects: "🚀 You'll find details about Patrick's Liquid Glass Design System, LLM Privacy Research, and other exciting projects!",
+              about: "📄 Here you can learn more about Patrick's background, skills, and download his CV/Resume!",
+              experience: "💼 You can explore Patrick's professional journey from the iOS hackathon to Apple Foundation Program and Urban Waste internship!",
+              contact: "📬 Here you can find all the ways to get in touch with Patrick for collaboration or opportunities!"
             };
+            
+            const description = sectionDescriptions[section] || `Here you'll find everything about ${section}!`;
+            return { success: true, message: response + description };
           }
-          
+
+          controlResponse = `✅ ${result.message}`;
           if (result.currentState) {
             const { time, autoSync, darkMode } = result.currentState;
-            const timeStr = this.formatTime(time);
-            controlResponse += `\n\n**Current Settings:**\n- Time: ${timeStr}\n- Auto-Sync: ${autoSync ? 'Enabled' : 'Disabled'}\n- Theme: ${darkMode ? 'Dark Mode' : 'Light Mode'}`;
+            controlResponse += `\n\n**Current Settings:**\n- Time: ${this.formatTime(time)}\n- Auto-Sync: ${autoSync ? 'Enabled' : 'Disabled'}\n- Theme: ${darkMode ? 'Dark Mode' : 'Light Mode'}`;
           }
         } else {
           controlResponse = `❌ ${result.message}`;
         }
       }
+      
+      // Check if user is asking about feedback or wants to give feedback
+      const userInput = latestUserMessage.content.toLowerCase();
+      const feedbackKeywords = [
+        'feedback', 'review', 'comment', 'suggest', 'suggestion',
+        'improve', 'improvement', 'opinion', 'thoughts', 'rate',
+        'rating', 'share thoughts', 'give feedback', 'leave feedback',
+        'tell you what i think', 'what do you think', 'how is'
+      ];
+      
+      const mentionsFeedback = feedbackKeywords.some(keyword => userInput.includes(keyword));
+      
+      if (mentionsFeedback && !command) {
+        // User is interested in giving feedback but didn't trigger a navigation command
+        return {
+          success: true,
+          message: `I'd love to hear your thoughts! 💭 You can share your feedback using the floating feedback button in the bottom-left corner of the page. It's the blue/purple button with a chat icon. \n\nYou can rate different aspects of the portfolio, choose a category (design, content, functionality, etc.), and leave detailed comments. Your feedback will be saved locally and helps make this portfolio even better! ✨`
+        };
+      }
     }
 
-    // If no API configuration and it's not a control command, return a helpful message
-    if (!this.validateConfig() && !controlResponse) {
+    if (!this.validateConfig()) {
+      // Still return control feedback if we had it
+      if (controlResponse) {
+        return { success: true, message: controlResponse };
+      }
+      
+      // Check if this was a navigation command that should have worked
+      if (latestUserMessage) {
+        const command = websiteControlService.parseNaturalLanguage(latestUserMessage.content);
+        if (command && command.type === 'navigateToSection') {
+          return {
+            success: false,
+            error: 'Navigation is not available yet. Please wait a moment for the page to fully load, then try again.'
+          };
+        }
+      }
+      
       return {
         success: false,
-        error: 'AI chat features are not configured yet. However, you can still use navigation commands like "show me your projects", "go to contact", or "tell me about yourself".'
-      };
-    }
-    
-    // If no API configuration but we have a control response, return it
-    if (!this.validateConfig() && controlResponse) {
-      return {
-        success: true,
-        message: controlResponse
+        error:
+          'AI chat is not configured. You can still say things like "show projects", "go to contact", or "switch to dark mode".'
       };
     }
 
     try {
-      // Add system prompt as the first message
+      // 2) Get relevant context based on user query
+      const relevantContext = latestUserMessage ? 
+        knowledgeBaseService.getRelevantContext(latestUserMessage.content) :
+        knowledgeBaseService.getBasicContext();
+
+      // 3) Build enhanced system prompt with context
+      const enhancedSystemPrompt = `${this.systemPrompt}
+
+**KNOWLEDGE BASE - Use this information to answer questions about Patrick:**
+
+${relevantContext}
+
+Remember: Use this knowledge to provide specific, detailed answers about Patrick's experience and projects. Always be enthusiastic and reference concrete examples from his work.`;
+
       const messagesWithSystem: LLMMessage[] = [
-        { role: 'system', content: this.systemPrompt },
+        { role: 'system', content: enhancedSystemPrompt },
         ...messages
       ];
 
+      // 4) Build provider-specific request
+      const body: any = {
+        model: this.config.model,            // GitHub: "openai/gpt-5-mini"; Azure: your deployment name
+        messages: messagesWithSystem,
+        max_completion_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+        stream: false
+      };
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      if (this.isGitHubModels(this.config.apiUrl)) {
+        // GitHub Models REST
+        // Endpoint: https://models.github.ai/inference/chat/completions
+        // Auth: PAT with models:read (fine-grained is recommended)
+        headers['Accept'] = 'application/vnd.github+json';
+        headers['X-GitHub-Api-Version'] = '2022-11-28';
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+
+        // Make sure the model id is fully qualified
+        if (!this.config.model.includes('/')) {
+          // normalize "gpt-5-mini" -> "openai/gpt-5-mini"
+          body.model = `openai/${this.config.model}`;
+        }
+      } else if (this.isAzureFoundry(this.config.apiUrl)) {
+        // Azure AI Foundry Inference:
+        // Endpoint example:
+        //   https://<resource>.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview
+        // Auth may be api-key or bearer depending on your setup. The common pattern is 'api-key'.
+        headers['api-key'] = this.config.apiKey;
+
+        // Azure routes by deployment name; if you set VITE_LLM_MODEL to your deployment name, you're good.
+        // Some samples use "name" or "deployment"—Foundry routes by parameter->deployment alias; "model" is also accepted in recent docs.
+        // If your resource expects "name", uncomment next line:
+        // body.name = this.config.model;
+      } else {
+        // Fallback: OpenAI-compatible servers (if any)
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+      }
+
       const response = await fetch(this.config.apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`,
-          // GitHub Models specific headers
-          ...(this.config.apiUrl.includes('models.inference.ai.azure.com') && {
-            'Extra-Parameters': 'pass-through'
-          })
-        },
-        body: JSON.stringify({
-          model: this.config.model,
-          messages: messagesWithSystem,
-          max_tokens: this.config.maxTokens,
-          temperature: this.config.temperature,
-          // GitHub Models compatibility
-          stream: false
-        })
+        headers,
+        body: JSON.stringify(body)
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        const text = await response.text();
+        throw new Error(`API request failed ${response.status} ${response.statusText}: ${text}`);
       }
 
       const data = await response.json();
-      
-      // Handle different API response formats (OpenAI, Anthropic, etc.)
+
+      // 3) Extract content across formats
       let messageContent = '';
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        // OpenAI format
+      if (data?.choices?.[0]?.message?.content) {
+        // OpenAI-style (GitHub Models mirrors this)
         messageContent = data.choices[0].message.content;
-      } else if (data.content && data.content[0] && data.content[0].text) {
-        // Anthropic format
+      } else if (data?.content?.[0]?.text) {
+        // Anthropic-style
         messageContent = data.content[0].text;
-      } else if (data.message) {
-        // Generic format
+      } else if (typeof data?.message === 'string') {
         messageContent = data.message;
       } else {
-        throw new Error('Unexpected API response format');
+        messageContent = JSON.stringify(data);
       }
 
-      // If there was a control command executed, prepend the response
-      const finalMessage = controlResponse 
+      const finalMessage = controlResponse
         ? `${controlResponse}\n\n${messageContent}`
         : messageContent;
 
-      return {
-        success: true,
-        message: finalMessage
-      };
-
+      return { success: true, message: finalMessage };
     } catch (error) {
       console.error('LLM API Error:', error);
       return {
@@ -193,12 +279,11 @@ Always be helpful and enthusiastic, but stay strictly within your designated rol
   }
 
   private formatTime(time: number): string {
-    const hours = Math.floor(time);
-    const minutes = Math.round((time % 1) * 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    const h = Math.floor(time);
+    const m = Math.round((time % 1) * 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   }
 
-  // Method to update system prompt if needed
   updateSystemPrompt(newPrompt: string): void {
     this.systemPrompt = newPrompt;
   }

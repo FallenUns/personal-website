@@ -17,6 +17,9 @@ import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import CircularLoader from './components/CircularLoader';
 import FloatingAssistant from './components/FloatingAssistant';
+import { FeedbackButton } from './components/FeedbackButton';
+import { FeedbackManager } from './components/FeedbackManager';
+import { GlobalFeedbackShortcut } from './components/GlobalFeedbackShortcut';
 import MobileComingSoon from './components/MobileComingSoon';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
@@ -159,9 +162,12 @@ const AppContent: React.FC = () => {
     getAutoSync: () => isAuto,
     navigateToSection: (sectionId: string) => {
       console.log(`🎯 App.tsx navigateToSection called with: ${sectionId}`);
+      
       try {
+        // Use the proven navigation utility function directly
+        console.log(`🚀 Using navigation utility for ${sectionId}`);
         scrollToSection(sectionId);
-        console.log(`✅ Navigation completed for: ${sectionId}`);
+        console.log(`✅ Navigation utility called for: ${sectionId}`);
       } catch (error) {
         console.error('❌ Navigation failed:', error);
         throw error;
@@ -300,6 +306,9 @@ const AppContent: React.FC = () => {
               </main>
               
               <FloatingAssistant isLoading={isLoading} />
+              <FeedbackButton />
+              <FeedbackManager />
+              <GlobalFeedbackShortcut />
             </motion.div>
           )}
         </AnimatePresence>
