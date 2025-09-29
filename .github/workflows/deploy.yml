@@ -19,73 +19,70 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install deps
         run: npm ci
 
-      - name: Build
+      - name: Build frontend
         run: npm run build
 
-      # Add the private SSH key so rsync/ssh can connect
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-      # Make the release directory named by the commit SHA
-      - name: Create release dir on server
+      - name: Create release dirs on server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} \
-            "mkdir -p ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}"
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
+            mkdir -p ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/server \
+            && mkdir -p ${{ vars.DEPLOY_PATH }}/shared \
+          "
 
-      # Upload the build
-      - name: Upload dist via rsync
+      - name: Upload frontend dist
         run: |
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" dist/ \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/
 
-      # Upload nginx configuration
-      - name: Upload nginx config
+      - name: Upload backend (no sudo)
+        run: |
+          rsync -az -e "ssh -o StrictHostKeyChecking=no" server/ \
+            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/server/
+
+      - name: Upload nginx config (optional if you manage vhost separately)
         run: |
           rsync -az -e "ssh -o StrictHostKeyChecking=no" nginx.conf \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/nginx.conf
-          
-      # Upload secure environment setup script
-      - name: Upload secure environment setup script
-        run: |
-          rsync -az -e "ssh -o StrictHostKeyChecking=no" secure-env-setup.sh \
-            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/secure-env-setup.sh
 
-      # Upload backend server files
-      - name: Upload backend server
+      - name: Activate release and restart backend
+        env:
+          SHA: ${{ github.sha }}
         run: |
-          rsync -az \
-            -e "ssh -o StrictHostKeyChecking=no" \
-            --rsync-path="sudo rsync" \
-            server/ ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:/var/www/server/
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} <<'SSH'
+            set -e
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH }}"
+            SHA="${SHA}"
 
-      # Atomic swap: point /var/www/current at new release, then make html -> current
-      - name: Activate release (zero downtime)
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
-            ln -sfn ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }} ${{ vars.DEPLOY_PATH }}/current && \
-            rm -rf ${{ vars.DEPLOY_PATH }}/html && \
-            ln -sfn ${{ vars.DEPLOY_PATH }}/current ${{ vars.DEPLOY_PATH }}/html \
-          "
+            # Flip symlinks (atomic)
+            ln -sfn "$DEPLOY_PATH/releases/$SHA" "$DEPLOY_PATH/current"
+            ln -sfn "$DEPLOY_PATH/current" "$DEPLOY_PATH/html"
 
-      # Restart backend service if it exists
-      - name: Restart backend service
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
-            if systemctl is-active --quiet portfolio-server; then \
-              sudo systemctl restart portfolio-server; \
-              echo 'Backend service restarted'; \
-            else \
-              echo 'Backend service not found - run secure-env-setup.sh to create it'; \
-            fi \
-          "
+            # Prepare runtime data dir and perms for backend
+            sudo mkdir -p "$DEPLOY_PATH/current/server/data/csv"
+            sudo chown -R www-data:www-data "$DEPLOY_PATH/current/server"
 
-      # Keep the last 5 releases; delete older to save space
-      - name: Purge old releases
+            # Install backend deps (prod only) as www-data
+            cd "$DEPLOY_PATH/current/server"
+            sudo -u www-data npm ci --omit=dev || sudo -u www-data npm install --omit=dev
+
+            # Restart service if present
+            if systemctl is-active --quiet portfolio-server; then
+              sudo systemctl restart portfolio-server
+              echo "Backend service restarted."
+            else
+              echo "portfolio-server missing. Create it once with your setup script."
+            fi
+          SSH
+
+      - name: Purge old releases (keep last 5)
         run: |
           ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
             ls -1dt ${{ vars.DEPLOY_PATH }}/releases/* | tail -n +6 | xargs -r rm -rf \
