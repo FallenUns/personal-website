@@ -61,15 +61,6 @@ jobs:
           rsync -az -e "ssh -o StrictHostKeyChecking=no" server/ \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/server/
 
-      # Install backend dependencies and setup
-      - name: Setup backend server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
-            cd ${{ vars.DEPLOY_PATH }}/server && \
-            npm install --production && \
-            sudo chown -R www-data:www-data ${{ vars.DEPLOY_PATH }}/server \
-          "
-
       # Atomic swap: point /var/www/current at new release, then make html -> current
       - name: Activate release (zero downtime)
         run: |
