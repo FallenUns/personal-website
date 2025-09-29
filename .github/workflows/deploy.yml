@@ -55,6 +55,21 @@ jobs:
           rsync -az -e "ssh -o StrictHostKeyChecking=no" secure-env-setup.sh \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/secure-env-setup.sh
 
+      # Upload backend server files
+      - name: Upload backend server
+        run: |
+          rsync -az -e "ssh -o StrictHostKeyChecking=no" server/ \
+            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/server/
+
+      # Install backend dependencies and setup
+      - name: Setup backend server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
+            cd ${{ vars.DEPLOY_PATH }}/server && \
+            npm install --production && \
+            sudo chown -R www-data:www-data ${{ vars.DEPLOY_PATH }}/server \
+          "
+
       # Atomic swap: point /var/www/current at new release, then make html -> current
       - name: Activate release (zero downtime)
         run: |
@@ -62,6 +77,18 @@ jobs:
             ln -sfn ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }} ${{ vars.DEPLOY_PATH }}/current && \
             rm -rf ${{ vars.DEPLOY_PATH }}/html && \
             ln -sfn ${{ vars.DEPLOY_PATH }}/current ${{ vars.DEPLOY_PATH }}/html \
+          "
+
+      # Restart backend service if it exists
+      - name: Restart backend service
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
+            if systemctl is-active --quiet portfolio-server; then \
+              sudo systemctl restart portfolio-server; \
+              echo 'Backend service restarted'; \
+            else \
+              echo 'Backend service not found - run secure-env-setup.sh to create it'; \
+            fi \
           "
 
       # Keep the last 5 releases; delete older to save space
