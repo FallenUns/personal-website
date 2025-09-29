@@ -45,11 +45,25 @@ export const FeedbackViewer: React.FC<FeedbackViewerProps> = ({ isOpen, onClose 
     }
   };
 
-  const handleClearFeedback = () => {
+  const handleClearFeedback = async () => {
     if (window.confirm('Are you sure you want to clear all feedback? This action cannot be undone.')) {
-      feedbackService.clearAllFeedback();
-      setFeedback([]);
-      setStats(null);
+      setLoading(true);
+      try {
+        const result = await feedbackService.clearAllFeedback();
+        
+        // Show result message if needed
+        if (result.message) {
+          console.log(result.message);
+        }
+        
+        // Reload feedback data after clearing
+        await loadFeedbackData();
+      } catch (error) {
+        setError('Failed to clear feedback');
+        console.error('Error clearing feedback:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

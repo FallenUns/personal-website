@@ -309,8 +309,52 @@ class FeedbackService {
   }
 
   // Clear all stored feedback (for privacy/cleanup)
-  clearAllFeedback(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
+  async clearAllFeedback(): Promise<{ success: boolean; message: string }> {
+    try {
+      // Try to clear from server first
+      const response = await fetch(`${this.API_BASE_URL}/feedback`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          confirm: 'DELETE_ALL_FEEDBACK'
+        })
+      });
+
+      let serverCleared = false;
+      if (response.ok) {
+        const result = await response.json();
+        serverCleared = result.success;
+      } else {
+        console.warn('Failed to clear feedback from server:', response.status);
+      }
+
+      // Always clear localStorage regardless of server response
+      localStorage.removeItem(this.STORAGE_KEY);
+
+      if (serverCleared) {
+        return {
+          success: true,
+          message: 'All feedback has been cleared from both server and local storage.'
+        };
+      } else {
+        return {
+          success: true,
+          message: 'Feedback cleared from local storage. Server may be unavailable.'
+        };
+      }
+    } catch (error) {
+      console.warn('Error clearing feedback from server:', error);
+      
+      // Still clear localStorage even if server fails
+      localStorage.removeItem(this.STORAGE_KEY);
+      
+      return {
+        success: true,
+        message: 'Feedback cleared from local storage. Server may be unavailable.'
+      };
+    }
   }
 }
 
