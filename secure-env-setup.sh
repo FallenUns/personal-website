@@ -51,7 +51,7 @@ echo ""
 echo "📝 Please provide the following environment variables:"
 
 # Prompt for sensitive variables
-prompt_secret "VITE_LLM_API_KEY" "GitHub Models Personal Access Token (for AI assistant)"
+prompt_secret "LLM_API_KEY" "GitHub Models Personal Access Token (for AI assistant)"
 prompt_secret "SECRET_KEY" "Secret key for server operations (generate a random 64-character string)"
 
 # Optional variables
