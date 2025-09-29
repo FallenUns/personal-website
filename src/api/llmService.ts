@@ -9,8 +9,8 @@ class LLMService {
 
   constructor() {
     this.config = {
-      apiUrl: import.meta.env.VITE_LLM_API_URL || '',
-      apiKey: import.meta.env.VITE_LLM_API_KEY || '',
+      apiUrl: '/api/llm/chat', // Use backend endpoint instead of direct LLM API
+      apiKey: '', // Not needed - backend handles authentication
       model: import.meta.env.VITE_LLM_MODEL || 'openai/gpt-4.1-mini',
       maxTokens: 500,
       temperature: 1
@@ -53,18 +53,7 @@ Answer questions exclusively about Patrick Adrianus and this website using the c
   }
 
   private validateConfig(): boolean {
-    return !!(this.config.apiUrl && this.config.apiKey && this.config.model);
-  }
-
-  private isGitHubModels(url: string) {
-    return url.includes('models.github.ai');
-  }
-
-  private isAzureFoundry(url: string) {
-    // New Azure AI Foundry resource endpoints look like:
-    //   https://<resource>.services.ai.azure.com/models/chat/completions?api-version=...
-    // or similar documented patterns.
-    return url.includes('.services.ai.azure.com') || url.includes('azure.com/ai-foundry');
+    return !!(this.config.apiUrl && this.config.model);
   }
 
   async sendMessage(messages: LLMMessage[]): Promise<LLMResponse> {
@@ -195,68 +184,36 @@ Remember: Use this knowledge to provide specific, detailed answers about Patrick
         ...messages
       ];
 
-      // 4) Build provider-specific request
-      const body: any = {
-        model: this.config.model,            // GitHub: "openai/gpt-5-mini"; Azure: your deployment name
-        messages: messagesWithSystem,
-        max_completion_tokens: this.config.maxTokens,
-        temperature: this.config.temperature,
-        stream: false
-      };
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-
-      if (this.isGitHubModels(this.config.apiUrl)) {
-        // GitHub Models REST
-        // Endpoint: https://models.github.ai/inference/chat/completions
-        // Auth: PAT with models:read (fine-grained is recommended)
-        headers['Accept'] = 'application/vnd.github+json';
-        headers['X-GitHub-Api-Version'] = '2022-11-28';
-        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
-
-        // Make sure the model id is fully qualified
-        if (!this.config.model.includes('/')) {
-          // normalize "gpt-5-mini" -> "openai/gpt-5-mini"
-          body.model = `openai/${this.config.model}`;
-        }
-      } else if (this.isAzureFoundry(this.config.apiUrl)) {
-        // Azure AI Foundry Inference:
-        // Endpoint example:
-        //   https://<resource>.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview
-        // Auth may be api-key or bearer depending on your setup. The common pattern is 'api-key'.
-        headers['api-key'] = this.config.apiKey;
-
-        // Azure routes by deployment name; if you set VITE_LLM_MODEL to your deployment name, you're good.
-        // Some samples use "name" or "deployment"—Foundry routes by parameter->deployment alias; "model" is also accepted in recent docs.
-        // If your resource expects "name", uncomment next line:
-        // body.name = this.config.model;
-      } else {
-        // Fallback: OpenAI-compatible servers (if any)
-        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
-      }
-
+      // 4) Send to backend API (which handles LLM authentication)
       const response = await fetch(this.config.apiUrl, {
         method: 'POST',
-        headers,
-        body: JSON.stringify(body)
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: messagesWithSystem,
+          model: this.config.model
+        })
       });
 
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(`API request failed ${response.status} ${response.statusText}: ${text}`);
+        throw new Error(`Backend API request failed ${response.status} ${response.statusText}: ${text}`);
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Backend API error');
+      }
 
-      // 3) Extract content across formats
+      const data = result.data;
+
+      // 5) Extract content from LLM response
       let messageContent = '';
       if (data?.choices?.[0]?.message?.content) {
-        // OpenAI-style (GitHub Models mirrors this)
         messageContent = data.choices[0].message.content;
       } else if (data?.content?.[0]?.text) {
-        // Anthropic-style
         messageContent = data.content[0].text;
       } else if (typeof data?.message === 'string') {
         messageContent = data.message;
@@ -270,7 +227,7 @@ Remember: Use this knowledge to provide specific, detailed answers about Patrick
 
       return { success: true, message: finalMessage };
     } catch (error) {
-      console.error('LLM API Error:', error);
+      console.error('Backend API Error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'

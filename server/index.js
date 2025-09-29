@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+const fetch = require('node-fetch'); // Add fetch for LLM API calls
 require('dotenv').config(); // Load environment variables
 const app = express();
 
@@ -272,6 +273,50 @@ app.delete('/api/feedback', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to delete feedback'
+    });
+  }
+});
+
+// LLM Chat endpoint (proxy to protect API key)
+app.post('/api/llm/chat', async (req, res) => {
+  try {
+    const { messages, model } = req.body;
+    
+    if (!process.env.LLM_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: 'LLM API key not configured'
+      });
+    }
+
+    const response = await fetch(process.env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.LLM_API_KEY}`
+      },
+      body: JSON.stringify({
+        messages,
+        model: model || process.env.VITE_LLM_MODEL || 'gpt-4.1-mini',
+        temperature: 0.7,
+        max_tokens: 1000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`LLM API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.error('Error calling LLM API:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process chat request'
     });
   }
 });
