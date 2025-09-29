@@ -61,26 +61,25 @@ jobs:
             DEPLOY_PATH="${{ vars.DEPLOY_PATH }}"
             SHA="${SHA}"
 
-            # Flip symlinks (atomic)
+            # 1) Flip symlinks atomically
             ln -sfn "$DEPLOY_PATH/releases/$SHA" "$DEPLOY_PATH/current"
             ln -sfn "$DEPLOY_PATH/current" "$DEPLOY_PATH/html"
 
-            # Prepare runtime data dir and perms for backend
-            sudo mkdir -p "$DEPLOY_PATH/current/server/data/csv"
-            sudo chown -R www-data:www-data "$DEPLOY_PATH/current/server"
+            # 2) Prepare runtime dir and perms (no sudo needed if 'deploy' is in www-data)
+            mkdir -p "$DEPLOY_PATH/current/server/data/csv"
+            chgrp -R www-data "$DEPLOY_PATH/current/server"
+            chmod -R g+rwX "$DEPLOY_PATH/current/server"
+            find "$DEPLOY_PATH/current/server" -type d -exec chmod g+s {} \;
 
-            # Install backend deps (prod only) as www-data
+            # 3) Install backend deps as deploy (read-only for app is fine)
             cd "$DEPLOY_PATH/current/server"
-            sudo -u www-data npm ci --omit=dev || sudo -u www-data npm install --omit=dev
+            npm ci --omit=dev || npm install --omit=dev
 
-            # Restart service if present
-            if systemctl is-active --quiet portfolio-server; then
-              sudo systemctl restart portfolio-server
-              echo "Backend service restarted."
-            else
-              echo "portfolio-server missing. Create it once with your setup script."
-            fi
+            # 4) Restart service (passwordless sudo – configured once in sudoers)
+            sudo systemctl restart portfolio-server || true
+            echo "Release $SHA active."
           SSH
+
 
       - name: Purge old releases (keep last 5)
         run: |
