@@ -11,6 +11,7 @@ echo "🔐 Setting up secure environment variables for patrickadrianus.com..."
 DEPLOY_PATH="/var/www"
 ENV_FILE="$DEPLOY_PATH/.env.production"
 SYSTEMD_SERVICE="/etc/systemd/system/portfolio-server.service"
+SERVER_PATH="/var/www/html"  # Updated to match your structure
 
 # Function to prompt for secure input
 prompt_secret() {
@@ -81,7 +82,7 @@ After=network.target
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=$DEPLOY_PATH/server
+WorkingDirectory=$SERVER_PATH
 ExecStart=/usr/bin/node index.js
 Restart=always
 RestartSec=5
@@ -91,7 +92,7 @@ EnvironmentFile=$ENV_FILE
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=$DEPLOY_PATH/server/data
+ReadWritePaths=$SERVER_PATH/data
 PrivateTmp=yes
 
 [Install]
@@ -103,11 +104,19 @@ echo "✅ Systemd service created"
 # Set proper permissions
 echo ""
 echo "Setting file permissions..."
-sudo chown -R www-data:www-data "$DEPLOY_PATH/server"
-sudo chmod -R 755 "$DEPLOY_PATH/server"
-sudo chmod -R 644 "$DEPLOY_PATH/server"/*.js
-sudo mkdir -p "$DEPLOY_PATH/server/data"
-sudo chown -R www-data:www-data "$DEPLOY_PATH/server/data"
+if [ -d "$SERVER_PATH" ]; then
+    sudo chown -R www-data:www-data "$SERVER_PATH"
+    sudo chmod -R 755 "$SERVER_PATH"
+    if [ -f "$SERVER_PATH/index.js" ]; then
+        sudo chmod 644 "$SERVER_PATH/index.js"
+    fi
+    # Create data directory if it doesn't exist
+    sudo mkdir -p "$SERVER_PATH/data"
+    sudo chown -R www-data:www-data "$SERVER_PATH/data"
+    echo "✅ Permissions set for $SERVER_PATH"
+else
+    echo "⚠️  Server directory $SERVER_PATH not found - skipping file permissions"
+fi
 
 # Enable and start the service
 echo ""
