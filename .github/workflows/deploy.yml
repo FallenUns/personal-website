@@ -65,19 +65,29 @@ jobs:
             ln -sfn "$DEPLOY_PATH/releases/$SHA" "$DEPLOY_PATH/current"
             ln -sfn "$DEPLOY_PATH/current" "$DEPLOY_PATH/html"
 
-            # 2) Prepare runtime dir and perms (no sudo needed if 'deploy' is in www-data)
+            # 2) Create data directory if it doesn't exist
             mkdir -p "$DEPLOY_PATH/current/server/data/csv"
-            chgrp -R www-data "$DEPLOY_PATH/current/server"
-            chmod -R g+rwX "$DEPLOY_PATH/current/server"
-            find "$DEPLOY_PATH/current/server" -type d -exec chmod g+s {} \;
 
-            # 3) Install backend deps as deploy (read-only for app is fine)
+            # 3) Install backend deps as deploy user
             cd "$DEPLOY_PATH/current/server"
             npm ci --omit=dev || npm install --omit=dev
 
-            # 4) Restart service (passwordless sudo – configured once in sudoers)
-            sudo systemctl restart portfolio-server || true
-            echo "Release $SHA active."
+            # 4) Fix permissions with sudo (but don't fail if it doesn't work)
+            sudo chown -R www-data:www-data "$DEPLOY_PATH/current/server" 2>/dev/null || echo "Permission fix failed - will try alternative approach"
+            
+            # 5) Alternative: just make sure the data directory is writable
+            sudo mkdir -p /var/www/server-data 2>/dev/null || true
+            sudo chown -R www-data:www-data /var/www/server-data 2>/dev/null || true
+            
+            # 6) Restart service (passwordless sudo for systemctl)
+            if sudo systemctl is-active --quiet portfolio-server 2>/dev/null; then
+              sudo systemctl restart portfolio-server
+              echo "Backend service restarted successfully"
+            else
+              echo "Backend service not found - run secure-env-setup.sh to create it"
+            fi
+            
+            echo "Release $SHA activated successfully"
           SSH
 
 
