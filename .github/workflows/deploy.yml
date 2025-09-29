@@ -58,11 +58,6 @@ jobs:
       # Upload backend server files
       - name: Upload backend server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
-            sudo mkdir -p /var/www/server && \
-            sudo chown -R ${{ vars.DEPLOY_USER }}:www-data /var/www/server && \
-            sudo chmod -R 755 /var/www/server \
-          "
           rsync -az \
             -e "ssh -o StrictHostKeyChecking=no" \
             --rsync-path="sudo rsync" \
