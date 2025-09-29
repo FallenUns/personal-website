@@ -49,11 +49,11 @@ jobs:
           rsync -az -e "ssh -o StrictHostKeyChecking=no" nginx.conf \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/nginx.conf
           
-      # Upload server setup script
-      - name: Upload server setup script
+      # Upload secure environment setup script
+      - name: Upload secure environment setup script
         run: |
-          rsync -az -e "ssh -o StrictHostKeyChecking=no" server-setup.sh \
-            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/server-setup.sh
+          rsync -az -e "ssh -o StrictHostKeyChecking=no" secure-env-setup.sh \
+            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/secure-env-setup.sh
 
       # Atomic swap: point /var/www/current at new release, then make html -> current
       - name: Activate release (zero downtime)
