@@ -53,43 +53,40 @@ jobs:
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/nginx.conf
 
       - name: Activate release and restart backend
-        env:
-          SHA: ${{ github.sha }}
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} <<'SSH'
+          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "
             set -e
-            DEPLOY_PATH="${{ vars.DEPLOY_PATH }}"
-            SHA="${SHA}"
+
+            DEPLOY_PATH='${{ vars.DEPLOY_PATH }}'
+            SHA='${{ github.sha }}'
 
             # 1) Flip symlinks atomically
-            ln -sfn "$DEPLOY_PATH/releases/$SHA" "$DEPLOY_PATH/current"
-            ln -sfn "$DEPLOY_PATH/current" "$DEPLOY_PATH/html"
+            ln -sfn \"$DEPLOY_PATH/releases/$SHA\" \"$DEPLOY_PATH/current\"
+            ln -sfn \"$DEPLOY_PATH/current\" \"$DEPLOY_PATH/html\"
 
-            # 2) Create data directory if it doesn't exist
-            mkdir -p "$DEPLOY_PATH/current/server/data/csv"
+            # 2) Runtime data: symlink release data -> shared data (persists across deploys)
+            mkdir -p /var/www/server-data/csv
+            rm -rf \"$DEPLOY_PATH/current/server/data\" || true
+            ln -sfn /var/www/server-data \"$DEPLOY_PATH/current/server/data\"
 
-            # 3) Install backend deps as deploy user
-            cd "$DEPLOY_PATH/current/server"
-            npm ci --omit=dev || npm install --omit=dev
-
-            # 4) Fix permissions with sudo (but don't fail if it doesn't work)
-            sudo chown -R www-data:www-data "$DEPLOY_PATH/current/server" 2>/dev/null || echo "Permission fix failed - will try alternative approach"
-            
-            # 5) Alternative: just make sure the data directory is writable
-            sudo mkdir -p /var/www/server-data 2>/dev/null || true
-            sudo chown -R www-data:www-data /var/www/server-data 2>/dev/null || true
-            
-            # 6) Restart service (passwordless sudo for systemctl)
-            if sudo systemctl is-active --quiet portfolio-server 2>/dev/null; then
-              sudo systemctl restart portfolio-server
-              echo "Backend service restarted successfully"
+            # 3) Install backend deps (only if lockfile present)
+            cd \"$DEPLOY_PATH/current/server\"
+            if [ -f package-lock.json ]; then
+              npm ci --omit=dev || npm install --omit=dev
             else
-              echo "Backend service not found - run secure-env-setup.sh to create it"
+              npm install --omit=dev
             fi
-            
-            echo "Release $SHA activated successfully"
-          SSH
 
+            # 4) Make group 'www-data' own the code tree (no sudo chown needed; you already set membership)
+            chgrp -R www-data \"$DEPLOY_PATH/current/server\" || true
+            chmod -R g+rwX \"$DEPLOY_PATH/current/server\" || true
+            find \"$DEPLOY_PATH/current/server\" -type d -exec chmod g+s {} \; || true
+
+            # 5) Restart service (allowed in sudoers)
+            sudo systemctl restart portfolio-server || true
+
+            echo \"Release $SHA activated\"
+          "
 
       - name: Purge old releases (keep last 5)
         run: |
