@@ -166,16 +166,11 @@ export const projects: Project[] = [
       'Python',
       'FastAPI',
       'scikit-learn',
-      'PyTorch',
+      'TensorFlow',
       'spaCy',
       'Hugging Face',
       'SQLite',
       'Docker',
-      'PostgreSQL',
-      'React',
-      'TypeScript',
-      'Tailwind',
-      'Framer Motion'
     ],
     category: 'Research',
     slug: 'software-engineering-project',
@@ -224,7 +219,7 @@ export const projects: Project[] = [
     slug: 'interactive-portfolio',
     fullDescription:
       'This is a personal portfolio website designed to showcase my skills and projects in an engaging and interactive way. The site features a unique "liquid glass" aesthetic, a dynamic background that changes with the time of day, and a conversational AI assistant to help users navigate the site and learn more about my work. The entire project is built with a modern tech stack, focusing on performance and user experience.',
-    liveUrl: 'patrickadrianus.com',
+    liveUrl: 'https://patrickadrianus.com',
     githubUrl: '#',
     features: [
       'Dynamic, time-of-day based background visuals',
@@ -244,6 +239,67 @@ export const projects: Project[] = [
       'A unique and memorable portfolio that effectively showcases my skills',
       'A reusable "Liquid Glass" component for future projects',
       'A deeper understanding of WebGL, GLSL shaders, and performance optimization techniques'
+    ]
+  },
+  {
+    id: 9,
+    title: 'Cliniwatch – iOS Mental Health Companion App',
+    description: 'A proactive monitoring system developed for the RMIT First Health iOS Hackathon to detect early signs of mental health deterioration before crisis point.',
+    mockupType: 'ui-ux',
+    technologies: [
+      'Swift',
+      'SwiftUI',
+      'Core Data',
+      'MapKit',
+      'UserNotifications',
+      'Natural Language Processing',
+      'iOS Development',
+      'Apple Health Integration (Future)',
+      'Firebase'
+    ],
+    category: 'Mobile',
+    slug: 'cliniwatch',
+    fullDescription:
+      'Cliniwatch was developed during the RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. The challenge was: "How might Northern Health create an early warning system that helps detect deteriorating mental health patients before it becomes a crisis — without depending solely on phone calls and clinical visits?" Our team created a comprehensive solution that bridges the gap between patients, carers, and clinical teams through proactive monitoring and early intervention.',
+    images: ['/cliniwatch-1.jpg', '/cliniwatch-2.jpg', '/cliniwatch-3.jpg'],
+    liveUrl: '#',
+    githubUrl: 'https://github.com/FallenUns/IOS_Hackathon',
+    features: [
+      'Daily Check-In System with customizable questions, emojis, and affirmations',
+      'Mood Calendar with emotional tracking and pattern recognition',
+      'Nearby Support with MapKit integration to find mental health clinics and psychiatrists',
+      'Community Hub connecting users with local mental health services',
+      'Log Book with gamified Motivation Garden featuring gardening streaks',
+      'Aura Points system for engagement rewards and milestone tracking',
+      'Your Sanctuary - personalized progress tracking dashboard',
+      'Built-in Contact List with closest contacts and recommended support contacts',
+      'Carer Dashboard allowing carers to provide their perspective and observations',
+      'Sleep & Energy Tracking for comprehensive wellness monitoring',
+      'Symptom Tracker for logging changes over time',
+      'Automated Alert System flagging concerning patterns to clinical teams',
+      'Future: Journaling with NLP sentiment analysis',
+      'Future: Apple Health integration for seamless data sharing'
+    ],
+    challenges: [
+      'Addressing the complex challenge posed by Northern Health within hackathon timeframe',
+      'Designing sensitive and accessible UI/UX for vulnerable mental health populations',
+      'Creating meaningful early warning algorithms without false positives',
+      'Balancing patient privacy with carer/clinical team visibility requirements',
+      'Implementing MapKit integration for accurate mental health service locations',
+      'Developing gamification that motivates without trivializing serious mental health issues',
+      'Building dual-interface system for both patients and carers',
+      'Ensuring HIPAA compliance and data security for health information',
+      'Creating seamless user experience across check-ins, tracking, and support features'
+    ],
+    outcomes: [
+      'Special mention at RMIT First Health iOS Hackathon (Apple, Northern Health, Bilue)',
+      'Successful solution to Northern Health\'s early warning system challenge',
+      'Comprehensive app addressing the gap between patient self-monitoring and clinical care',
+      'Effective team collaboration delivering complex healthcare solution under time pressure',
+      'Innovation in proactive mental health monitoring without relying solely on phone calls/visits',
+      'Strong foundation for real-world deployment in healthcare settings',
+      'Demonstrated ability to work with industry partners (Apple, Northern Health, Bilue)',
+      'Potential to significantly improve mental health crisis prevention'
     ]
   }
 ];

@@ -201,23 +201,30 @@ export class KnowledgeBaseService {
   getBasicContext(): string {
     return `**About Patrick Adrianus:**
 Patrick is a recent graduate from RMIT with experience in:
-- **iOS Development**: Participated in iOS hackathon, Apple Foundation Program
-- **Full-Stack Development**: ERP systems, web applications
-- **Research**: LLM privacy violation detection systems
-- **UI/UX**: Advanced glassmorphism effects, interactive designs
+- **iOS Development**: Participated in RMIT First Health iOS Hackathon with industry partners (Apple, Northern Health, Bilue), Apple Foundation Program
+- **Full-Stack Development**: ERP systems, web applications, interactive portfolio
+- **Research**: LLM privacy violation detection systems, NLP sentiment analysis
+- **UI/UX**: Advanced glassmorphism effects, interactive designs, healthcare app UX
 
 **Key Skills:**
 - Programming: Python, Swift, JavaScript/TypeScript, React
-- Mobile: iOS development, SwiftUI, Xcode
+- Mobile: iOS development, SwiftUI, Xcode, MapKit, Core Data, Firebase
 - Web: React, Next.js, Three.js, WebGL, GLSL Shaders
-- Research: Machine Learning, LLMs, Privacy Analysis
-- Design: UI/UX, Glassmorphism, Interactive Design
+- Research: Machine Learning, LLMs, Privacy Analysis, Natural Language Processing
+- Design: UI/UX, Glassmorphism, Interactive Design, Accessibility, Healthcare UX
+- Collaboration: Team projects, hackathon development, industry partnerships
 
-**Notable Achievements:**
-- Special mention at RMIT iOS Hackathon for "Cliniwatch" mental health app
+**Notable Projects:**
+- **Cliniwatch**: iOS mental health companion app built with team during RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. Addresses early warning system challenge for mental health crisis prevention
+- **Liquid Glass Design System**: Advanced glassmorphism UI library with GLSL shaders and physics-based animations
+- **LLM Privacy Detection**: Research system analyzing Stack Overflow posts for privacy violations using GPT-4o and DeepSeek
+- **Interactive Portfolio**: This website featuring dynamic backgrounds, AI assistant, and advanced web technologies
+
+**Achievements:**
+- Special mention at RMIT First Health iOS Hackathon with team for "Cliniwatch" solution addressing Northern Health's challenge
 - Completed Apple Foundation Program
-- Built advanced glassmorphism UI library with shader effects
-- Conducted research on LLM privacy violation detection
+- Successfully collaborated with industry partners (Apple, Northern Health, Bilue) on healthcare innovation
+- Conducted academic research on LLM privacy detection with published results
 
 **Website Features:**
 - Interactive portfolio with dynamic time-of-day backgrounds

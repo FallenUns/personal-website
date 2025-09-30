@@ -122,16 +122,26 @@ Answer questions exclusively about Patrick Adrianus and this website using the c
       
       // Check if user is asking about feedback or wants to give feedback
       const userInput = latestUserMessage.content.toLowerCase();
-      const feedbackKeywords = [
-        'feedback', 'review', 'comment', 'suggest', 'suggestion',
-        'improve', 'improvement', 'opinion', 'thoughts', 'rate',
-        'rating', 'share thoughts', 'give feedback', 'leave feedback',
-        'tell you what i think', 'what do you think', 'how is'
+      
+      // More specific feedback detection patterns
+      const feedbackPatterns = [
+        /give\s+(you\s+)?feedback/i,
+        /leave\s+(you\s+)?feedback/i,
+        /share\s+(my\s+)?feedback/i,
+        /provide\s+(some\s+)?feedback/i,
+        /i\s+(want\s+to\s+|would\s+like\s+to\s+|need\s+to\s+)?(give|leave|share|provide)\s+(you\s+)?feedback/i,
+        /feedback\s+(on|about)\s+(this|the)\s+(website|portfolio|site)/i,
+        /i\s+(want\s+to\s+|would\s+like\s+to\s+)?(rate|review)\s+(this|the)\s+(website|portfolio|site)/i,
+        /how\s+(can\s+i\s+|do\s+i\s+)?(give|leave|share)\s+(you\s+)?feedback/i,
+        /where\s+(can\s+i\s+|do\s+i\s+)?(give|leave|share)\s+(you\s+)?feedback/i,
+        /suggestions?\s+(for|about)\s+(this|the)\s+(website|portfolio|site)/i,
+        /i\s+have\s+(some\s+)?(feedback|suggestions?|thoughts\s+about\s+the\s+site)/i,
+        /can\s+i\s+(give|leave|share)\s+(you\s+)?feedback/i
       ];
       
-      const mentionsFeedback = feedbackKeywords.some(keyword => userInput.includes(keyword));
+      const isFeedbackRequest = feedbackPatterns.some(pattern => pattern.test(userInput));
       
-      if (mentionsFeedback && !command) {
+      if (isFeedbackRequest && !command) {
         // User is interested in giving feedback but didn't trigger a navigation command
         return {
           success: true,
@@ -165,10 +175,16 @@ Answer questions exclusively about Patrick Adrianus and this website using the c
     }
 
     try {
-      // 2) Get relevant context based on user query
-      const relevantContext = latestUserMessage ? 
-        knowledgeBaseService.getRelevantContext(latestUserMessage.content) :
-        knowledgeBaseService.getBasicContext();
+      // 2) Get relevant context based on user query - use full context for detailed requests
+      let relevantContext = '';
+      if (latestUserMessage) {
+        const isDetailedRequest = this.isDetailedInformationRequest(latestUserMessage.content);
+        relevantContext = isDetailedRequest 
+          ? knowledgeBaseService.getFullContext()
+          : knowledgeBaseService.getRelevantContext(latestUserMessage.content);
+      } else {
+        relevantContext = knowledgeBaseService.getBasicContext();
+      }
 
       // 3) Build enhanced system prompt with context
       const enhancedSystemPrompt = `${this.systemPrompt}
@@ -177,7 +193,15 @@ Answer questions exclusively about Patrick Adrianus and this website using the c
 
 ${relevantContext}
 
-Remember: Use this knowledge to provide specific, detailed answers about Patrick's experience and projects. Always be enthusiastic and reference concrete examples from his work.`;
+**Response Guidelines:**
+- For general questions: Be concise but informative, highlighting key points
+- For detailed requests ("tell me more", "elaborate", "more details", etc.): Provide comprehensive information including specific examples, technologies, achievements, outcomes, and impact
+- When users ask for more information, include project details like challenges faced, technical solutions, collaboration aspects, and results achieved
+- Use the full knowledge base context to provide rich, detailed responses that showcase Patrick's expertise and accomplishments
+- Reference specific projects, technologies, and achievements when relevant
+- Always be enthusiastic and specific about Patrick's work
+
+Remember: Use this knowledge to provide engaging answers about Patrick's experience and projects. For detailed requests, don't hold back - share the comprehensive information available in the knowledge base.`;
 
       const messagesWithSystem: LLMMessage[] = [
         { role: 'system', content: enhancedSystemPrompt },
@@ -239,6 +263,31 @@ Remember: Use this knowledge to provide specific, detailed answers about Patrick
     const h = Math.floor(time);
     const m = Math.round((time % 1) * 60);
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  }
+
+  private isDetailedInformationRequest(message: string): boolean {
+    const detailedRequestPatterns = [
+      /tell me more/i,
+      /more information/i,
+      /more details/i,
+      /elaborate/i,
+      /explain more/i,
+      /go into detail/i,
+      /comprehensive/i,
+      /in depth/i,
+      /detailed/i,
+      /specifics/i,
+      /everything about/i,
+      /all about/i,
+      /complete information/i,
+      /full details/i,
+      /can you expand/i,
+      /expand on/i,
+      /deeper dive/i,
+      /more about/i
+    ];
+
+    return detailedRequestPatterns.some(pattern => pattern.test(message));
   }
 
   updateSystemPrompt(newPrompt: string): void {

@@ -206,12 +206,6 @@ class WebsiteControlService {
       return { type: 'navigateToSection', value: exactMatches[lowerInput as keyof typeof exactMatches] };
     }
 
-    // Priority 1.5: Enhanced context-aware question analysis
-    const contextualResult = this.analyzeQuestionContext(lowerInput);
-    if (contextualResult) {
-      return contextualResult;
-    }
-
     // Priority 2: Time setting patterns - Enhanced to handle more formats
     const timePatterns = [
       // "set time to 14:30" or "set time to 14.5"
@@ -305,282 +299,56 @@ class WebsiteControlService {
       return { type: 'getStatus' };
     }
 
-    // Priority 7: Feedback patterns - Let users know about feedback feature
-    const feedbackKeywords = [
-      'feedback', 'review', 'comment', 'suggest', 'suggestion',
-      'improve', 'improvement', 'opinion', 'thoughts', 'rate',
-      'rating', 'experience', 'what do you think', 'tell you',
-      'share thoughts', 'give feedback', 'leave feedback'
-    ];
-    
-    for (const keyword of feedbackKeywords) {
-      if (lowerInput.includes(keyword)) {
-        // Don't return a command, just let the AI know they mentioned feedback
-        break;
-      }
-    }
-
-    // Priority 8: Enhanced Navigation with Project-Specific Detection
-    
-    // FIRST: Check for specific project mentions (highest priority)
-    const specificProjectPatterns = [
-      /liquid\s*glass/i,
-      /llm\s*privacy/i,
-      /cliniwatch/i,
-      /github\s*(projects?|repositories)/i,
-      /portfolio\s*(projects?|items?)/i,
-      /code\s*(samples?|examples?)/i,
-      /(what|show|tell).*liquid\s*glass/i,
-      /(what|show|tell).*(projects?|portfolio|built|created|developed|made)/i,
-      /(show\s+me\s+your|what)\s+work(?!\s+(experience|history|background))/i, // "show me your work" but not "work experience"
-      /what\s+work\s+have\s+you\s+done/i,
-      /showcase/i,
-      /demos?/i
+    // Priority 7: EXPLICIT NAVIGATION COMMANDS ONLY
+    // Only trigger navigation for very explicit navigation requests
+    const explicitNavigationPatterns = [
+      // Direct navigation commands
+      /^(go to|navigate to|take me to|show me the|open the|visit the)\s+(projects?|about|experiences?|contacts?)\s*(section|page)?$/i,
+      /^(show|open|visit)\s+(projects?|about|experiences?|contacts?)\s*(section|page)?$/i,
+      
+      // Contact intent (explicit hiring/contact requests)
+      /^(how do i|how can i|how to)\s+(hire|contact|reach|get in touch|email)\s*(him|patrick|you)?$/i,
+      /^i (want to|need to|would like to)\s+(hire|contact|reach|work with)\s*(him|patrick|you)$/i,
+      /^(let's|lets)\s+(work together|collaborate)$/i,
+      /^(are you|is patrick|is he)\s+available for\s+(work|hire|projects)$/i,
+      
+      // Very specific project viewing requests
+      /^(show me|let me see|i want to see)\s+(your|patrick's|his)?\s*(projects?|portfolio|work)$/i,
+      /^(view|see)\s+(projects?|portfolio)$/i,
+      
+      // Very specific experience viewing requests  
+      /^(show me|let me see|i want to see)\s+(your|patrick's|his)?\s*(experience|background|work history|career)$/i,
+      /^(view|see)\s+(experience|background|work history|career)$/i,
+      
+      // About page requests
+      /^(show me|let me see|i want to see)\s+(your|patrick's|his)?\s*(about|bio|profile|resume|cv)$/i,
+      /^(download|get)\s+(resume|cv)$/i
     ];
 
-    for (const pattern of specificProjectPatterns) {
-      if (pattern.test(lowerInput)) {
-        return { type: 'navigateToSection', value: 'projects' };
-      }
-    }
-
-    // SECOND: Check for specific experience mentions
-    const specificExperiencePatterns = [
-      /(tell\s+me\s+about|about)\s+(your\s+)?(work\s+)?experience/i,
-      /(your\s+)?(professional|work)\s+(background|experience|history)/i,
-      /(where\s+(did|have)\s+you|patrick)\s+(work|worked)/i,
-      /describe\s+your\s+work(?!\s+(on|with))/i, // "describe your work" but not "describe your work on projects"
-      /apple\s+foundation/i,
-      /urban\s+waste/i,
-      /rmit/i,
-      /(job|employment|position)s?\s+(history|experience)/i,
-      /(companies|organizations)\s+(worked|you)/i,
-      /internship/i,
-      /hackathon/i,
-      /career\s+(path|history|timeline)/i
-    ];
-
-    for (const pattern of specificExperiencePatterns) {
-      if (pattern.test(lowerInput)) {
-        return { type: 'navigateToSection', value: 'experience' };
-      }
-    }
-
-    // THIRD: Refined keyword scoring with less overlap
-    // Projects - More specific project-related terms
-    const projectKeywords = [
-      'portfolio', 'repositories', 'code samples', 'applications', 'apps',
-      'what have you made', 'what did you build', 'show me what', 'things you',
-      'patrick built', 'patrick created', 'patrick made', 'github projects'
-    ];
-    
-    // Experience - Work history specific terms
-    const experienceKeywords = [
-      'professional', 'employment', 'positions', 'roles', 'timeline',
-      'companies', 'organizations'
-    ];
-    
-    // About - Personal information specific terms  
-    const aboutKeywords = [
-      'who', 'introduction', 'intro', 'overview', 'summary',
-      'who are you', 'who is patrick', 'about patrick',
-      'profile', 'bio', 'biography', 'yourself', 'describe',
-      'download cv', 'download resume', 'get cv', 'get resume', 'curriculum',
-      'resume', 'cv', 'skills', 'expertise',
-      'meet patrick', 'get to know', 'introduce yourself'
-    ];
-    
-    // Contact - Communication specific terms
-    const contactKeywords = [
-      'contact', 'contacts', 'email', 'reach', 'touch', 'connect', 'message',
-      'get in touch', 'reach out', 'talk', 'speak', 'communicate', 'phone', 
-      'linkedin', 'social', 'find you', 'how can i', 'how to reach', 
-      'how to contact', 'get hold', 'available', 'freelance', 'contractor', 
-      'opportunity', 'opportunities', 'patrick email', 'patrick contact',
-      'let me know', 'send message', 'drop a line', 'write to'
-    ];
-
-    // Context-aware hiring keywords - only match when it's clearly about contacting
-    const contactHiringKeywords = [
-      'i want to hire', 'i would like to hire', 'i need to hire',
-      'looking to hire', 'interested in hiring', 'want to work with',
-      'would like to work with', "let's work together", 'collaborate with'
-    ];
-
-    // First check for direct navigation commands
-    const directNavPatterns = [
-      /^(go to|navigate to|show me|take me to|show|open|view|see|visit)\s+(projects?|about|experiences?|contacts?)$/i,
-      /^(projects?|about|experiences?|contacts?)(\s+section)?$/i
-    ];
-
-    for (const pattern of directNavPatterns) {
+    for (const pattern of explicitNavigationPatterns) {
       const match = lowerInput.match(pattern);
       if (match) {
-        let section = match[2] || match[1];
-        section = section.toLowerCase();
-        if (section === 'projects' || section === 'project') {
+        const fullMatch = match[0];
+        
+        // Determine target section based on keywords in the match
+        if (/projects?|portfolio/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'projects' };
-        } else if (section === 'experiences' || section === 'experience') {
+        } else if (/experience|background|work history|career/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'experience' };
-        } else if (section === 'contacts' || section === 'contact') {
-          return { type: 'navigateToSection', value: 'contact' };
-        } else if (section === 'about') {
+        } else if (/about|bio|profile|resume|cv/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'about' };
+        } else if (/contact|hire|reach|email|work with|collaborate|available/i.test(fullMatch)) {
+          return { type: 'navigateToSection', value: 'contact' };
         }
       }
     }
 
-    // Enhanced scoring with refined keywords and less overlap
-    let scores = {
-      projects: 0,
-      experience: 0,
-      about: 0,
-      contact: 0
-    };
-
-    // Count keyword matches for each section
-    projectKeywords.forEach(keyword => {
-      if (lowerInput.includes(keyword)) scores.projects++;
-    });
-    
-    experienceKeywords.forEach(keyword => {
-      if (lowerInput.includes(keyword)) scores.experience++;
-    });
-    
-    aboutKeywords.forEach(keyword => {
-      if (lowerInput.includes(keyword)) scores.about++;
-    });
-    
-    // Enhanced contact scoring with context awareness
-    contactKeywords.forEach(keyword => {
-      if (lowerInput.includes(keyword)) scores.contact++;
-    });
-
-    // Add context-aware hiring keywords with higher weight
-    contactHiringKeywords.forEach(phrase => {
-      if (lowerInput.includes(phrase)) scores.contact += 2; // Higher weight for clear contact intent
-    });
-
-    // Special handling for ambiguous terms
-    // "about" context analysis
-    if (lowerInput.includes('about')) {
-      if (lowerInput.includes('tell me about you') || 
-          lowerInput.includes('tell me about yourself') ||
-          lowerInput.includes('about patrick')) {
-        scores.about += 2; // Strong boost for personal questions
-      } else if (lowerInput.includes('about your experience') || 
-                 lowerInput.includes('about your work') ||
-                 lowerInput.includes('about your professional')) {
-        scores.experience += 2; // Route experience questions correctly
-        scores.about -= 1; // Reduce about score for experience questions
-      }
-    }
-
-    // "work" context analysis  
-    if (lowerInput.includes('work')) {
-      if (lowerInput.includes('work experience') || 
-          lowerInput.includes('work history') ||
-          lowerInput.includes('work background')) {
-        scores.experience += 2;
-      } else if (lowerInput.includes('work with') || 
-                 lowerInput.includes('work together')) {
-        scores.contact += 1;
-      }
-    }
-
-    // Find the section with the highest score
-    let maxScore = 0;
-    let targetSection = null;
-    
-    for (const [section, score] of Object.entries(scores)) {
-      if (score > maxScore) {
-        maxScore = score;
-        targetSection = section;
-      }
-    }
-
-    // If we found any matches, navigate to the highest scoring section
-    if (targetSection && maxScore > 0) {
-      return { type: 'navigateToSection', value: targetSection };
-    }
-
-    // Fallback: Check for question patterns that imply navigation
-    const questionPatterns = [
-      { pattern: /what.*(project|built|made|created|developed)/i, section: 'projects' },
-      { pattern: /show.*(project|work|portfolio)/i, section: 'projects' },
-      { pattern: /tell.*(project|work|built)/i, section: 'projects' },
-      { pattern: /what.*(experience|worked|job)/i, section: 'experience' },
-      { pattern: /where.*(work|worked|experience)/i, section: 'experience' },
-      { pattern: /tell.*(experience|background|career)/i, section: 'experience' },
-      { pattern: /who.*(patrick|you|is)/i, section: 'about' },
-      { pattern: /tell.*(about|yourself|patrick)/i, section: 'about' },
-      { pattern: /download.*(cv|resume)/i, section: 'about' },
-      // Only include contact patterns for clear contact intent (not qualification questions)
-      { pattern: /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?(contact|reach|get\s+in\s+touch|email)/i, section: 'contact' },
-      { pattern: /i\s+want\s+to\s+(contact|reach|hire|work\s+with)/i, section: 'contact' },
-      { pattern: /i\s+(need|would\s+like)\s+to\s+(contact|reach|hire|work\s+with)/i, section: 'contact' }
-    ];
-
-    for (const { pattern, section } of questionPatterns) {
-      if (pattern.test(lowerInput)) {
-        return { type: 'navigateToSection', value: section };
-      }
-    }
-
-    return null;
-  }
-
-  // Enhanced context-aware question analysis
-  private analyzeQuestionContext(lowerInput: string): LLMCommand | null {
-    // Questions ABOUT Patrick's qualifications/skills (should go to about/experience)
-    const qualificationQuestions = [
-      /why\s+(should\s+i\s+|would\s+i\s+|do\s+you\s+)?hire\s+(him|patrick|you)/i,
-      /what\s+(makes\s+)?(him|patrick|you)\s+(good|qualified|suitable|worth)/i,
-      /why\s+(is\s+)?(he|patrick|you)\s+(good|qualified|suitable|worth)/i,
-      /should\s+i\s+hire\s+(him|patrick|you)/i,
-      /is\s+(he|patrick|you)\s+(good|qualified|suitable|worth)/i,
-      /what\s+(skills|experience|qualifications)\s+(does\s+(he|patrick|you)\s+have|do\s+you\s+have)/i,
-      /what\s+(are\s+(his|patrick's|your)|his|patrick's|your)\s+(skills|qualifications|abilities|strengths)/i,
-      /tell\s+me\s+about\s+(his|patrick's|your)\s+(skills|qualifications|background)/i,
-      /what\s+(can|could)\s+(he|patrick|you)\s+(do|offer|bring)/i,
-      /why\s+(choose|pick|select)\s+(him|patrick|you)/i,
-      /is\s+(he|patrick|you)\s+good\s+(for|at)/i,
-      /what\s+(can|could)\s+(patrick|he|you)\s+(do|offer|bring|provide)/i,
-      /why\s+(choose|pick|select)\s+(him|patrick|you)(?!\s+a)/i // Avoid "why choose him a" constructions
-    ];
-
-    // Questions FOR hiring/contacting (should go to contact)
-    const contactIntentQuestions = [
-      /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?hire\s+(him|patrick|you)/i,
-      /where\s+(do\s+i\s+|can\s+i\s+|to\s+)?hire\s+(him|patrick|you)/i,
-      /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?(contact|reach|get\s+in\s+touch)/i,
-      /i\s+want\s+to\s+hire\s+(him|patrick|you)/i,
-      /i\s+would\s+like\s+to\s+hire\s+(him|patrick|you)/i,
-      /i\s+need\s+to\s+(contact|reach|hire)\s+(him|patrick|you)/i,
-      /let's\s+(work\s+together|collaborate)/i,
-      /available\s+for\s+(work|hire|projects)/i,
-      /how\s+much\s+(do\s+you\s+charge|does\s+(he|patrick)\s+charge)/i,
-      /(what's|what\s+is)\s+(his|patrick's|your)\s+(rate|price|cost)/i,
-      /i\s+need\s+to\s+hire\s+(someone|a\s+developer)/i
-    ];
-
-    // Check qualification questions first (these should NOT go to contact)
-    for (const pattern of qualificationQuestions) {
-      if (pattern.test(lowerInput)) {
-        // Route to about for general qualifications or experience for work history
-        if (lowerInput.includes('experience') || lowerInput.includes('worked') || lowerInput.includes('background')) {
-          return { type: 'navigateToSection', value: 'experience' };
-        }
-        return { type: 'navigateToSection', value: 'about' };
-      }
-    }
-
-    // Check contact intent questions (these should go to contact)
-    for (const pattern of contactIntentQuestions) {
-      if (pattern.test(lowerInput)) {
-        return { type: 'navigateToSection', value: 'contact' };
-      }
-    }
+    // DO NOT trigger navigation for informational questions like:
+    // - "Tell me more about Patrick's projects"
+    // - "What projects has he worked on?"
+    // - "Can you elaborate on his experience?"
+    // - "More details about the hackathon"
+    // These should go to the AI assistant, not navigation
 
     return null;
   }
