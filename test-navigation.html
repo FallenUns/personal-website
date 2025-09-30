@@ -55,12 +55,24 @@
         <button onclick="testCommand('toggle auto sync')">Test: "toggle auto sync"</button>
     </div>
 
+    <div style="background: #fff3cd; padding: 10px; margin: 10px 0; border-radius: 4px;">
+        <strong>🔧 Testing Hiring Context Parser (New):</strong>
+        <div style="margin-top: 8px;">
+            <button onclick="testCommand('Why should I hire him')">Test: "Why should I hire him"</button>
+            <button onclick="testCommand('Should I hire Patrick')">Test: "Should I hire Patrick"</button>
+            <button onclick="testCommand('What makes him qualified')">Test: "What makes him qualified"</button>
+            <button onclick="testCommand('How do I hire him')">Test: "How do I hire him"</button>
+            <button onclick="testCommand('I want to hire Patrick')">Test: "I want to hire Patrick"</button>
+            <button onclick="testCommand('What are his skills')">Test: "What are his skills"</button>
+        </div>
+    </div>
+
     <div id="results" class="test-results">
 Ready to test commands...
     </div>
 
     <script>
-        // Simulate the control service parsing logic
+        // Enhanced control service parsing logic with context awareness
         function parseNaturalLanguage(input) {
             const lowerInput = input.toLowerCase().trim();
 
@@ -76,6 +88,12 @@ Ready to test commands...
 
             if (exactMatches[lowerInput]) {
                 return { type: 'navigateToSection', value: exactMatches[lowerInput] };
+            }
+
+            // Priority 1.5: Enhanced context-aware question analysis
+            const contextualResult = analyzeQuestionContext(lowerInput);
+            if (contextualResult) {
+                return contextualResult;
             }
 
             // Priority 2: Time setting patterns
@@ -189,6 +207,57 @@ Ready to test commands...
             for (const pattern of contextualPatterns) {
                 if (pattern.keywords.some(keyword => lowerInput.includes(keyword))) {
                     return { type: 'navigateToSection', value: pattern.section };
+                }
+            }
+
+            return null;
+        }
+
+        // Enhanced context-aware question analysis
+        function analyzeQuestionContext(lowerInput) {
+            // Questions ABOUT Patrick's qualifications/skills (should go to about/experience)
+            const qualificationQuestions = [
+                /why\s+(should\s+i\s+|would\s+i\s+|do\s+you\s+)?hire\s+(him|patrick|you)/i,
+                /what\s+(makes\s+)?(him|patrick|you)\s+(good|qualified|suitable|worth)/i,
+                /why\s+(is\s+)?(he|patrick|you)\s+(good|qualified|suitable|worth)/i,
+                /should\s+i\s+hire\s+(him|patrick|you)/i,
+                /is\s+(he|patrick|you)\s+(good|qualified|suitable|worth)/i,
+                /what\s+(skills|experience|qualifications)\s+(does\s+(he|patrick|you)\s+have|do\s+you\s+have)/i,
+                /tell\s+me\s+about\s+(his|patrick's|your)\s+(skills|qualifications|background)/i,
+                /what\s+(can|could)\s+(he|patrick|you)\s+(do|offer|bring)/i,
+                /why\s+(choose|pick|select)\s+(him|patrick|you)/i,
+                /what\s+(are\s+(his|patrick's|your)|his|patrick's|your)\s+(strengths|skills|abilities)/i
+            ];
+
+            // Questions FOR hiring/contacting (should go to contact)
+            const contactIntentQuestions = [
+                /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?hire\s+(him|patrick|you)/i,
+                /where\s+(do\s+i\s+|can\s+i\s+|to\s+)?hire\s+(him|patrick|you)/i,
+                /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?(contact|reach|get\s+in\s+touch)/i,
+                /i\s+want\s+to\s+hire\s+(him|patrick|you)/i,
+                /i\s+would\s+like\s+to\s+hire\s+(him|patrick|you)/i,
+                /i\s+need\s+to\s+(contact|reach|hire)\s+(him|patrick|you)/i,
+                /let's\s+(work\s+together|collaborate)/i,
+                /available\s+for\s+(work|hire|projects)/i,
+                /how\s+much\s+(do\s+you\s+charge|does\s+(he|patrick)\s+charge)/i,
+                /(what's|what\s+is)\s+(his|patrick's|your)\s+(rate|price|cost)/i
+            ];
+
+            // Check qualification questions first (these should NOT go to contact)
+            for (const pattern of qualificationQuestions) {
+                if (pattern.test(lowerInput)) {
+                    // Route to about for general qualifications or experience for work history
+                    if (lowerInput.includes('experience') || lowerInput.includes('worked') || lowerInput.includes('background')) {
+                        return { type: 'navigateToSection', value: 'experience' };
+                    }
+                    return { type: 'navigateToSection', value: 'about' };
+                }
+            }
+
+            // Check contact intent questions (these should go to contact)
+            for (const pattern of contactIntentQuestions) {
+                if (pattern.test(lowerInput)) {
+                    return { type: 'navigateToSection', value: 'contact' };
                 }
             }
 

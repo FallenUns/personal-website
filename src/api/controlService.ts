@@ -206,6 +206,12 @@ class WebsiteControlService {
       return { type: 'navigateToSection', value: exactMatches[lowerInput as keyof typeof exactMatches] };
     }
 
+    // Priority 1.5: Enhanced context-aware question analysis
+    const contextualResult = this.analyzeQuestionContext(lowerInput);
+    if (contextualResult) {
+      return contextualResult;
+    }
+
     // Priority 2: Time setting patterns - Enhanced to handle more formats
     const timePatterns = [
       // "set time to 14:30" or "set time to 14.5"
@@ -314,47 +320,91 @@ class WebsiteControlService {
       }
     }
 
-    // Priority 8: ROBUST Navigation patterns - Very aggressive matching
+    // Priority 8: Enhanced Navigation with Project-Specific Detection
     
-    // Check for ANY mention of section keywords anywhere in the input
-    // This is very broad and will catch almost any mention
-    
-    // Projects - catch ANY mention of project-related words
+    // FIRST: Check for specific project mentions (highest priority)
+    const specificProjectPatterns = [
+      /liquid\s*glass/i,
+      /llm\s*privacy/i,
+      /cliniwatch/i,
+      /github\s*(projects?|repositories)/i,
+      /portfolio\s*(projects?|items?)/i,
+      /code\s*(samples?|examples?)/i,
+      /(what|show|tell).*liquid\s*glass/i,
+      /(what|show|tell).*(projects?|portfolio|built|created|developed|made)/i,
+      /(show\s+me\s+your|what)\s+work(?!\s+(experience|history|background))/i, // "show me your work" but not "work experience"
+      /what\s+work\s+have\s+you\s+done/i,
+      /showcase/i,
+      /demos?/i
+    ];
+
+    for (const pattern of specificProjectPatterns) {
+      if (pattern.test(lowerInput)) {
+        return { type: 'navigateToSection', value: 'projects' };
+      }
+    }
+
+    // SECOND: Check for specific experience mentions
+    const specificExperiencePatterns = [
+      /(tell\s+me\s+about|about)\s+(your\s+)?(work\s+)?experience/i,
+      /(your\s+)?(professional|work)\s+(background|experience|history)/i,
+      /(where\s+(did|have)\s+you|patrick)\s+(work|worked)/i,
+      /describe\s+your\s+work(?!\s+(on|with))/i, // "describe your work" but not "describe your work on projects"
+      /apple\s+foundation/i,
+      /urban\s+waste/i,
+      /rmit/i,
+      /(job|employment|position)s?\s+(history|experience)/i,
+      /(companies|organizations)\s+(worked|you)/i,
+      /internship/i,
+      /hackathon/i,
+      /career\s+(path|history|timeline)/i
+    ];
+
+    for (const pattern of specificExperiencePatterns) {
+      if (pattern.test(lowerInput)) {
+        return { type: 'navigateToSection', value: 'experience' };
+      }
+    }
+
+    // THIRD: Refined keyword scoring with less overlap
+    // Projects - More specific project-related terms
     const projectKeywords = [
-      'project', 'projects', 'portfolio', 'work', 'built', 'created', 'developed',
-      'applications', 'apps', 'showcase', 'demos', 'examples', 'liquid glass',
-      'llm privacy', 'cliniwatch', 'github', 'repositories', 'code samples',
+      'portfolio', 'repositories', 'code samples', 'applications', 'apps',
       'what have you made', 'what did you build', 'show me what', 'things you',
-      'your work', 'patrick built', 'patrick created', 'patrick made'
+      'patrick built', 'patrick created', 'patrick made', 'github projects'
     ];
     
-    // Experience - catch ANY mention of experience-related words
+    // Experience - Work history specific terms
     const experienceKeywords = [
-      'experience', 'experiences', 'job', 'jobs', 'career', 'work history',
-      'employment', 'positions', 'roles', 'worked', 'working', 'professional',
-      'timeline', 'internship', 'hackathon', 'apple foundation', 'urban waste', 'rmit',
-      'where did', 'where have', 'companies', 'organizations',
-      'patrick worked', 'patrick experience', 'tell me about experience'
+      'professional', 'employment', 'positions', 'roles', 'timeline',
+      'companies', 'organizations'
     ];
     
-    // About - catch ANY mention of about-related words
+    // About - Personal information specific terms  
     const aboutKeywords = [
-      'about', 'who', 'introduction', 'intro', 'overview', 'summary',
-      'tell me about you', 'who are you', 'who is patrick', 'about patrick',
-      'background', 'profile', 'bio', 'biography', 'yourself', 'describe',
+      'who', 'introduction', 'intro', 'overview', 'summary',
+      'who are you', 'who is patrick', 'about patrick',
+      'profile', 'bio', 'biography', 'yourself', 'describe',
       'download cv', 'download resume', 'get cv', 'get resume', 'curriculum',
-      'resume', 'cv', 'skills', 'expertise', 'history',
-      'meet patrick', 'learn about', 'get to know', 'introduce yourself'
+      'resume', 'cv', 'skills', 'expertise',
+      'meet patrick', 'get to know', 'introduce yourself'
     ];
     
-    // Contact - catch ANY mention of contact-related words
+    // Contact - Communication specific terms
     const contactKeywords = [
       'contact', 'contacts', 'email', 'reach', 'touch', 'connect', 'message',
-      'hire', 'hiring', 'work with', 'collaborate', 'get in touch', 'reach out',
-      'talk', 'speak', 'communicate', 'phone', 'linkedin', 'social', 'find you',
-      'how can i', 'how to reach', 'how to contact', 'get hold', 'available',
-      'freelance', 'contractor', 'opportunity', 'opportunities', 'interested',
-      'patrick email', 'patrick contact'
+      'get in touch', 'reach out', 'talk', 'speak', 'communicate', 'phone', 
+      'linkedin', 'social', 'find you', 'how can i', 'how to reach', 
+      'how to contact', 'get hold', 'available', 'freelance', 'contractor', 
+      'opportunity', 'opportunities', 'patrick email', 'patrick contact',
+      'let me know', 'send message', 'drop a line', 'write to'
+    ];
+
+    // Context-aware hiring keywords - only match when it's clearly about contacting
+    const contactHiringKeywords = [
+      'i want to hire', 'i would like to hire', 'i need to hire',
+      'looking to hire', 'interested in hiring', 'want to work with',
+      'would like to work with', "let's work together", 'collaborate with'
     ];
 
     // First check for direct navigation commands
@@ -380,7 +430,7 @@ class WebsiteControlService {
       }
     }
 
-    // Now check for ANY keyword match with scoring system
+    // Enhanced scoring with refined keywords and less overlap
     let scores = {
       projects: 0,
       experience: 0,
@@ -401,9 +451,42 @@ class WebsiteControlService {
       if (lowerInput.includes(keyword)) scores.about++;
     });
     
+    // Enhanced contact scoring with context awareness
     contactKeywords.forEach(keyword => {
       if (lowerInput.includes(keyword)) scores.contact++;
     });
+
+    // Add context-aware hiring keywords with higher weight
+    contactHiringKeywords.forEach(phrase => {
+      if (lowerInput.includes(phrase)) scores.contact += 2; // Higher weight for clear contact intent
+    });
+
+    // Special handling for ambiguous terms
+    // "about" context analysis
+    if (lowerInput.includes('about')) {
+      if (lowerInput.includes('tell me about you') || 
+          lowerInput.includes('tell me about yourself') ||
+          lowerInput.includes('about patrick')) {
+        scores.about += 2; // Strong boost for personal questions
+      } else if (lowerInput.includes('about your experience') || 
+                 lowerInput.includes('about your work') ||
+                 lowerInput.includes('about your professional')) {
+        scores.experience += 2; // Route experience questions correctly
+        scores.about -= 1; // Reduce about score for experience questions
+      }
+    }
+
+    // "work" context analysis  
+    if (lowerInput.includes('work')) {
+      if (lowerInput.includes('work experience') || 
+          lowerInput.includes('work history') ||
+          lowerInput.includes('work background')) {
+        scores.experience += 2;
+      } else if (lowerInput.includes('work with') || 
+                 lowerInput.includes('work together')) {
+        scores.contact += 1;
+      }
+    }
 
     // Find the section with the highest score
     let maxScore = 0;
@@ -432,14 +515,70 @@ class WebsiteControlService {
       { pattern: /who.*(patrick|you|is)/i, section: 'about' },
       { pattern: /tell.*(about|yourself|patrick)/i, section: 'about' },
       { pattern: /download.*(cv|resume)/i, section: 'about' },
-      { pattern: /how.*(contact|reach|hire|email)/i, section: 'contact' },
-      { pattern: /want.*(hire|contact|reach|work)/i, section: 'contact' },
-      { pattern: /interested.*(working|hiring|contact)/i, section: 'contact' }
+      // Only include contact patterns for clear contact intent (not qualification questions)
+      { pattern: /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?(contact|reach|get\s+in\s+touch|email)/i, section: 'contact' },
+      { pattern: /i\s+want\s+to\s+(contact|reach|hire|work\s+with)/i, section: 'contact' },
+      { pattern: /i\s+(need|would\s+like)\s+to\s+(contact|reach|hire|work\s+with)/i, section: 'contact' }
     ];
 
     for (const { pattern, section } of questionPatterns) {
       if (pattern.test(lowerInput)) {
         return { type: 'navigateToSection', value: section };
+      }
+    }
+
+    return null;
+  }
+
+  // Enhanced context-aware question analysis
+  private analyzeQuestionContext(lowerInput: string): LLMCommand | null {
+    // Questions ABOUT Patrick's qualifications/skills (should go to about/experience)
+    const qualificationQuestions = [
+      /why\s+(should\s+i\s+|would\s+i\s+|do\s+you\s+)?hire\s+(him|patrick|you)/i,
+      /what\s+(makes\s+)?(him|patrick|you)\s+(good|qualified|suitable|worth)/i,
+      /why\s+(is\s+)?(he|patrick|you)\s+(good|qualified|suitable|worth)/i,
+      /should\s+i\s+hire\s+(him|patrick|you)/i,
+      /is\s+(he|patrick|you)\s+(good|qualified|suitable|worth)/i,
+      /what\s+(skills|experience|qualifications)\s+(does\s+(he|patrick|you)\s+have|do\s+you\s+have)/i,
+      /what\s+(are\s+(his|patrick's|your)|his|patrick's|your)\s+(skills|qualifications|abilities|strengths)/i,
+      /tell\s+me\s+about\s+(his|patrick's|your)\s+(skills|qualifications|background)/i,
+      /what\s+(can|could)\s+(he|patrick|you)\s+(do|offer|bring)/i,
+      /why\s+(choose|pick|select)\s+(him|patrick|you)/i,
+      /is\s+(he|patrick|you)\s+good\s+(for|at)/i,
+      /what\s+(can|could)\s+(patrick|he|you)\s+(do|offer|bring|provide)/i,
+      /why\s+(choose|pick|select)\s+(him|patrick|you)(?!\s+a)/i // Avoid "why choose him a" constructions
+    ];
+
+    // Questions FOR hiring/contacting (should go to contact)
+    const contactIntentQuestions = [
+      /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?hire\s+(him|patrick|you)/i,
+      /where\s+(do\s+i\s+|can\s+i\s+|to\s+)?hire\s+(him|patrick|you)/i,
+      /how\s+(do\s+i\s+|can\s+i\s+|to\s+)?(contact|reach|get\s+in\s+touch)/i,
+      /i\s+want\s+to\s+hire\s+(him|patrick|you)/i,
+      /i\s+would\s+like\s+to\s+hire\s+(him|patrick|you)/i,
+      /i\s+need\s+to\s+(contact|reach|hire)\s+(him|patrick|you)/i,
+      /let's\s+(work\s+together|collaborate)/i,
+      /available\s+for\s+(work|hire|projects)/i,
+      /how\s+much\s+(do\s+you\s+charge|does\s+(he|patrick)\s+charge)/i,
+      /(what's|what\s+is)\s+(his|patrick's|your)\s+(rate|price|cost)/i,
+      /i\s+need\s+to\s+hire\s+(someone|a\s+developer)/i
+    ];
+
+    // Check qualification questions first (these should NOT go to contact)
+    for (const pattern of qualificationQuestions) {
+      if (pattern.test(lowerInput)) {
+        // Route to about for general qualifications or experience for work history
+        if (lowerInput.includes('experience') || lowerInput.includes('worked') || lowerInput.includes('background')) {
+          return { type: 'navigateToSection', value: 'experience' };
+        }
+        return { type: 'navigateToSection', value: 'about' };
+      }
+    }
+
+    // Check contact intent questions (these should go to contact)
+    for (const pattern of contactIntentQuestions) {
+      if (pattern.test(lowerInput)) {
+        return { type: 'navigateToSection', value: 'contact' };
       }
     }
 
