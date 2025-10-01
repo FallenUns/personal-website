@@ -12,7 +12,9 @@ interface ExperienceDetailProps {
 const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'responsibilities' | 'achievements' | 'impact'>('overview');
   const [isVisible, setIsVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const modalContentRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Find the experience by slug
@@ -39,6 +41,20 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
     }
   }, [isVisible]);
 
+  // Handle ESC key press
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isVisible && !isClosing) {
+        handleClose();
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('keydown', handleEscKey);
+      return () => document.removeEventListener('keydown', handleEscKey);
+    }
+  }, [isVisible, isClosing]);
+
   if (!experience) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -56,10 +72,19 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
   }
 
   const handleClose = () => {
+    if (isClosing) return; // Prevent multiple calls
+    setIsClosing(true);
     setIsVisible(false);
     setTimeout(() => {
       navigateBack();
     }, 300);
+  };
+
+  // Handle click outside modal
+  const handleBackdropClick = (event: React.MouseEvent) => {
+    if (modalContentRef.current && !modalContentRef.current.contains(event.target as Node)) {
+      handleClose();
+    }
   };
 
   const liquidGlassProps = useMemo(() => ({
@@ -226,6 +251,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
+          onClick={handleBackdropClick}
         >
           <div className="w-full h-full flex items-center justify-center p-4">
             <motion.div
@@ -235,6 +261,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
             >
               <LiquidGlass
                 width={dimensions.width}
@@ -244,7 +271,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                 {...liquidGlassProps}
                 overLight={false}
               >
-                <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
+                <div ref={modalContentRef} className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
                   {/* Header */}
                   <div className="flex items-center justify-between p-6 border-b border-white/10">
                     <div className="flex items-center space-x-3">
@@ -253,10 +280,15 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                       </span>
                     </div>
                     <motion.button
-                      onClick={handleClose}
-                      className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClose();
+                      }}
+                      disabled={isClosing}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: isClosing ? 1 : 1.1 }}
+                      whileTap={{ scale: isClosing ? 1 : 0.9 }}
+                      aria-label="Close modal"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
                         <line x1="18" y1="6" x2="6" y2="18"></line>

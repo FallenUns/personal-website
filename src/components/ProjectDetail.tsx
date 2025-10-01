@@ -12,7 +12,9 @@ interface ProjectDetailProps {
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'challenges' | 'outcomes'>('overview');
   const [isVisible, setIsVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const modalContentRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Find the project by slug
@@ -37,6 +39,20 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     }
   }, [isVisible]);
 
+  // Handle ESC key press
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isVisible && !isClosing) {
+        handleClose();
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('keydown', handleEscKey);
+      return () => document.removeEventListener('keydown', handleEscKey);
+    }
+  }, [isVisible, isClosing]);
+
 
   if (!project) {
     return (
@@ -55,10 +71,19 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   }
 
   const handleClose = () => {
+    if (isClosing) return; // Prevent multiple calls
+    setIsClosing(true);
     setIsVisible(false);
     setTimeout(() => {
       navigateBack();
     }, 300);
+  };
+
+  // Handle click outside modal
+  const handleBackdropClick = (event: React.MouseEvent) => {
+    if (modalContentRef.current && !modalContentRef.current.contains(event.target as Node)) {
+      handleClose();
+    }
   };
 
   const liquidGlassProps = useMemo(() => ({
@@ -239,20 +264,22 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-      className="fixed inset-0 z-[9999] bg-black/30"
+          className="fixed inset-0 z-[9999] bg-black/30"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
+          onClick={handleBackdropClick}
         >
           <div className="w-full h-full flex items-center justify-center p-4">
             <motion.div
               ref={containerRef}
-        className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl h-[min(85vh,800px)] relative"
+              className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl h-[min(85vh,800px)] relative"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
             >
               <LiquidGlass
                 width={dimensions.width}
@@ -262,7 +289,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                 {...liquidGlassProps}
                 overLight={false}
               >
-                <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
+                <div ref={modalContentRef} className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
                   {/* Header */}
                   <div className="flex items-center justify-between p-6 border-b border-white/10">
                     <div className="flex items-center space-x-3">
@@ -271,10 +298,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                       </span>
                     </div>
                     <motion.button
-                      onClick={handleClose}
-                      className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClose();
+                      }}
+                      disabled={isClosing}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: isClosing ? 1 : 1.1 }}
+                      whileTap={{ scale: isClosing ? 1 : 0.9 }}
+                      aria-label="Close modal"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -398,6 +430,55 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 </div>
                               </LiquidGlass>
                             </div>
+                          ) : project.images && project.images.length > 0 ? (
+                            // Display actual project image if available
+                            <LiquidGlass
+                              width={0}
+                              height={0}
+                              positioning="relative"
+                              style={{ borderRadius: '16px', width: '100%', height: '100%', minWidth: '100%', minHeight: '100%' }}
+                              elasticity={0.2}
+                              saturation={140}
+                              displacementScale={60}
+                              blurAmount={4}
+                              mode="shader"
+                              overLight={false}
+                            >
+                              <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden">
+                                <img 
+                                  src={project.images[0]} 
+                                  alt={project.title}
+                                  className="w-full h-full object-cover rounded-2xl"
+                                  onLoad={() => {
+                                    console.log(`✅ Image loaded successfully: ${project.images?.[0] || 'unknown'}`);
+                                  }}
+                                  onError={(e) => {
+                                    console.error(`❌ Failed to load image: ${project.images?.[0] || 'unknown'}`);
+                                    // Fallback to placeholder if image fails to load
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const parent = target.parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = `
+                                        <div class="w-full h-full flex items-center justify-center text-white/60">
+                                          <div class="text-center">
+                                            <div class="w-16 h-16 bg-white/20 rounded-xl mb-4 mx-auto flex items-center justify-center">
+                                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                <polyline points="21,15 16,10 5,21"></polyline>
+                                              </svg>
+                                            </div>
+                                            <p class="text-sm">Image: ${project.images?.[0] || 'unknown'}</p>
+                                            <p class="text-xs text-white/40">Not found</p>
+                                          </div>
+                                        </div>
+                                      `;
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </LiquidGlass>
                           ) : (
                             // Standard preview for other projects
                             <LiquidGlass
