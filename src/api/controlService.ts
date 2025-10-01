@@ -305,6 +305,13 @@ class WebsiteControlService {
       /^(go to|navigate to|take me to|show me the|open the|visit the)\s+(projects?|about|experiences?|contacts?)\s*(section|page)?$/i,
       /^(show|open|visit)\s+(projects?|about|experiences?|contacts?)\s*(section|page)?$/i,
       
+      // "Tell me more about [section]" patterns - specific to sections navigation
+      /^tell me more about (the\s+)?(contact|contacting|reaching out)$/i,
+      /^tell me more about (the\s+)?(projects?|portfolio|work)$/i,
+      /^tell me more about (the\s+)?(experience|background|career|work history)$/i,
+      /^tell me more about (the\s+)?(about|bio|profile)(?!\w)/i,
+
+
       // Contact intent (explicit hiring/contact requests)
       /^(how do i|how can i|how to)\s+(hire|contact|reach|get in touch|email)\s*(him|patrick|you)?$/i,
       /^i (want to|need to|would like to)\s+(hire|contact|reach|work with)\s*(him|patrick|you)$/i,
@@ -348,13 +355,15 @@ class WebsiteControlService {
         const fullMatch = match[0];
         
         // Determine target section based on keywords in the match
-        if (/projects?|portfolio/i.test(fullMatch)) {
+        if (/contact|contacting|reaching out/i.test(fullMatch)) {
+          return { type: 'navigateToSection', value: 'contact' };
+        } else if (/projects?|portfolio|work(?!\s+(history|experience))/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'projects' };
         } else if (/experience|background|work history|career/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'experience' };
         } else if (/about|bio|profile|resume|cv|patrick|who.*patrick|introduce.*patrick/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'about' };
-        } else if (/contact|hire|reach|email|work with|collaborate|available/i.test(fullMatch)) {
+        } else if (/|hire|reach|email|work with|collaborate|available/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'contact' };
         }
       }
