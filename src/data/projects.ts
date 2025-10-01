@@ -3,6 +3,24 @@
 export type ProjectCategory = 'Design' | 'Development' | 'Mobile' | 'UI Library' | 'Research';
 export type MockupType = 'ui-ux' | 'web' | 'landing' | 'paper';
 
+export type ChartType = 'bar' | 'line' | 'pie' | 'area' | 'scatter';
+
+export type ChartDataPoint = {
+  [key: string]: string | number;
+};
+
+export type ChartConfig = {
+  type: ChartType;
+  title: string;
+  description?: string;
+  data: ChartDataPoint[];
+  xAxisKey: string;
+  yAxisKeys: string[];
+  colors?: string[];
+  width?: number;
+  height?: number;
+};
+
 export type Project = {
   id: number;
   title: string;
@@ -21,6 +39,9 @@ export type Project = {
   features: string[];
   challenges?: string[];
   outcomes?: string[];
+  
+  // Chart data for research projects
+  charts?: ChartConfig[];
 };
 
 export const projects: Project[] = [
@@ -199,6 +220,102 @@ export const projects: Project[] = [
       'GPT-4o CoT recall up to 45.9% with lower precision',
       'High overall accuracy (≥84%) but not meaningful due to imbalance',
       'Result: viable as human-in-the-loop prefilter; not ready for full automation'
+    ],
+    charts: [
+      {
+        type: 'bar',
+        title: 'Correct vs Incorrect Labels of Privacy Violations',
+        data: [
+          {
+            name: 'DeepSeek CoT',
+            correct: 65,
+            incorrect: 81
+          },
+          {
+            name: 'DeepSeek Few Shot',
+            correct: 68,
+            incorrect: 78
+          },
+          {
+            name: 'DeepSeek Zero Shot',
+            correct: 54,
+            incorrect: 92
+          },
+          {
+            name: 'GPT CoT',
+            correct: 67,
+            incorrect: 79
+          },
+          {
+            name: 'GPT Few Shot',
+            correct: 65,
+            incorrect: 81
+          },
+          {
+            name: 'GPT Zero Shot',
+            correct: 41,
+            incorrect: 105
+          }
+        ],
+        xAxisKey: 'name',
+        yAxisKeys: ['correct', 'incorrect'],
+        colors: ['#22c55e', '#ef4444'],
+        width: 400,
+        height: 250
+      },
+      {
+        type: 'bar',
+        title: 'Model Performance Metrics Comparison',
+        data: [
+          {
+            name: 'GPT Zero Shot',
+            precision: 24.40,
+            recall: 28.10,
+            f1Score: 26.10,
+            accuracy: 88.40
+          },
+          {
+            name: 'GPT Few Shot',
+            precision: 24.90,
+            recall: 44.50,
+            f1Score: 31.90,
+            accuracy: 86.20
+          },
+          {
+            name: 'GPT CoT',
+            precision: 22.20,
+            recall: 45.90,
+            f1Score: 29.90,
+            accuracy: 84.30
+          },
+          {
+            name: 'DS Zero Shot',
+            precision: 25.10,
+            recall: 37.00,
+            f1Score: 29.90,
+            accuracy: 87.40
+          },
+          {
+            name: 'DS Few Shot',
+            precision: 25.40,
+            recall: 46.60,
+            f1Score: 32.70,
+            accuracy: 86.10
+          },
+          {
+            name: 'DS CoT',
+            precision: 24.90,
+            recall: 44.50,
+            f1Score: 31.90,
+            accuracy: 86.20
+          }
+        ],
+        xAxisKey: 'name',
+        yAxisKeys: ['precision', 'recall', 'f1Score', 'accuracy'],
+        colors: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'],
+        width: 400,
+        height: 250
+      }
     ]
   },
     {
@@ -262,7 +379,7 @@ export const projects: Project[] = [
     slug: 'cliniwatch',
     fullDescription:
       'Cliniwatch was developed during the RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. The challenge was: "How might Northern Health create an early warning system that helps detect deteriorating mental health patients before it becomes a crisis — without depending solely on phone calls and clinical visits?" Our team created a comprehensive solution that bridges the gap between patients, carers, and clinical teams through proactive monitoring and early intervention.',
-    images: ['/cliniwatch-1.jpg', '/cliniwatch-2.jpg', '/cliniwatch-3.jpg'],
+    images: ['/cliniwatch-1.png', '/cliniwatch-2.jpg', '/cliniwatch-3.jpg'],
     liveUrl: '#',
     githubUrl: 'https://github.com/FallenUns/IOS_Hackathon',
     features: [

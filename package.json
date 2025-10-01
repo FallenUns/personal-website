@@ -20,6 +20,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
+    "recharts": "^3.2.1",
     "simplex-noise": "^4.0.3",
     "stats.js": "^0.17.0",
     "tailwindcss": "^4.1.10",

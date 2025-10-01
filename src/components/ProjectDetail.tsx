@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
+import InteractiveChart from './InteractiveChart';
 import { navigateBack } from '../utils/router';
 import './performance.css';
 import { getProjectBySlug } from '../data/projects';
@@ -11,10 +12,13 @@ interface ProjectDetailProps {
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'challenges' | 'outcomes'>('overview');
+  const [activeChartIndex, setActiveChartIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
+  const leftPanelRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Find the project by slug
@@ -38,6 +42,23 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
         return () => resizeObserver.disconnect();
     }
   }, [isVisible]);
+
+  // Handle scroll to show/hide indicator
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget;
+    const hasScrollableContent = element.scrollHeight > element.clientHeight;
+    const hasScrolled = element.scrollTop > 0;
+    setShowScrollIndicator(hasScrollableContent && !hasScrolled);
+  };
+
+  // Check initial scroll state
+  useEffect(() => {
+    if (leftPanelRef.current) {
+      const element = leftPanelRef.current;
+      const hasScrollableContent = element.scrollHeight > element.clientHeight;
+      setShowScrollIndicator(hasScrollableContent);
+    }
+  }, [project, isVisible]);
 
   // Handle ESC key press
   useEffect(() => {
@@ -318,7 +339,37 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                   {/* Main content */}
                   <div className="flex-1 flex overflow-hidden">
                     {/* Left side - Hero */}
-                    <div className="w-1/2 p-6 flex flex-col overflow-y-auto">
+                    <div 
+                      ref={leftPanelRef}
+                      className="w-1/2 p-6 flex flex-col overflow-y-auto relative"
+                      onScroll={handleScroll}
+                    >
+                      {/* Simple arrow indicator - fixed position */}
+                      {showScrollIndicator && ((project.liveUrl && project.liveUrl !== '#') || (project.githubUrl && project.githubUrl !== '#')) ? (
+                        <div className="fixed bottom-4 left-4 z-[10000] pointer-events-none">
+                          <motion.div
+                            className="bg-white/20 backdrop-blur-sm rounded-full p-2 border border-white/30"
+                            animate={{ y: [0, 4, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                          >
+                            <svg 
+                              width="16" 
+                              height="16" 
+                              viewBox="0 0 24 24" 
+                              className="text-white/90"
+                            >
+                              <path 
+                                d="M12 5v14m-4-4l4 4 4-4" 
+                                stroke="currentColor" 
+                                strokeWidth="2.5" 
+                                fill="none" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </motion.div>
+                        </div>
+                      ) : null}
                       <div className="mb-6">
                         <motion.h1
                           className="text-4xl font-bold text-white mb-4"
@@ -339,14 +390,41 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                       </div>
 
                       {/* Project mockup/preview */}
-                      <div className="flex-1 flex items-center justify-center">
+                      <div className="flex-1 flex flex-col">
                         <motion.div
-                          className="w-full max-w-md h-64 relative"
+                          className="flex-1 w-full max-w-lg mx-auto relative"
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.4 }}
                         >
-                          {project.slug === 'liquid-glass-design' ? (
+                          {project.charts && project.charts.length > 0 ? (
+                            // Display interactive chart for research projects
+                            <div className="w-full h-full flex flex-col justify-center">
+                              <div className="flex-1 min-h-0 flex items-center justify-center">
+                                <div className="w-full h-full max-w-2xl relative">
+                                  {/* Chart count indicator - top right */}
+                                  {project.charts.length > 1 && (
+                                    <div className="absolute top-2 right-2 z-10">
+                                      <div className="bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20">
+                                        <span className="text-xs text-white/80">
+                                          {activeChartIndex + 1}/{project.charts.length}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <InteractiveChart 
+                                    config={{
+                                      ...project.charts[activeChartIndex],
+                                      description: undefined,
+                                      width: 450,
+                                      height: 280
+                                    }} 
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : project.slug === 'liquid-glass-design' ? (
                             // Special showcase for liquid glass project
                             <div className="w-full h-full grid grid-cols-2 gap-3">
                               <LiquidGlass
@@ -508,6 +586,48 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                             </LiquidGlass>
                           )}
                         </motion.div>
+                        
+                        {/* Chart navigation - positioned outside chart container */}
+                        {project.charts && project.charts.length > 1 && (
+                          <div className="flex justify-center items-center gap-3 mt-4 mb-2">
+                            <button
+                              onClick={() => setActiveChartIndex((prev) => 
+                                prev === 0 ? project.charts!.length - 1 : prev - 1
+                              )}
+                              className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                              aria-label="Previous chart"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                                <polyline points="15,18 9,12 15,6"></polyline>
+                              </svg>
+                            </button>
+                            <div className="flex gap-2">
+                              {project.charts.map((_, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => setActiveChartIndex(index)}
+                                  className={`w-2 h-2 rounded-full transition-all ${
+                                    index === activeChartIndex 
+                                      ? 'bg-white' 
+                                      : 'bg-white/40 hover:bg-white/60'
+                                  }`}
+                                  aria-label={`View chart ${index + 1}`}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => setActiveChartIndex((prev) => 
+                                prev === project.charts!.length - 1 ? 0 : prev + 1
+                              )}
+                              className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                              aria-label="Next chart"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                                <polyline points="9,18 15,12 9,6"></polyline>
+                              </svg>
+                            </button>
+                          </div>
+                        )}
                       </div>
                       {/* Action buttons */}
                       <div className="flex gap-3 mt-6">

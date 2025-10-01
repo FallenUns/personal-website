@@ -73,6 +73,8 @@ const AppContent: React.FC = () => {
   useCriticalResourceLoader();
   useAssetPreloader({
     images: [
+      '/cliniwatch-1.png',
+      '/portfolio-1.png',
       '/vite.svg',
       '/react-logo.png',
       '/python-logo.png',
