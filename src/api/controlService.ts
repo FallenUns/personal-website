@@ -299,9 +299,8 @@ class WebsiteControlService {
       return { type: 'getStatus' };
     }
 
-    // Priority 7: EXPLICIT NAVIGATION COMMANDS ONLY
-    // Only trigger navigation for very explicit navigation requests
-    const explicitNavigationPatterns = [
+    // Priority 7: NAVIGATION COMMANDS (both explicit navigation and information requests)
+    const navigationPatterns = [
       // Direct navigation commands
       /^(go to|navigate to|take me to|show me the|open the|visit the)\s+(projects?|about|experiences?|contacts?)\s*(section|page)?$/i,
       /^(show|open|visit)\s+(projects?|about|experiences?|contacts?)\s*(section|page)?$/i,
@@ -312,20 +311,38 @@ class WebsiteControlService {
       /^(let's|lets)\s+(work together|collaborate)$/i,
       /^(are you|is patrick|is he)\s+available for\s+(work|hire|projects)$/i,
       
-      // Very specific project viewing requests
+      // Project viewing and information requests
       /^(show me|let me see|i want to see)\s+(your|patrick's|his)?\s*(projects?|portfolio|work)$/i,
       /^(view|see)\s+(projects?|portfolio)$/i,
+      /(tell me|explain|describe|what about|more about|details about|information about)\s+(your|patrick's|his)?\s*(projects?|portfolio|work)/i,
+      /(tell me more about|more details about|elaborate on)\s+(the\s+)?(projects?|portfolio|work)/i,
+      /what\s+(projects?|work)\s+(has he|did he|have you)\s+(done|worked on|built|created)/i,
+      /can you (tell me about|show me)\s+(the\s+)?(projects?|portfolio|work)/i,
       
-      // Very specific experience viewing requests  
+      // Experience viewing and information requests  
       /^(show me|let me see|i want to see)\s+(your|patrick's|his)?\s*(experience|background|work history|career)$/i,
       /^(view|see)\s+(experience|background|work history|career)$/i,
+      /(tell me|explain|describe|what about|more about|details about|information about)\s+(your|patrick's|his)?\s*(experience|background|work history|career)/i,
+      /(tell me more about|more details about|elaborate on)\s+(the\s+)?(experience|background|work history|career)/i,
+      /what\s+(experience|background|work)\s+(does he|do you)\s+have/i,
+      /can you (tell me about|show me)\s+(the\s+)?(experience|background|work history|career)/i,
       
-      // About page requests
+      // About page requests and information
       /^(show me|let me see|i want to see)\s+(your|patrick's|his)?\s*(about|bio|profile|resume|cv)$/i,
-      /^(download|get)\s+(resume|cv)$/i
+      /^(download|get)\s+(resume|cv)$/i,
+      /(tell me|explain|describe|what about|more about|details about|information about)\s+(patrick|him|you|yourself)/i,
+      /(tell me more about|more details about|elaborate on)\s+(patrick|him|you|yourself)/i,
+      /who (is|are)\s+(patrick|you)/i,
+      /can you (tell me about|introduce)\s+(patrick|yourself)/i,
+      
+      // Contact information requests
+      /(tell me|explain|describe|what about|more about|details about|information about)\s+(contact|contacting|reaching|hiring)/i,
+      /(tell me more about|more details about|elaborate on)\s+(the\s+)?(contact|hiring)/i,
+      /how can i\s+(contact|reach|hire)\s+(patrick|him|you)/i,
+      /what's\s+(patrick's|his|your)\s+(email|contact)/i
     ];
 
-    for (const pattern of explicitNavigationPatterns) {
+    for (const pattern of navigationPatterns) {
       const match = lowerInput.match(pattern);
       if (match) {
         const fullMatch = match[0];
@@ -335,7 +352,7 @@ class WebsiteControlService {
           return { type: 'navigateToSection', value: 'projects' };
         } else if (/experience|background|work history|career/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'experience' };
-        } else if (/about|bio|profile|resume|cv/i.test(fullMatch)) {
+        } else if (/about|bio|profile|resume|cv|patrick|who.*patrick|introduce.*patrick/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'about' };
         } else if (/contact|hire|reach|email|work with|collaborate|available/i.test(fullMatch)) {
           return { type: 'navigateToSection', value: 'contact' };
@@ -343,13 +360,7 @@ class WebsiteControlService {
       }
     }
 
-    // DO NOT trigger navigation for informational questions like:
-    // - "Tell me more about Patrick's projects"
-    // - "What projects has he worked on?"
-    // - "Can you elaborate on his experience?"
-    // - "More details about the hackathon"
-    // These should go to the AI assistant, not navigation
-
+    // No navigation command found
     return null;
   }
 
