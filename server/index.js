@@ -298,8 +298,8 @@ app.post('/api/llm/chat', async (req, res) => {
       body: JSON.stringify({
         messages,
         model: model || process.env.VITE_LLM_MODEL || 'gpt-4.1-mini',
-        temperature: 0.7,
-        max_tokens: 1000
+        temperature: 0.5,
+        max_tokens: 300
       })
     });
 
