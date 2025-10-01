@@ -268,7 +268,7 @@ const AppContent: React.FC = () => {
                       🚧 Work in Progress
                     </span>
                     <span className="text-white/60 hidden sm:inline">
-                      • Chatbots, projects and experience details are not fully completed yet.
+                      • Chatbots and projects are not fully completed yet.
                     </span>
                     <motion.div
                       className="w-2 h-2 bg-orange-400 rounded-full"
