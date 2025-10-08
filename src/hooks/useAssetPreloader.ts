@@ -40,6 +40,12 @@ export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
     const signal = abortControllerRef.current.signal;
 
     registerLoader('asset-preloader');
+    console.log(`Starting to preload ${totalAssets} assets:`, {
+      images: uncachedImages.length,
+      fonts: uncachedFonts.length,
+      scripts: uncachedScripts.length
+    });
+    
     let loadedCount = 0;
     let errorCount = 0;
 
@@ -51,17 +57,21 @@ export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
       if (assetUrl) {
         if (isError) {
           errorCount++;
+          console.warn(`Failed to load asset: ${assetUrl}`);
           onError?.('Failed to load asset', assetUrl);
         } else {
+          console.log(`Successfully loaded asset: ${assetUrl}`);
           assetCache.add(assetUrl);
         }
       }
       
       const progress = (loadedCount / totalAssets) * 100;
+      console.log(`Asset loading progress: ${loadedCount}/${totalAssets} (${progress.toFixed(1)}%)`);
       setCustomProgress(progress);
       onProgress?.(loadedCount, totalAssets);
       
       if (loadedCount === totalAssets) {
+        console.log(`All assets loaded! Errors: ${errorCount}/${totalAssets}`);
         markLoaded('asset-preloader');
       }
     };
@@ -75,18 +85,31 @@ export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
         }
         
         const img = new Image();
+        
+        // Set a timeout for slow connections
+        const imageTimeout = setTimeout(() => {
+          console.warn(`Image loading timeout for: ${src}`);
+          updateProgress(src, true); // Count as error after timeout
+          resolve();
+        }, 10000); // 10 second timeout for each image
+        
         img.onload = () => {
+          clearTimeout(imageTimeout);
           updateProgress(src, false);
           resolve();
         };
         img.onerror = () => {
+          clearTimeout(imageTimeout);
           updateProgress(src, true); // Count as error
           resolve();
         };
+        
+        // Start loading the image
         img.src = src;
         
         // Handle abort
         signal.addEventListener('abort', () => {
+          clearTimeout(imageTimeout);
           img.onload = null;
           img.onerror = null;
           resolve();

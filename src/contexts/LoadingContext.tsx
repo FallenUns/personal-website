@@ -43,9 +43,9 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     const safetyTimer = setTimeout(() => {
       if (isLoading) {
         setProgress(100);
-        setTimeout(() => setIsLoading(false), 300);
+        setTimeout(() => setIsLoading(false), 100);
       }
-    }, minimumLoadTime);
+    }, 15000); // Increased to 15 seconds to allow more time for slow connections
 
     return () => clearTimeout(safetyTimer);
   }, [minimumLoadTime, isLoading]);
@@ -62,7 +62,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
         // If minimum time passes and still no loaders, finish loading
         if (elapsedTime >= minimumLoadTime) {
             setProgress(100);
-            const hideTimer = setTimeout(() => setIsLoading(false), 300);
+            const hideTimer = setTimeout(() => setIsLoading(false), 100);
             return () => clearTimeout(hideTimer);
         }
         return;
@@ -82,7 +82,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
       
         const hideTimer = setTimeout(() => {
             setIsLoading(false);
-        }, 300); // Small delay to show 100%
+        }, 100); // Reduced delay to show 100% briefly
       
         return () => clearTimeout(hideTimer);
     }

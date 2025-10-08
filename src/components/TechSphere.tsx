@@ -131,7 +131,6 @@ const TechSphere: React.FC = () => {
     { logo: '/tensorflow-logo.png', size: 75, style: { top: '40%', left: '0%' }, alt: 'TensorFlow', delay: 0.4, url: '[https://tensorflow.org](https://tensorflow.org)', description: 'TensorFlow' },
     { logo: '/python-logo.png', size: 85, style: { bottom: '15%', left: '20%' }, alt: 'Python', delay: 0.6, url: '[https://python.org](https://python.org)', description: 'Python' },
     { logo: '/js-logo.png', size: 70, style: { top: '12%', right: '18%' }, alt: 'JavaScript', delay: 0.3, url: '[https://developer.mozilla.org/en-US/docs/Web/JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)', description: 'JavaScript' },
-    { logo: '/vite.svg', size: 75, style: { top: '45%', right: '5%' }, alt: 'Vite', delay: 0.5, url: '[https://vitejs.dev](https://vitejs.dev)', description: 'Vite' },
     { logo: '/react-logo.png', size: 65, style: { bottom: '18%', right: '22%' }, alt: 'React Native', delay: 0.7, url: '[https://reactnative.dev](https://reactnative.dev)', description: 'React Native' },
   ];
 
