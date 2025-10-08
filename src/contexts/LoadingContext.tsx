@@ -18,7 +18,7 @@ interface LoadingProviderProps {
 
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ 
   children, 
-  minimumLoadTime = 1000 // Increased to 1 second minimum for better UX
+  minimumLoadTime = 300 // Reduced to 300ms for much faster experience
 }) => {
   const [loaders, setLoaders] = useState<Set<string>>(new Set());
   const [loadedItems, setLoadedItems] = useState<Set<string>>(new Set());
@@ -46,7 +46,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
         setProgress(100);
         setTimeout(() => setIsLoading(false), 100);
       }
-    }, 15000); // Increased to 15 seconds to allow more time for slow connections
+    }, 8000); // Reduced to 8 seconds - sufficient for most connections
 
     return () => clearTimeout(safetyTimer);
   }, [minimumLoadTime, isLoading]);
@@ -63,7 +63,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
         // If minimum time passes and still no loaders, finish loading
         if (elapsedTime >= minimumLoadTime) {
             setProgress(100);
-            setTimeout(() => setIsLoading(false), 500);
+            setTimeout(() => setIsLoading(false), 100); // Fast transition
         }
         return;
     }
@@ -86,10 +86,15 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
       setAllContentLoaded(true);
     }
 
-    if (allLoaded && minimumTimePassed) {
-      // Everything is ready - complete the loading
+    // Special case: if everything loads super fast (under 200ms), don't wait
+    if (allLoaded && elapsedTime < 200) {
       setProgress(100);
-      setTimeout(() => setIsLoading(false), 800);
+      setTimeout(() => setIsLoading(false), 50); // Almost immediate for super fast loading
+    }
+    // Normal case: respect minimum time but transition quickly
+    else if (allLoaded && minimumTimePassed) {
+      setProgress(100);
+      setTimeout(() => setIsLoading(false), 100); // Super fast transition when at 100%
     }
   }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded]);
 

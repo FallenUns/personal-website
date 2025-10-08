@@ -127,6 +127,7 @@ const CircularLoader: React.FC = () => {
             strokeDasharray={circumference}
             strokeLinecap="round"
             // Animate the strokeDashoffset property with smooth transitions
+            initial={{ strokeDashoffset: circumference }} // Set initial value to prevent warning
             animate={{ strokeDashoffset: strokeOffset }}
             transition={{ 
               duration: 0.8, // Increased duration for smoother transitions

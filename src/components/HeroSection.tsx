@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
+import { PreloadedImage } from '../utils/preloadedImageHooks';
 
 const HeroSection: React.FC = () => {
   useComponentLoader('HeroSection');
@@ -233,7 +234,7 @@ const HeroSection: React.FC = () => {
             overLight={false}
             mode='shader'
           >
-            <img
+            <PreloadedImage
               src="/Subject.png"
               alt="Patrick's Portrait"
               className="w-full h-full object-cover object-top"
@@ -276,7 +277,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/react-logo.png" alt="React" className="w-6 h-6" />
+              <PreloadedImage src="/react-logo.png" alt="React" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
 
@@ -311,7 +312,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/python-logo.png" alt="Python" className="w-6 h-6" />
+              <PreloadedImage src="/python-logo.png" alt="Python" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
 
@@ -346,7 +347,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/js-logo.png" alt="JavaScript" className="w-6 h-6" />
+              <PreloadedImage src="/js-logo.png" alt="JavaScript" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
 
@@ -381,7 +382,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/tensorflow-logo.png" alt="TensorFlow" className="w-6 h-6" />
+              <PreloadedImage src="/tensorflow-logo.png" alt="TensorFlow" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
 
@@ -416,7 +417,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/r-logo.png" alt="R" className="w-6 h-6" />
+              <PreloadedImage src="/r-logo.png" alt="R" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
 
@@ -450,7 +451,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/sql-logo.png" alt="SQL" className="w-6 h-6" />
+              <PreloadedImage src="/sql-logo.png" alt="SQL" className="w-6 h-6" />
             </LiquidGlass>
           </motion.div>
         </div>
@@ -492,7 +493,7 @@ const HeroSection: React.FC = () => {
             overLight={false}
             mode='shader'
           >
-            <img
+            <PreloadedImage
               src="/Subject.png"
               alt="Patrick's Portrait"
               className="w-full h-full object-cover object-top"
@@ -535,7 +536,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/react-logo.png" alt="React" className="w-9 h-9" />
+              <PreloadedImage src="/react-logo.png" alt="React" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
 
@@ -570,7 +571,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/python-logo.png" alt="Python" className="w-9 h-9" />
+              <PreloadedImage src="/python-logo.png" alt="Python" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
 
@@ -605,7 +606,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/tensorflow-logo.png" alt="TensorFlow" className="w-9 h-9" />
+              <PreloadedImage src="/tensorflow-logo.png" alt="TensorFlow" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
 
@@ -640,7 +641,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-              <img src="/js-logo.png" alt="JavaScript" className="w-9 h-9" />
+              <PreloadedImage src="/js-logo.png" alt="JavaScript" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
 
@@ -676,7 +677,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-             <img src="/r-logo.png" alt="R" className="w-9 h-9" />
+             <PreloadedImage src="/r-logo.png" alt="R" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
 
@@ -710,7 +711,7 @@ const HeroSection: React.FC = () => {
               overLight={false}
               mode='shader'
             >
-               <img src="/sql-logo.png" alt="SQL" className="w-9 h-9" />
+               <PreloadedImage src="/sql-logo.png" alt="SQL" className="w-9 h-9" />
             </LiquidGlass>
           </motion.div>
         </div>

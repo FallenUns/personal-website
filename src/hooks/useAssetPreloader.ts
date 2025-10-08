@@ -17,8 +17,13 @@ const assetCache = new Set<string>();
 export const useImagePreloader = () => {
   const { registerLoader, markLoaded, setCustomProgress } = useLoading();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const hasStartedRef = useRef(false); // Prevent duplicate preloading
   
   useEffect(() => {
+    // Prevent duplicate preloading
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
     // Create abort controller for cleanup
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
@@ -50,6 +55,7 @@ export const useImagePreloader = () => {
     // Cleanup function
     return () => {
       abortControllerRef.current?.abort();
+      hasStartedRef.current = false; // Reset for potential future use
     };
   }, [registerLoader, markLoaded, setCustomProgress]);
 };

@@ -114,20 +114,14 @@ export const preloadAllImages = (
   // Force browser to preload each image by adding preload links immediately
   allImages.forEach(src => addImageToDocumentCache(src));
   
-  const promises = allImages.map((src, index) => {
+  const promises = allImages.map((src) => {
     return preloadImage(src)
       .then((img) => {
         loaded.push(img);
         
-        // Add artificial delay for very fast connections to smooth UX
-        const elapsedTime = performance.now() - startTime;
-        const expectedMinTime = (index + 1) * 100; // 100ms per image minimum
-        const delayNeeded = Math.max(0, expectedMinTime - elapsedTime);
-        
-        setTimeout(() => {
-          onProgress?.(loaded.length + failed.length, allImages.length, src);
-          console.log(`✅ Loaded and cached image ${loaded.length + failed.length}/${allImages.length}: ${src}`);
-        }, delayNeeded);
+        // Report progress immediately - let LoadingContext handle timing
+        onProgress?.(loaded.length + failed.length, allImages.length, src);
+        console.log(`✅ Loaded and cached image ${loaded.length + failed.length}/${allImages.length}: ${src}`);
       })
       .catch((error) => {
         failed.push(src);

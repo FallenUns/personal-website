@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
+import { PreloadedImage } from '../utils/preloadedImageHooks';
 import './TechSphere.css';
 
 // Hook to check if the viewport is mobile-sized
@@ -111,7 +112,7 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
         displacementScale={30}
         mode='shader'
       >
-        <img
+        <PreloadedImage
           src={logo} alt={alt}
           style={{ width: '55%', height: '55%', objectFit: 'contain', transition: 'filter 0.3s ease', filter: isHovered ? 'brightness(1.2) drop-shadow(0 0 5px rgba(255,255,255,0.5))' : 'brightness(1)' }}
         />
