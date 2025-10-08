@@ -24,6 +24,7 @@ import MobileComingSoon from './components/MobileComingSoon';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
 import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug, isBirthdayPage } from './utils/router';
+import { projects, type Project } from './data/projects';
 import './components/performance.css';
 
 // Function to get the background color based on the hour
@@ -69,23 +70,43 @@ const AppContent: React.FC = () => {
   // Check if current route is the birthday page
   const isBirthday = isBirthdayPage(currentRoute);
 
-  // Register critical resource loaders
-  useCriticalResourceLoader();
-  useAssetPreloader({
-    images: [
-      '/cliniwatch-1.png',
-      '/portfolio-1.png',
-      '/vite.svg',
+  // Collect all images used in the application
+  const allImages = useMemo(() => {
+    const heroImages = [
+      '/Subject.png',
       '/react-logo.png',
       '/python-logo.png',
       '/js-logo.png',
       '/tensorflow-logo.png',
-      '/react-logo.png',
-      '/Subject.png',
       '/r-logo.png',
       '/sql-logo.png',
       '/logo.png'
-    ],
+    ];
+
+    // Collect all project images from the data
+    const projectImages: string[] = [];
+    projects.forEach((project: Project) => {
+      if (project.images) {
+        projectImages.push(...project.images);
+      }
+    });
+
+    // Additional images that might be used
+    const additionalImages = [
+      '/cliniwatch-1.png',
+      '/portfolio-1.png'
+    ];
+
+    // Combine all unique images
+    const allUniqueImages = [...new Set([...heroImages, ...projectImages, ...additionalImages])];
+    
+    return allUniqueImages;
+  }, []);
+
+  // Register critical resource loaders
+  useCriticalResourceLoader();
+  useAssetPreloader({
+    images: allImages,
   });
 
   // Prevent scrolling during loading
