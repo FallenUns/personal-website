@@ -126,9 +126,12 @@ const CircularLoader: React.FC = () => {
             fill="transparent"
             strokeDasharray={circumference}
             strokeLinecap="round"
-            // Animate the strokeDashoffset property
+            // Animate the strokeDashoffset property with smooth transitions
             animate={{ strokeDashoffset: strokeOffset }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            transition={{ 
+              duration: 0.8, // Increased duration for smoother transitions
+              ease: "easeInOut" // Smoother easing
+            }}
             style={{
               filter: 'drop-shadow(0 0 6px rgba(164, 139, 250, 0.4))'
             }}

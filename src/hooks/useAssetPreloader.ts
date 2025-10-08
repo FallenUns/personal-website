@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLoading } from '../contexts/LoadingContext';
+import { preloadAllImages } from '../utils/imagePreloader';
 
 interface UseAssetPreloaderOptions {
   images?: string[];
@@ -12,6 +13,47 @@ interface UseAssetPreloaderOptions {
 // Cache for loaded assets to prevent reloading
 const assetCache = new Set<string>();
 
+// Hook for comprehensive image preloading using the new image preloader
+export const useImagePreloader = () => {
+  const { registerLoader, markLoaded, setCustomProgress } = useLoading();
+  const abortControllerRef = useRef<AbortController | null>(null);
+  
+  useEffect(() => {
+    // Create abort controller for cleanup
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    registerLoader('image-preloader');
+    console.log('🚀 Starting comprehensive image preloading...');
+    
+    // Use the enhanced image preloader
+    preloadAllImages((loaded, total, currentImage) => {
+      if (signal.aborted) return;
+      
+      // Let LoadingContext handle progress smoothing - just report actual progress
+      const rawProgress = (loaded / total) * 100;
+      
+      console.log(`📸 Image loading progress: ${loaded}/${total} (${rawProgress.toFixed(1)}%) - ${currentImage}`);
+      setCustomProgress(rawProgress);
+      
+      if (loaded === total) {
+        console.log('🎉 All images preloaded successfully!');
+        // Mark as loaded immediately - let LoadingContext handle timing
+        markLoaded('image-preloader');
+      }
+    }).catch((error) => {
+      console.error('❌ Error during image preloading:', error);
+      // Still mark as loaded to prevent infinite loading
+      setTimeout(() => markLoaded('image-preloader'), 500);
+    });
+
+    // Cleanup function
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, [registerLoader, markLoaded, setCustomProgress]);
+};
+
 export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
   const { registerLoader, markLoaded, setCustomProgress } = useLoading();
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -20,9 +62,9 @@ export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
     const { images = [], fonts = [], scripts = [], onProgress, onError } = options;
     
     // Filter out already cached assets
-    const uncachedImages = images.filter(src => !assetCache.has(src));
-    const uncachedFonts = fonts.filter(font => !assetCache.has(font));
-    const uncachedScripts = scripts.filter(src => !assetCache.has(src));
+    const uncachedImages = images.filter((src: string) => !assetCache.has(src));
+    const uncachedFonts = fonts.filter((font: string) => !assetCache.has(font));
+    const uncachedScripts = scripts.filter((src: string) => !assetCache.has(src));
     
     const totalAssets = uncachedImages.length + uncachedFonts.length + uncachedScripts.length;
     
@@ -77,7 +119,7 @@ export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
     };
 
     // Preload images
-    const imagePromises = uncachedImages.map((src) => {
+    const imagePromises = uncachedImages.map((src: string) => {
       return new Promise<void>((resolve) => {
         if (signal.aborted) {
           resolve();
@@ -118,7 +160,7 @@ export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
     });
 
     // Preload fonts
-    const fontPromises = uncachedFonts.map((fontFamily) => {
+    const fontPromises = uncachedFonts.map((fontFamily: string) => {
       return new Promise<void>((resolve) => {
         if (signal.aborted) {
           resolve();
@@ -143,7 +185,7 @@ export const useAssetPreloader = (options: UseAssetPreloaderOptions = {}) => {
 
     // Preload scripts
     const scriptElements: HTMLScriptElement[] = [];
-    const scriptPromises = uncachedScripts.map((src) => {
+    const scriptPromises = uncachedScripts.map((src: string) => {
       return new Promise<void>((resolve) => {
         if (signal.aborted) {
           resolve();

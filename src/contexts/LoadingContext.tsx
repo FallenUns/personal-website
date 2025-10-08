@@ -18,13 +18,14 @@ interface LoadingProviderProps {
 
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ 
   children, 
-  minimumLoadTime = 200 // 200 ms minimum
+  minimumLoadTime = 1000 // Increased to 1 second minimum for better UX
 }) => {
   const [loaders, setLoaders] = useState<Set<string>>(new Set());
   const [loadedItems, setLoadedItems] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [startTime] = useState(Date.now());
+  const [allContentLoaded, setAllContentLoaded] = useState(false);
 
   const registerLoader = useCallback((id: string) => {
     setLoaders(prev => new Set(prev).add(id));
@@ -62,31 +63,35 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
         // If minimum time passes and still no loaders, finish loading
         if (elapsedTime >= minimumLoadTime) {
             setProgress(100);
-            const hideTimer = setTimeout(() => setIsLoading(false), 100);
-            return () => clearTimeout(hideTimer);
+            setTimeout(() => setIsLoading(false), 500);
         }
         return;
     }
 
     // Calculate progress based on loaded components
-    const newProgress = Math.floor((loadedCount / totalLoaders) * 100);
-    setProgress(prev => Math.max(prev, newProgress)); // Prevent progress from going backwards
+    const rawProgress = Math.floor((loadedCount / totalLoaders) * 100);
+    
+    // For fast connections, smooth out the progress updates
+    const timeBasedProgress = Math.floor((elapsedTime / minimumLoadTime) * 100);
+    const smoothProgress = Math.min(rawProgress, timeBasedProgress);
+    
+    // Always move progress forward, never backward
+    setProgress(prev => Math.max(prev, smoothProgress));
 
     // Check for completion
     const allLoaded = loadedCount >= totalLoaders;
     const minimumTimePassed = elapsedTime >= minimumLoadTime;
 
-    if (allLoaded && minimumTimePassed) {
-        // Ensure progress hits 100 before hiding
-        setProgress(100);
-      
-        const hideTimer = setTimeout(() => {
-            setIsLoading(false);
-        }, 100); // Reduced delay to show 100% briefly
-      
-        return () => clearTimeout(hideTimer);
+    if (allLoaded && !allContentLoaded) {
+      setAllContentLoaded(true);
     }
-  }, [loaders, loadedItems, startTime, minimumLoadTime]);
+
+    if (allLoaded && minimumTimePassed) {
+      // Everything is ready - complete the loading
+      setProgress(100);
+      setTimeout(() => setIsLoading(false), 800);
+    }
+  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded]);
 
   return (
     <LoadingContext.Provider value={{

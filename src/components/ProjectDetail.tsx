@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import InteractiveChart from './InteractiveChart';
 import { navigateBack } from '../utils/router';
+import { PreloadedImage } from '../utils/preloadedImageHooks';
 import './performance.css';
 import { getProjectBySlug } from '../data/projects';
 
@@ -523,36 +524,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               overLight={false}
                             >
                               <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden">
-                                <img 
+                                <PreloadedImage 
                                   src={project.images[0]} 
                                   alt={project.title}
                                   className="w-full h-full object-cover rounded-2xl"
                                   onLoad={() => {
-                                    console.log(`✅ Image loaded successfully: ${project.images?.[0] || 'unknown'}`);
+                                    console.log(`✅ Using preloaded image: ${project.images?.[0] || 'unknown'}`);
                                   }}
-                                  onError={(e) => {
-                                    console.error(`❌ Failed to load image: ${project.images?.[0] || 'unknown'}`);
-                                    // Fallback to placeholder if image fails to load
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    const parent = target.parentElement;
-                                    if (parent) {
-                                      parent.innerHTML = `
-                                        <div class="w-full h-full flex items-center justify-center text-white/60">
-                                          <div class="text-center">
-                                            <div class="w-16 h-16 bg-white/20 rounded-xl mb-4 mx-auto flex items-center justify-center">
-                                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                                <polyline points="21,15 16,10 5,21"></polyline>
-                                              </svg>
-                                            </div>
-                                            <p class="text-sm">Image: ${project.images?.[0] || 'unknown'}</p>
-                                            <p class="text-xs text-white/40">Not found</p>
-                                          </div>
-                                        </div>
-                                      `;
-                                    }
+                                  onError={() => {
+                                    console.error(`❌ Failed to load preloaded image: ${project.images?.[0] || 'unknown'}`);
                                   }}
                                 />
                               </div>

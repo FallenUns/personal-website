@@ -160,7 +160,7 @@ export const projects: Project[] = [
     slug: 'liquid-glass-design',
     fullDescription:
       'An innovative design system featuring advanced glassmorphism effects with real-time shader rendering. This project pushes the boundaries of web UI with liquid-like glass elements reacting to user interaction via physics-based animations and dynamic lighting.',
-    images: ['/project6-1.jpg', '/project6-2.jpg', '/project6-3.jpg'],
+    images: ['/logo.png'],
     liveUrl: '#',
     githubUrl: '#',
     features: [
@@ -197,7 +197,7 @@ export const projects: Project[] = [
     slug: 'software-engineering-project',
     fullDescription:
       'Research + production-minded pipeline that collects Stack Overflow posts (2020–2024), filters candidates with rule-based heuristics, and evaluates LLMs (GPT-4o, DeepSeek) across zero-shot, few-shot, and chain-of-thought prompts. Includes manual annotation, metrics, and a small API/dashboard for triage.',
-    images: ['/se-project-1.jpg', '/se-project-2.jpg', '/se-project-3.jpg'],
+    images: ['/Subject.png'],
     liveUrl: '#',
     githubUrl: 'https://github.com/FallenUns/Detecting-Privacy-Violation-using-LLM',
     features: [
@@ -336,7 +336,7 @@ export const projects: Project[] = [
     slug: 'interactive-portfolio',
     fullDescription:
       'This is a personal portfolio website designed to showcase my skills and projects in an engaging and interactive way. The site features a unique "liquid glass" aesthetic, a dynamic background that changes with the time of day, and a conversational AI assistant to help users navigate the site and learn more about my work. The entire project is built with a modern tech stack, focusing on performance and user experience.',
-    images: ['/portfolio-1.png', '/portfolio-2.jpg', '/portfolio-3.jpg'],
+    images: ['/portfolio-1.png'],
     liveUrl: 'https://patrickadrianus.com',
     githubUrl: 'https://github.com/FallenUns/personal-website',
     features: [
@@ -379,7 +379,7 @@ export const projects: Project[] = [
     slug: 'cliniwatch',
     fullDescription:
       'Cliniwatch was developed during the RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. The challenge was: "How might Northern Health create an early warning system that helps detect deteriorating mental health patients before it becomes a crisis — without depending solely on phone calls and clinical visits?" Our team created a comprehensive solution that bridges the gap between patients, carers, and clinical teams through proactive monitoring and early intervention.',
-    images: ['/cliniwatch-1.png', '/cliniwatch-2.jpg', '/cliniwatch-3.jpg'],
+    images: ['/cliniwatch-1.png'],
     liveUrl: '#',
     githubUrl: 'https://github.com/FallenUns/IOS_Hackathon',
     features: [
