@@ -80,9 +80,11 @@ const AppContent: React.FC = () => {
       '/python-logo.png',
       '/js-logo.png',
       '/tensorflow-logo.png',
+      '/react-logo.png',
       '/Subject.png',
       '/r-logo.png',
-      '/sql-logo.png'
+      '/sql-logo.png',
+      '/logo.png'
     ],
   });
 
