@@ -12,7 +12,7 @@ A high-performance, interactive personal portfolio website featuring immersive 3
 
 ### 🤖 AI Chat Assistant
 - **Floating Assistant Orb**: Interactive AI chatbot with smooth animations
-- **LLM Integration**: Powered by OpenAI/Anthropic APIs for intelligent responses
+- **LLM Integration**: Powered by OpenAI APIs for intelligent responses
 - **Context-Aware**: Maintains conversation history and project-specific knowledge
 - **Project-Focused Responses**: AI assistant trained on portfolio content and technical details
 - **Secure API Management**: Environment variable-based configuration
