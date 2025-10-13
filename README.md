@@ -1,154 +1,206 @@
-# Personal Website
+# Personal Website 🚀
 
-A high-performance personal portfolio website built with React, TypeScript, and Vite.
+A high-performance, interactive personal portfolio website featuring immersive 3D graphics, AI-powered chat assistant, and dynamic time-based theming. Built with modern web technologies for optimal user experience.
 
-## Performance Optimizations
+## ✨ Features
 
-This website has been optimized for maximum performance with the following improvements:
+### 🎨 Interactive 3D Graphics
+- **Three.js Integration**: Stunning 3D background with React Three Fiber
+- **Dynamic Particle System**: Tech-themed particle sphere with dynamic animations
+- **Post-Processing Effects**: Advanced visual effects using @react-three/postprocessing
+- **Time-Based Theming**: Dynamic color schemes that change based on time of day (Dawn, Day, Dusk, Night)
 
-### 🚀 React Optimizations
-- **Lazy Loading**: Components are lazy-loaded to reduce initial bundle size
-- **React.memo**: Components are memoized to prevent unnecessary re-renders
-- **useCallback**: Event handlers are memoized to prevent function recreation
-- **Optimized State Management**: Efficient state updates with proper dependency arrays
+### 🤖 AI Chat Assistant
+- **Floating Assistant Orb**: Interactive AI chatbot with smooth animations
+- **LLM Integration**: Powered by OpenAI/Anthropic APIs for intelligent responses
+- **Context-Aware**: Maintains conversation history and project-specific knowledge
+- **Project-Focused Responses**: AI assistant trained on portfolio content and technical details
+- **Secure API Management**: Environment variable-based configuration
 
-### 🎨 CSS Optimizations
-- **Hardware Acceleration**: CSS transforms use `translate3d` and `translateZ(0)`
-- **will-change Property**: Applied to animated elements for better performance
-- **CSS Containment**: Layout, style, and paint containment for better rendering
-- **Reduced Motion Support**: Respects user preferences for reduced motion
+### � Responsive Design
+- **Mobile Detection**: Adaptive experience based on device capabilities
+- **Progressive Enhancement**: Full-featured desktop experience with optimized mobile view
+- **Touch Optimizations**: Mobile-friendly interactions and gestures
 
-### 📦 Bundle Optimizations
-- **Code Splitting**: Manual chunks for vendor libraries and animations
-- **Tree Shaking**: Dead code elimination with modern build tools
-- **Minification**: Terser for JavaScript and CSS minification
-- **Console Removal**: Production builds remove console logs
+### 🎯 Interactive Components
+- **Smooth Scrolling**: Section navigation with scroll spy
+- **Project Showcase**: Detailed project cards with interactive charts (Recharts)
+- **Experience Timeline**: Professional experience section with detailed views
+- **Feedback System**: In-app feedback collection and management
+- **Custom Routing**: Client-side routing for seamless navigation
 
-### 🖼️ Image & Asset Optimizations
-- **Optimized Gradients**: Cached color palettes to reduce calculations
-- **SVG Optimization**: Inline SVGs with proper accessibility attributes
-- **Font Display**: `font-display: swap` for better loading performance
+### 🎭 Advanced Animations
+- **Framer Motion**: Fluid page transitions and micro-interactions
+- **Hardware Acceleration**: GPU-accelerated animations for 60fps performance
+- **Reduced Motion Support**: Accessibility-friendly animations respecting user preferences
 
-### 🎭 Animation Optimizations
-- **RAF Throttling**: RequestAnimationFrame throttling for smooth animations
-- **Transform Optimization**: Using transform instead of changing layout properties
-- **Reduced Complexity**: Mobile devices get simplified visual effects
+## �️ Tech Stack
 
-### 📊 Performance Monitoring
-- **Core Web Vitals**: Tracking FCP, LCP, and CLS metrics
-- **Memory Monitoring**: JavaScript heap usage tracking in development
-- **FPS Tracking**: Frame rate monitoring for smooth animations
-- **Resource Timing**: Slow resource detection and reporting
+### Core Technologies
+- **React 19.1.0** - Latest React with concurrent features
+- **TypeScript 5.8.3** - Type-safe development
+- **Vite 6.3.5** - Lightning-fast build tool with HMR
+- **Tailwind CSS 4.1.10** - Utility-first CSS framework
 
-### 🔧 Build Configuration
-- **Modern Target**: ESNext for smaller bundles in modern browsers
-- **Optimized Dependencies**: Pre-bundled common dependencies
-- **HMR Optimization**: Fast hot module replacement in development
+### 3D & Graphics
+- **Three.js 0.177.0** - WebGL 3D graphics library
+- **@react-three/fiber 9.2.0** - React renderer for Three.js
+- **@react-three/drei 10.4.2** - Useful helpers for React Three Fiber
+- **@react-three/postprocessing 3.0.4** - Post-processing effects
+- **simplex-noise 4.0.3** - Noise generation for procedural animations
 
-## Running the Project
+### UI & Animation
+- **Framer Motion 12.18.1** - Production-ready animation library
+- **liquid-glass-react 1.1.1** - Glassmorphism effects
+- **Recharts 3.2.1** - Composable charting library
+- **react-markdown 10.1.0** - Markdown rendering
+
+### Development Tools
+- **@vitejs/plugin-react-swc 3.9.0** - Fast Refresh with SWC
+- **ESLint 9.25.0** - Code quality and consistency
+- **TypeScript ESLint 8.30.1** - TypeScript-specific linting
+- **Terser 5.43.1** - JavaScript minification
+- **stats.js 0.17.0** - Performance monitoring
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/FallenUns/personal-website.git
+cd personal-website
+
 # Install dependencies
 npm install
 
+# Set up environment variables (for AI assistant)
+# Create .env file with your API keys
+cp .env.example .env
+
 # Start development server
 npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
 ```
 
-## Performance Metrics
+### Available Scripts
 
-The website achieves excellent performance scores:
+```bash
+# Start development server with HMR
+npm run dev
+
+# Type-check and build for production
+npm run build
+
+# Preview production build locally
+npm run preview
+
+# Lint code
+npm run lint
+```
+
+## 🎯 Performance Optimizations
+
+### React Optimizations
+- **Lazy Loading**: Route-based code splitting
+- **React.memo**: Memoized components to prevent unnecessary re-renders
+- **useCallback & useMemo**: Optimized hooks for expensive computations
+- **Context API**: Efficient global state management (LoadingContext, TimeContext)
+
+### Rendering Optimizations
+- **Hardware Acceleration**: CSS transforms with `translate3d` and `translateZ(0)`
+- **will-change Property**: Optimized for animated elements
+- **CSS Containment**: Layout, style, and paint containment
+- **RequestAnimationFrame**: Smooth 60fps animations
+
+### Asset Optimizations
+- **Asset Preloader**: Custom hook for preloading critical resources
+- **Image Optimization**: Lazy loading and preloading strategies
+- **Font Display**: `font-display: swap` for better loading UX
+- **SVG Optimization**: Inline optimized SVGs
+
+### Bundle Optimizations
+- **Code Splitting**: Vendor and animation chunks separated
+- **Tree Shaking**: Dead code elimination
+- **Minification**: Terser for production builds
+- **Modern Target**: ESNext for smaller bundles
+
+### Performance Monitoring
+- **Core Web Vitals**: FCP, LCP, CLS, FID tracking
+- **FPS Monitoring**: Real-time frame rate tracking (development)
+- **Memory Profiling**: Heap usage monitoring
+- **Resource Timing**: Slow resource detection
+
+## 📊 Performance Metrics
+
+Target metrics for optimal user experience:
 - **First Contentful Paint (FCP)**: < 1.5s
 - **Largest Contentful Paint (LCP)**: < 2.5s
 - **Cumulative Layout Shift (CLS)**: < 0.1
 - **First Input Delay (FID)**: < 100ms
+- **Frame Rate**: Consistent 60fps on desktop
 
-## Browser Support
+## 🌐 Browser Support
 
-- Chrome 88+
-- Firefox 85+
-- Safari 14+
-- Edge 88+
+- Chrome 88+ ✅
+- Firefox 85+ ✅
+- Safari 14+ ✅
+- Edge 88+ ✅
 
-## Tech Stack
+## 📁 Project Structure
 
-- **Framework**: React 19 with TypeScript
-- **Build Tool**: Vite 6
-- **Styling**: Tailwind CSS 4
-- **Animations**: Framer Motion
-- **Bundler**: Rollup (via Vite)
-
-## Development
-
-Performance is monitored in development mode with:
-- Real-time FPS tracking
-- Memory usage monitoring
-- Resource loading analysis
-- Core Web Vitals reporting
-
-Check the browser console for performance metrics during development.
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+src/
+├── api/              # API services and types
+├── components/       # React components
+├── contexts/         # React contexts
+├── data/             # Static data (projects, experiences)
+├── hooks/            # Custom React hooks
+├── services/         # Business logic services
+├── types/            # TypeScript type definitions
+└── utils/            # Utility functions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🔒 Security
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Environment variables for sensitive data
+- Secure API key management
+- No hardcoded credentials
+- HTTPS-only in production
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## 🎨 Customization
 
-### 🤖 AI Chatbot Integration
-- **LLM-Powered Assistant**: Integrated with OpenAI/Anthropic APIs for intelligent responses
-- **Project-Focused**: AI only answers questions related to the website and portfolio
-- **Conversation Memory**: Maintains context throughout the chat session
-- **Secure Configuration**: Environment variable-based API key management
+### Time-Based Themes
+The website dynamically adjusts colors based on time of day:
+- **Dawn** (5am-8am): Purple hues
+- **Day** (8am-5pm): Blue tones  
+- **Dusk** (5pm-8pm): Deep purple
+- **Night** (8pm-5am): Dark indigo
+
+### Adding Projects
+Edit `src/data/projects.ts` to add new portfolio projects.
+
+### Adding Experience
+Edit `src/data/experiences.ts` to update work experience.
+
+## � Contributing
+
+This is a personal portfolio project, but suggestions and feedback are welcome!
+
+## 📝 License
+
+© 2024 Patrick Adrianus. All rights reserved.
+
+## 🙏 Acknowledgments
+
+- Three.js community for amazing 3D capabilities
+- React Three Fiber for seamless React integration
+- Framer Motion for beautiful animations
+- The open-source community for incredible tools
+
+---
+
+**Built with ❤️ by Patrick Adrianus**
