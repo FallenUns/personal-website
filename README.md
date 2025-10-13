@@ -51,7 +51,7 @@ A high-performance, interactive personal portfolio website featuring immersive 3
 
 ### UI & Animation
 - **Framer Motion 12.18.1** - Production-ready animation library
-- **liquid-glass-react 1.1.1** - Glassmorphism effects
+- **[liquid-glass-react](https://github.com/rdev/liquid-glass-react) 1.1.1** - Glassmorphism effects (customized for this project)
 - **Recharts 3.2.1** - Composable charting library
 - **react-markdown 10.1.0** - Markdown rendering
 
@@ -80,7 +80,7 @@ npm install
 
 # Set up environment variables (for AI assistant)
 # Create .env file with your API keys
-cp .env.example .env
+cp .env
 
 # Start development server
 npm run dev
@@ -147,7 +147,6 @@ Target metrics for optimal user experience:
 
 - Chrome 88+ ✅
 - Firefox 85+ ✅
-- Safari 14+ ✅
 - Edge 88+ ✅
 
 ## 📁 Project Structure
@@ -192,13 +191,14 @@ This is a personal portfolio project, but suggestions and feedback are welcome!
 
 ## 📝 License
 
-© 2024 Patrick Adrianus. All rights reserved.
+© 2025 Patrick Adrianus. All rights reserved.
 
 ## 🙏 Acknowledgments
 
 - Three.js community for amazing 3D capabilities
 - React Three Fiber for seamless React integration
 - Framer Motion for beautiful animations
+- [rdev/liquid-glass-react](https://github.com/rdev/liquid-glass-react) for the glassmorphism effects foundation
 - The open-source community for incredible tools
 
 ---
