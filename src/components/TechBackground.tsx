@@ -1,5 +1,6 @@
 // src/components/TechBackground.tsx
 import React, { useEffect, useRef, useMemo } from 'react';
+import { useComponentLoader } from '../contexts/LoadingContext';
 import './tech-background.css';
 import { throttle } from '../utils/throttle';
 
@@ -79,6 +80,9 @@ const TechBackground: React.FC<TechBackgroundProps> = ({ hour }) => {
   const interactiveRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const currentPosRef = useRef({ curX: 0, curY: 0, tgX: 0, tgY: 0 });
+
+  // Register this component for loading tracking
+  useComponentLoader('TechBackground');
 
   // Interactive element that follows mouse
   useEffect(() => {

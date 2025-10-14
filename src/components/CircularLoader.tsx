@@ -12,8 +12,8 @@ const CircularLoader: React.FC = () => {
     { range: [30, 45], text: "🌪️ Shaping the form...", subtext: "Blowing and molding with precision" },
     { range: [45, 60], text: "✨ Adding crystalline details...", subtext: "Crafting intricate patterns" },
     { range: [60, 75], text: "🔧 Refining the edges...", subtext: "Polishing to perfection" },
-    { range: [75, 90], text: "❄️ Cooling in the annealer...", subtext: "Slowly tempering the glass" },
-    { range: [90, 100], text: "💎 Masterpiece complete!", subtext: "Welcome to my digital atelier" }
+    { range: [75, 99], text: "❄️ Cooling in the annealer...", subtext: "Slowly tempering the glass" },
+    { range: [99, 100], text: "💎 Masterpiece complete!", subtext: "Welcome to my digital atelier" }
   ];
   
   const [currentMessage, setCurrentMessage] = useState(loadingMessages[0]);

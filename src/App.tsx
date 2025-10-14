@@ -223,84 +223,95 @@ const AppContent: React.FC = () => {
       {/* Show mobile coming soon screen for mobile devices */}
       {isMobile && <MobileComingSoon />}
       
-      {/* Render main content always - it stays in the background */}
+      {/* Show loading screen immediately with background color */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            className="fixed inset-0 z-[10000] flex items-center justify-center"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{ backgroundColor: loaderBackgroundColor }}
+          >
+            <CircularLoader />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Render main content - hidden during loading but allows components to mount */}
       <TimeProvider hour={currentTime} isDarkMode={isDarkMode}>
-        <AnimatePresence>
-          {!isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              {/* Work in Progress Banner */}
-              <motion.div
-                className="fixed top-0 left-0 right-0 z-[100] bg-gradient-to-r from-orange-500/10 to-yellow-500/10 backdrop-blur-md border-b border-orange-400/20"
-                initial={{ y: -100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1, ease: "easeOut" }}
-              >
-                <div className="max-w-7xl mx-auto px-4 py-2">
-                  <div className="flex items-center justify-center gap-3 text-sm">
-                    <motion.div
-                      className="w-2 h-2 bg-orange-400 rounded-full"
-                      animate={{ 
-                        opacity: [0.5, 1, 0.5],
-                        scale: [0.8, 1.2, 0.8]
-                      }}
-                      transition={{ 
-                        duration: 2, 
-                        repeat: Infinity, 
-                        ease: "easeInOut" 
-                      }}
-                    />
-                    <span className="text-white/80 font-medium">
-                      🚧 Work in Progress
-                    </span>
-                    <span className="text-white/60 hidden sm:inline">
-                      • Chatbots and projects are not fully completed yet.
-                    </span>
-                    <motion.div
-                      className="w-2 h-2 bg-orange-400 rounded-full"
-                      animate={{ 
-                        opacity: [0.5, 1, 0.5],
-                        scale: [0.8, 1.2, 0.8]
-                      }}
-                      transition={{ 
-                        duration: 2, 
-                        repeat: Infinity, 
-                        ease: "easeInOut",
-                        delay: 1
-                      }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
+        <div style={{ 
+          opacity: isLoading ? 0 : 1,
+          visibility: isLoading ? 'hidden' : 'visible',
+          transition: isLoading ? 'none' : 'opacity 0.8s ease-out'
+        }}>
+          {/* Work in Progress Banner */}
+          <motion.div
+            className="fixed top-0 left-0 right-0 z-[100] bg-gradient-to-r from-orange-500/10 to-yellow-500/10 backdrop-blur-md border-b border-orange-400/20"
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: isLoading ? -100 : 0, opacity: isLoading ? 0 : 1 }}
+            transition={{ duration: 0.6, delay: isLoading ? 0 : 1, ease: "easeOut" }}
+          >
+            <div className="max-w-7xl mx-auto px-4 py-2">
+              <div className="flex items-center justify-center gap-3 text-sm">
+                <motion.div
+                  className="w-2 h-2 bg-orange-400 rounded-full"
+                  animate={{ 
+                    opacity: [0.5, 1, 0.5],
+                    scale: [0.8, 1.2, 0.8]
+                  }}
+                  transition={{ 
+                    duration: 2, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                />
+                <span className="text-white/80 font-medium">
+                  🚧 Work in Progress
+                </span>
+                <span className="text-white/60 hidden sm:inline">
+                  • Chatbots and projects are not fully completed yet.
+                </span>
+                <motion.div
+                  className="w-2 h-2 bg-orange-400 rounded-full"
+                  animate={{ 
+                    opacity: [0.5, 1, 0.5],
+                    scale: [0.8, 1.2, 0.8]
+                  }}
+                  transition={{ 
+                    duration: 2, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    delay: 1
+                  }}
+                />
+              </div>
+            </div>
+          </motion.div>
 
-              <TechBackground hour={currentTime} />
-              
-              <Navbar
-                time={currentTime}
-                onTimeChange={handleTimeChange}
-                isDarkMode={isDarkMode}
-                onToggleDarkMode={handleToggleDarkMode}
-                isAuto={isAuto}
-                onToggleAuto={handleToggleAuto}
-              />
-              
-              <main className="relative z-10 pt-8">
-                <HeroSection />
-                <ExperienceSection />
-                <ProjectsSection />
-                <Contact />
-              </main>
-              
-              <FloatingAssistant isLoading={isLoading} />
-              <FeedbackButton />
-              <FeedbackManager />
-              <GlobalFeedbackShortcut />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <TechBackground hour={currentTime} />
+          
+          <Navbar
+            time={currentTime}
+            onTimeChange={handleTimeChange}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={handleToggleDarkMode}
+            isAuto={isAuto}
+            onToggleAuto={handleToggleAuto}
+          />
+          
+          <main className="relative z-10 pt-8">
+            <HeroSection />
+            <ExperienceSection />
+            <ProjectsSection />
+            <Contact />
+          </main>
+          
+          <FloatingAssistant isLoading={isLoading} />
+          <FeedbackButton />
+          <FeedbackManager />
+          <GlobalFeedbackShortcut />
+        </div>
 
         {/* Project Detail Overlay - Only shows when on project route */}
         <AnimatePresence>
@@ -351,28 +362,13 @@ const AppContent: React.FC = () => {
           )}
         </AnimatePresence>
       </TimeProvider>
-
-      {/* The loading screen acts as an overlay on top of everything */}
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            style={{ backgroundColor: loaderBackgroundColor }}
-          >
-            <CircularLoader />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 };
 
 function App() {
   return (
-    <LoadingProvider minimumLoadTime={3000}>
+    <LoadingProvider minimumLoadTime={1000}>
       <AppContent />
     </LoadingProvider>
   );

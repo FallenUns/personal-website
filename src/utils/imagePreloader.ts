@@ -1,5 +1,10 @@
 import { projects } from '../data/projects';
 
+// Helper to check if a file is a video
+const isVideoFile = (src: string): boolean => {
+  return /\.(mp4|webm|mov)$/i.test(src);
+};
+
 // Collect all images used throughout the application
 export const getAllImages = (): string[] => {
   const heroImages = [
@@ -13,17 +18,16 @@ export const getAllImages = (): string[] => {
     '/logo.png'
   ];
 
-  // Collect project images from data
+  // Collect project images from data (excluding videos)
   const projectImages: string[] = [];
   projects.forEach((project) => {
     if (project.images && project.images.length > 0) {
-      projectImages.push(...project.images);
+      projectImages.push(...project.images.filter(img => !isVideoFile(img)));
     }
   });
 
   // Additional static images
   const staticImages = [
-    '/cliniwatch-1.png',
     '/portfolio-1.png'
   ];
 
@@ -33,9 +37,28 @@ export const getAllImages = (): string[] => {
   return allUniqueImages;
 };
 
+// Collect all videos used throughout the application
+export const getAllVideos = (): string[] => {
+  const projectVideos: string[] = [];
+  projects.forEach((project) => {
+    if (project.images && project.images.length > 0) {
+      projectVideos.push(...project.images.filter(img => isVideoFile(img)));
+    }
+  });
+
+  // Combine and deduplicate all videos
+  const allUniqueVideos = [...new Set(projectVideos)];
+  
+  return allUniqueVideos;
+};
+
 // Cache for preloaded images with proper browser integration
 const imageCache = new Map<string, HTMLImageElement>();
 const imageBlobCache = new Map<string, string>();
+
+// Cache for preloaded videos
+const videoCache = new Map<string, HTMLVideoElement>();
+const videoBlobCache = new Map<string, string>();
 
 // Force image into browser cache using link preload
 const addImageToDocumentCache = (src: string) => {
@@ -63,46 +86,158 @@ export const preloadImage = (src: string): Promise<HTMLImageElement> => {
     // First, add to browser's preload cache
     addImageToDocumentCache(src);
     
-    const img = new Image();
-    
-    // Important: Set these BEFORE setting src to ensure proper caching
-    img.crossOrigin = 'anonymous';
-    
-    img.onload = () => {
-      console.log(`✅ Successfully preloaded and cached: ${src}`);
-      imageCache.set(src, img);
-      
-      // Store blob URL for even better caching
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const blobUrl = URL.createObjectURL(blob);
-            imageBlobCache.set(src, blobUrl);
+    // Fetch as blob for better caching
+    fetch(src)
+      .then(response => response.blob())
+      .then(blob => {
+        // Create blob URL for the image
+        const blobUrl = URL.createObjectURL(blob);
+        imageBlobCache.set(src, blobUrl);
+        
+        const img = new Image();
+        
+        img.onload = () => {
+          console.log(`✅ Successfully preloaded and cached as blob: ${src}`);
+          imageCache.set(src, img);
+          resolve(img);
+        };
+        
+        img.onerror = () => {
+          console.warn(`❌ Failed to load image blob: ${src}`);
+          reject(new Error(`Failed to load image: ${src}`));
+        };
+        
+        // Use the blob URL
+        img.src = blobUrl;
+      })
+      .catch(() => {
+        // Fallback to direct loading if fetch fails
+        console.warn(`⚠️ Fetch failed for ${src}, falling back to direct load`);
+        const img = new Image();
+        
+        img.crossOrigin = 'anonymous';
+        
+        img.onload = () => {
+          console.log(`✅ Successfully preloaded (fallback): ${src}`);
+          imageCache.set(src, img);
+          resolve(img);
+        };
+        
+        img.onerror = () => {
+          console.warn(`❌ Failed to load image: ${src}`);
+          reject(new Error(`Failed to load image: ${src}`));
+        };
+        
+        img.src = src;
+      });
+  });
+};
+
+// Preload a single video and return a promise
+export const preloadVideo = (src: string): Promise<HTMLVideoElement> => {
+  // Return cached video if already loaded
+  if (videoCache.has(src)) {
+    console.log(`📹 Video already cached: ${src}`);
+    return Promise.resolve(videoCache.get(src)!);
+  }
+
+  return new Promise((resolve, reject) => {
+    // First, fetch the video as a blob to ensure it's fully cached
+    fetch(src)
+      .then(response => response.blob())
+      .then(blob => {
+        // Create a blob URL for the video
+        const blobUrl = URL.createObjectURL(blob);
+        videoBlobCache.set(src, blobUrl);
+        
+        const video = document.createElement('video');
+        
+        // Set video attributes for preloading
+        video.preload = 'auto';
+        video.muted = true;
+        video.playsInline = true;
+        
+        let hasResolved = false;
+        
+        const onCanPlayThrough = () => {
+          if (hasResolved) return;
+          hasResolved = true;
+          
+          console.log(`✅ Successfully preloaded and cached video as blob: ${src}`);
+          videoCache.set(src, video);
+          
+          // Clean up event listeners
+          video.removeEventListener('canplaythrough', onCanPlayThrough);
+          video.removeEventListener('loadeddata', onLoadedData);
+          video.removeEventListener('error', onError);
+          
+          resolve(video);
+        };
+        
+        const onLoadedData = () => {
+          // Also resolve on loadeddata as a fallback
+          if (hasResolved) return;
+          
+          // Give it a moment to ensure data is ready
+          setTimeout(() => {
+            if (!hasResolved) {
+              hasResolved = true;
+              console.log(`✅ Successfully preloaded video blob (loadeddata): ${src}`);
+              videoCache.set(src, video);
+              
+              video.removeEventListener('canplaythrough', onCanPlayThrough);
+              video.removeEventListener('loadeddata', onLoadedData);
+              video.removeEventListener('error', onError);
+              
+              resolve(video);
+            }
+          }, 100);
+        };
+        
+        const onError = (e: Event) => {
+          if (hasResolved) return;
+          hasResolved = true;
+          
+          console.warn(`❌ Failed to load video blob: ${src}`, e);
+          
+          // Clean up event listeners
+          video.removeEventListener('canplaythrough', onCanPlayThrough);
+          video.removeEventListener('loadeddata', onLoadedData);
+          video.removeEventListener('error', onError);
+          
+          reject(new Error(`Failed to load video: ${src}`));
+        };
+        
+        video.addEventListener('canplaythrough', onCanPlayThrough);
+        video.addEventListener('loadeddata', onLoadedData);
+        video.addEventListener('error', onError);
+        
+        // Set a timeout to prevent hanging
+        const timeout = setTimeout(() => {
+          if (!hasResolved && video.readyState >= 2) {
+            // If we have enough data loaded, resolve anyway
+            hasResolved = true;
+            console.log(`✅ Video blob preloaded (timeout with ready data): ${src}`);
+            videoCache.set(src, video);
+            clearTimeout(timeout);
+            resolve(video);
           }
-        });
-      }
-      
-      resolve(img);
-    };
-    
-    img.onerror = () => {
-      console.warn(`❌ Failed to load image: ${src}`);
-      reject(new Error(`Failed to load image: ${src}`));
-    };
-    
-    // Start loading the image
-    img.src = src;
+        }, 15000); // 15 second timeout
+        
+        // Use the blob URL instead of the original src
+        video.src = blobUrl;
+        video.load();
+      })
+      .catch(error => {
+        console.error(`❌ Failed to fetch video: ${src}`, error);
+        reject(error);
+      });
   });
 };
 
 // Preload all images with progress tracking
 export const preloadAllImages = (
-  onProgress?: (loaded: number, total: number, currentImage: string) => void
+  onProgress?: (loaded: number, total: number, currentAsset: string) => void
 ): Promise<{ loaded: HTMLImageElement[], failed: string[] }> => {
   const allImages = getAllImages();
   const loaded: HTMLImageElement[] = [];
@@ -140,6 +275,85 @@ export const preloadAllImages = (
   });
 };
 
+// Preload all videos with progress tracking
+export const preloadAllVideos = (
+  onProgress?: (loaded: number, total: number, currentVideo: string) => void
+): Promise<{ loaded: HTMLVideoElement[], failed: string[] }> => {
+  const allVideos = getAllVideos();
+  const loaded: HTMLVideoElement[] = [];
+  const failed: string[] = [];
+  const startTime = performance.now();
+  
+  if (allVideos.length === 0) {
+    console.log('📹 No videos to preload');
+    return Promise.resolve({ loaded, failed });
+  }
+  
+  console.log(`🚀 Starting to preload ${allVideos.length} videos:`, allVideos);
+  
+  const promises = allVideos.map((src) => {
+    return preloadVideo(src)
+      .then((video) => {
+        loaded.push(video);
+        
+        // Report progress immediately
+        onProgress?.(loaded.length + failed.length, allVideos.length, src);
+        console.log(`✅ Loaded and cached video ${loaded.length + failed.length}/${allVideos.length}: ${src}`);
+      })
+      .catch((error) => {
+        failed.push(src);
+        onProgress?.(loaded.length + failed.length, allVideos.length, src);
+        console.warn(`❌ Failed to load video ${loaded.length + failed.length}/${allVideos.length}: ${src}`, error);
+      });
+  });
+  
+  return Promise.allSettled(promises).then(() => {
+    const totalTime = performance.now() - startTime;
+    console.log(`🎉 Video preloading complete in ${totalTime.toFixed(2)}ms! Loaded: ${loaded.length}, Failed: ${failed.length}`);
+    if (loaded.length > 0) {
+      console.log(`📦 Successfully cached ${loaded.length} videos for instant access`);
+    }
+    return { loaded, failed };
+  });
+};
+
+// Preload all media (images + videos) with combined progress tracking
+export const preloadAllMedia = (
+  onProgress?: (loaded: number, total: number, currentAsset: string) => void
+): Promise<{ 
+  images: { loaded: HTMLImageElement[], failed: string[] },
+  videos: { loaded: HTMLVideoElement[], failed: string[] }
+}> => {
+  const allImages = getAllImages();
+  const allVideos = getAllVideos();
+  const totalAssets = allImages.length + allVideos.length;
+  
+  let imagesLoaded = 0;
+  let videosLoaded = 0;
+  
+  const imageProgressHandler = (loaded: number, _total: number, current: string) => {
+    imagesLoaded = loaded;
+    const totalLoaded = imagesLoaded + videosLoaded;
+    console.log(`📊 Progress: Images ${imagesLoaded}/${allImages.length}, Videos ${videosLoaded}/${allVideos.length}, Total ${totalLoaded}/${totalAssets}`);
+    onProgress?.(totalLoaded, totalAssets, current);
+  };
+  
+  const videoProgressHandler = (loaded: number, _total: number, current: string) => {
+    videosLoaded = loaded;
+    const totalLoaded = imagesLoaded + videosLoaded;
+    console.log(`📊 Progress: Images ${imagesLoaded}/${allImages.length}, Videos ${videosLoaded}/${allVideos.length}, Total ${totalLoaded}/${totalAssets}`);
+    onProgress?.(totalLoaded, totalAssets, current);
+  };
+  
+  return Promise.all([
+    preloadAllImages(imageProgressHandler),
+    preloadAllVideos(videoProgressHandler)
+  ]).then(([images, videos]) => {
+    console.log(`🎉 All media preloaded! Images: ${images.loaded.length}, Videos: ${videos.loaded.length}`);
+    return { images, videos };
+  });
+};
+
 // Get a preloaded image from cache
 export const getCachedImage = (src: string): HTMLImageElement | null => {
   return imageCache.get(src) || null;
@@ -160,10 +374,41 @@ export const getBestCachedImageSrc = (src: string): string => {
   return src;
 };
 
+// Get a preloaded video from cache
+export const getCachedVideo = (src: string): HTMLVideoElement | null => {
+  return videoCache.get(src) || null;
+};
+
+// Get cached blob URL for a video
+export const getCachedVideoBlob = (src: string): string | null => {
+  return videoBlobCache.get(src) || null;
+};
+
+// Get the best available cached version of a video
+export const getBestCachedVideoSrc = (src: string): string => {
+  // First try blob URL for maximum performance
+  const blobUrl = getCachedVideoBlob(src);
+  if (blobUrl) return blobUrl;
+  
+  // Fall back to original URL (should be in browser cache)
+  return src;
+};
+
 // Check if all images are preloaded
 export const areAllImagesPreloaded = (): boolean => {
   const allImages = getAllImages();
   return allImages.every(src => imageCache.has(src));
+};
+
+// Check if all videos are preloaded
+export const areAllVideosPreloaded = (): boolean => {
+  const allVideos = getAllVideos();
+  return allVideos.every(src => videoCache.has(src));
+};
+
+// Check if all media is preloaded
+export const areAllMediaPreloaded = (): boolean => {
+  return areAllImagesPreloaded() && areAllVideosPreloaded();
 };
 
 // Hook to get loading state
@@ -179,5 +424,31 @@ export const getImageLoadingProgress = (): {
     totalImages: allImages.length,
     loadedImages,
     isComplete: loadedImages === allImages.length
+  };
+};
+
+// Get combined media loading progress
+export const getMediaLoadingProgress = (): {
+  totalAssets: number;
+  loadedAssets: number;
+  totalImages: number;
+  loadedImages: number;
+  totalVideos: number;
+  loadedVideos: number;
+  isComplete: boolean;
+} => {
+  const allImages = getAllImages();
+  const allVideos = getAllVideos();
+  const loadedImages = allImages.filter(src => imageCache.has(src)).length;
+  const loadedVideos = allVideos.filter(src => videoCache.has(src)).length;
+  
+  return {
+    totalAssets: allImages.length + allVideos.length,
+    loadedAssets: loadedImages + loadedVideos,
+    totalImages: allImages.length,
+    loadedImages,
+    totalVideos: allVideos.length,
+    loadedVideos,
+    isComplete: loadedImages === allImages.length && loadedVideos === allVideos.length
   };
 };

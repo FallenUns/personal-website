@@ -18,7 +18,7 @@ interface LoadingProviderProps {
 
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ 
   children, 
-  minimumLoadTime = 300 // Reduced to 300ms for much faster experience
+  minimumLoadTime = 1000 // Increased to 1 second to allow video preloading
 }) => {
   const [loaders, setLoaders] = useState<Set<string>>(new Set());
   const [loadedItems, setLoadedItems] = useState<Set<string>>(new Set());
@@ -39,17 +39,8 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     setProgress(p => Math.min(100, Math.max(p, customProgress)));
   }, []);
 
-  // Safety timeout to ensure loading never gets stuck
-  useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      if (isLoading) {
-        setProgress(100);
-        setTimeout(() => setIsLoading(false), 100);
-      }
-    }, 8000); // Reduced to 8 seconds - sufficient for most connections
-
-    return () => clearTimeout(safetyTimer);
-  }, [minimumLoadTime, isLoading]);
+  // No safety timeout - wait for actual completion
+  // Loading will only complete when all loaders are done
 
   // Calculate progress and manage loading state
   useEffect(() => {
@@ -62,8 +53,9 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
         setProgress(0);
         // If minimum time passes and still no loaders, finish loading
         if (elapsedTime >= minimumLoadTime) {
+            console.log('⚠️ No loaders registered, completing loading');
             setProgress(100);
-            setTimeout(() => setIsLoading(false), 100); // Fast transition
+            setTimeout(() => setIsLoading(false), 100);
         }
         return;
     }
@@ -71,32 +63,45 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     // Calculate progress based on loaded components
     const rawProgress = Math.floor((loadedCount / totalLoaders) * 100);
     
-    // For fast connections, smooth out the progress updates
-    const timeBasedProgress = Math.floor((elapsedTime / minimumLoadTime) * 100);
-    const smoothProgress = Math.min(rawProgress, timeBasedProgress);
+    // Log progress periodically
+    if (rawProgress % 10 === 0 && rawProgress !== progress) {
+      console.log(`📊 Loading: ${loadedCount}/${totalLoaders} loaders (${rawProgress}%)`);
+      console.log(`   Registered: [${Array.from(loaders).join(', ')}]`);
+      console.log(`   Loaded: [${Array.from(loadedItems).join(', ')}]`);
+    }
+    
+    // Don't complete too fast - ensure smooth progression
+    const timeBasedProgress = Math.min(
+      Math.floor((elapsedTime / (minimumLoadTime * 2)) * 100),
+      99 // Cap at 99% until everything is loaded
+    );
+    
+    // Use the actual progress, but don't let time-based slow it down too much
+    const smoothProgress = Math.max(rawProgress, timeBasedProgress);
     
     // Always move progress forward, never backward
-    setProgress(prev => Math.max(prev, smoothProgress));
+    setProgress(prev => Math.max(prev, Math.min(smoothProgress, 99)));
 
-    // Check for completion
+    // Check for completion - be more strict
     const allLoaded = loadedCount >= totalLoaders;
     const minimumTimePassed = elapsedTime >= minimumLoadTime;
 
     if (allLoaded && !allContentLoaded) {
+      console.log('✅ All loaders completed!');
+      console.log(`   Total loaders: ${totalLoaders}`);
+      console.log(`   Loaded: [${Array.from(loadedItems).join(', ')}]`);
       setAllContentLoaded(true);
     }
 
-    // Special case: if everything loads super fast (under 200ms), don't wait
-    if (allLoaded && elapsedTime < 200) {
+    // Only complete when ALL conditions are met
+    if (allLoaded && minimumTimePassed) {
       setProgress(100);
-      setTimeout(() => setIsLoading(false), 50); // Almost immediate for super fast loading
+      setTimeout(() => {
+        console.log('🎉 Loading complete, hiding loading screen');
+        setIsLoading(false);
+      }, 300); // Give a moment for 100% to be visible
     }
-    // Normal case: respect minimum time but transition quickly
-    else if (allLoaded && minimumTimePassed) {
-      setProgress(100);
-      setTimeout(() => setIsLoading(false), 100); // Super fast transition when at 100%
-    }
-  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded]);
+  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded, progress]);
 
   return (
     <LoadingContext.Provider value={{

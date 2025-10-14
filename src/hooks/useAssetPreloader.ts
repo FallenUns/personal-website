@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLoading } from '../contexts/LoadingContext';
-import { preloadAllImages } from '../utils/imagePreloader';
+import { preloadAllMedia } from '../utils/imagePreloader';
 
 interface UseAssetPreloaderOptions {
   images?: string[];
@@ -29,25 +29,25 @@ export const useImagePreloader = () => {
     const signal = abortControllerRef.current.signal;
 
     registerLoader('image-preloader');
-    console.log('🚀 Starting comprehensive image preloading...');
+    console.log('🚀 Starting comprehensive media preloading (images + videos)...');
     
-    // Use the enhanced image preloader
-    preloadAllImages((loaded, total, currentImage) => {
+    // Use the enhanced media preloader
+    preloadAllMedia((loaded, total, currentAsset) => {
       if (signal.aborted) return;
       
       // Let LoadingContext handle progress smoothing - just report actual progress
       const rawProgress = (loaded / total) * 100;
       
-      console.log(`📸 Image loading progress: ${loaded}/${total} (${rawProgress.toFixed(1)}%) - ${currentImage}`);
+      console.log(`📸 Media loading progress: ${loaded}/${total} (${rawProgress.toFixed(1)}%) - ${currentAsset}`);
       setCustomProgress(rawProgress);
       
       if (loaded === total) {
-        console.log('🎉 All images preloaded successfully!');
+        console.log('🎉 All media (images + videos) preloaded successfully!');
         // Mark as loaded immediately - let LoadingContext handle timing
         markLoaded('image-preloader');
       }
     }).catch((error) => {
-      console.error('❌ Error during image preloading:', error);
+      console.error('❌ Error during media preloading:', error);
       // Still mark as loaded to prevent infinite loading
       setTimeout(() => markLoaded('image-preloader'), 500);
     });

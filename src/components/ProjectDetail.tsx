@@ -4,6 +4,7 @@ import LiquidGlass from './LiquidGlass';
 import InteractiveChart from './InteractiveChart';
 import { navigateBack } from '../utils/router';
 import { PreloadedImage } from '../utils/preloadedImageHooks';
+import { PreloadedVideo } from '../utils/preloadedVideoHooks';
 import './performance.css';
 import { getProjectBySlug } from '../data/projects';
 
@@ -14,6 +15,7 @@ interface ProjectDetailProps {
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'challenges' | 'outcomes'>('overview');
   const [activeChartIndex, setActiveChartIndex] = useState(0);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
@@ -393,7 +395,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                       {/* Project mockup/preview */}
                       <div className="flex-1 flex flex-col">
                         <motion.div
-                          className="flex-1 w-full max-w-lg mx-auto relative"
+                          className="flex-1 w-full max-w-lg mx-auto relative max-h-[400px]"
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.4 }}
@@ -510,7 +512,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               </LiquidGlass>
                             </div>
                           ) : project.images && project.images.length > 0 ? (
-                            // Display actual project image if available
+                            // Display actual project image or video if available
                             <LiquidGlass
                               width={0}
                               height={0}
@@ -523,18 +525,48 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               mode="shader"
                               overLight={false}
                             >
-                              <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden">
-                                <PreloadedImage 
-                                  src={project.images[0]} 
-                                  alt={project.title}
-                                  className="w-full h-full object-cover rounded-2xl"
-                                  onLoad={() => {
-                                    console.log(`✅ Using preloaded image: ${project.images?.[0] || 'unknown'}`);
-                                  }}
-                                  onError={() => {
-                                    console.error(`❌ Failed to load preloaded image: ${project.images?.[0] || 'unknown'}`);
-                                  }}
-                                />
+                              <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden relative flex items-center justify-center">
+                                {/* Media count indicator - top right */}
+                                {project.images.length > 1 && (
+                                  <div className="absolute top-2 right-2 z-10">
+                                    <div className="bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20">
+                                      <span className="text-xs text-white/80">
+                                        {activeMediaIndex + 1}/{project.images.length}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                                {project.images[activeMediaIndex].toLowerCase().endsWith('.mp4') || 
+                                 project.images[activeMediaIndex].toLowerCase().endsWith('.webm') || 
+                                 project.images[activeMediaIndex].toLowerCase().endsWith('.mov') ? (
+                                  <PreloadedVideo
+                                    key={project.images[activeMediaIndex]}
+                                    src={project.images[activeMediaIndex]}
+                                    className="max-w-full max-h-full object-contain rounded-2xl"
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    onLoadedData={() => {
+                                      console.log(`✅ Video loaded: ${project.images?.[activeMediaIndex] || 'unknown'}`);
+                                    }}
+                                    onError={() => {
+                                      console.error(`❌ Failed to load video: ${project.images?.[activeMediaIndex] || 'unknown'}`);
+                                    }}
+                                  />
+                                ) : (
+                                  <PreloadedImage 
+                                    src={project.images[activeMediaIndex]} 
+                                    alt={project.title}
+                                    className="max-w-full max-h-full object-contain rounded-2xl"
+                                    onLoad={() => {
+                                      console.log(`✅ Using preloaded image: ${project.images?.[activeMediaIndex] || 'unknown'}`);
+                                    }}
+                                    onError={() => {
+                                      console.error(`❌ Failed to load preloaded image: ${project.images?.[activeMediaIndex] || 'unknown'}`);
+                                    }}
+                                  />
+                                )}
                               </div>
                             </LiquidGlass>
                           ) : (
@@ -566,6 +598,48 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                             </LiquidGlass>
                           )}
                         </motion.div>
+                        
+                        {/* Media navigation - for multiple images/videos */}
+                        {project.images && project.images.length > 1 && !project.charts && (
+                          <div className="flex justify-center items-center gap-3 mt-4 mb-2">
+                            <button
+                              onClick={() => setActiveMediaIndex((prev) => 
+                                prev === 0 ? project.images!.length - 1 : prev - 1
+                              )}
+                              className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                              aria-label="Previous media"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                                <polyline points="15,18 9,12 15,6"></polyline>
+                              </svg>
+                            </button>
+                            <div className="flex gap-2">
+                              {project.images.map((_, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => setActiveMediaIndex(index)}
+                                  className={`w-2 h-2 rounded-full transition-all ${
+                                    index === activeMediaIndex 
+                                      ? 'bg-white' 
+                                      : 'bg-white/40 hover:bg-white/60'
+                                  }`}
+                                  aria-label={`View media ${index + 1}`}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => setActiveMediaIndex((prev) => 
+                                prev === project.images!.length - 1 ? 0 : prev + 1
+                              )}
+                              className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                              aria-label="Next media"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                                <polyline points="9,18 15,12 9,6"></polyline>
+                              </svg>
+                            </button>
+                          </div>
+                        )}
                         
                         {/* Chart navigation - positioned outside chart container */}
                         {project.charts && project.charts.length > 1 && (

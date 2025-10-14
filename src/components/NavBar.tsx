@@ -1,5 +1,6 @@
 import React, { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useComponentLoader } from '../contexts/LoadingContext';
 import LiquidGlass from './LiquidGlass';
 import Logo from './Logo';
 import { useScrollSpy } from '../hooks/useScrollSpy';
@@ -119,6 +120,9 @@ const Navbar: React.FC<NavbarProps> = (props) => {
     width: 0, // Start with 0 to measure actual content
     height: 54  // A fixed height
   });
+
+  // Register this component for loading tracking
+  useComponentLoader('Navbar');
 
   // -- NEW: Scroll spy setup with better offset --
   const sectionIds = ['about', 'experience', 'projects', 'contact'];

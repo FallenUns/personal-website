@@ -92,20 +92,28 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
           blurAmount={4}
           displacementScale={8}
           className="cursor-pointer"
-          onClick={() => onRatingChange(star)}
         >
-          <span
-            className={`text-xl transition-colors ${
-              star <= rating 
-                ? 'text-yellow-400' 
-                : 'text-white/40'
-            }`}
+          <button
+            type="button"
+            onClick={() => onRatingChange(star)}
+            className="w-full h-full bg-transparent border-0 outline-none cursor-pointer"
+            aria-label={`Rate ${star} out of 5 stars`}
+            aria-pressed={star <= rating}
           >
-            ★
-          </span>
+            <span
+              className={`text-xl transition-colors ${
+                star <= rating 
+                  ? 'text-yellow-400' 
+                  : 'text-white/40'
+              }`}
+              aria-hidden="true"
+            >
+              ★
+            </span>
+          </button>
         </LiquidGlass>
       ))}
-      <span className="ml-2 text-sm text-white/70">
+      <span className="ml-2 text-sm text-white/70" aria-live="polite">
         ({rating}/5)
       </span>
     </div>
@@ -221,55 +229,66 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                   {/* Name and Email */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-white/90 mb-2">
+                      <label htmlFor="feedback-name" className="block text-sm font-medium text-white/90 mb-2">
                         Name *
                       </label>
                       <input
                         type="text"
-                        id="name"
+                        id="feedback-name"
+                        name="name"
+                        autoComplete="name"
                         required
                         value={formData.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
                         className="w-full h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/50 outline-none px-4 py-3 focus:border-white/40 focus:bg-white/15 transition-all duration-200"
                         placeholder="Your name"
+                        aria-label="Your name"
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">
+                      <label htmlFor="feedback-email" className="block text-sm font-medium text-white/90 mb-2">
                         Email
                       </label>
                       <input
                         type="email"
-                        id="email"
+                        id="feedback-email"
+                        name="email"
+                        autoComplete="email"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         className="w-full h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/50 outline-none px-4 py-3 focus:border-white/40 focus:bg-white/15 transition-all duration-200"
                         placeholder="your@email.com"
+                        aria-label="Your email address"
                       />
                     </div>
                   </div>
 
                   {/* Rating */}
                   <div>
-                    <label className="block text-sm font-medium text-white/90 mb-2">
+                    <label htmlFor="feedback-rating" className="block text-sm font-medium text-white/90 mb-2">
                       Overall Rating *
                     </label>
-                    <StarRating 
-                      rating={formData.rating} 
-                      onRatingChange={(rating) => handleInputChange('rating', rating)}
-                    />
+                    <div id="feedback-rating" role="radiogroup" aria-label="Overall rating out of 5 stars">
+                      <StarRating 
+                        rating={formData.rating} 
+                        onRatingChange={(rating) => handleInputChange('rating', rating)}
+                      />
+                    </div>
                   </div>
 
                   {/* Category */}
                   <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-white/90 mb-2">
+                    <label htmlFor="feedback-category" className="block text-sm font-medium text-white/90 mb-2">
                       Feedback Category *
                     </label>
                     <select
-                      id="category"
+                      id="feedback-category"
+                      name="category"
+                      autoComplete="off"
                       value={formData.category}
                       onChange={(e) => handleInputChange('category', e.target.value as FeedbackFormData['category'])}
                       className="w-full h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white outline-none px-4 py-3 focus:border-white/40 focus:bg-white/15 transition-all duration-200"
+                      aria-label="Select feedback category"
                     >
                       <option value="general" className="bg-gray-800 text-white">General Feedback</option>
                       <option value="design" className="bg-gray-800 text-white">Design & Visuals</option>
@@ -281,17 +300,20 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
 
                   {/* Message */}
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-white/90 mb-2">
+                    <label htmlFor="feedback-message" className="block text-sm font-medium text-white/90 mb-2">
                       Your Message *
                     </label>
                     <textarea
-                      id="message"
+                      id="feedback-message"
+                      name="message"
+                      autoComplete="off"
                       required
                       rows={4}
                       value={formData.message}
                       onChange={(e) => handleInputChange('message', e.target.value)}
                       className="w-full h-32 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/50 outline-none px-4 py-3 resize-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
                       placeholder="Share your thoughts, suggestions, or any feedback about the portfolio..."
+                      aria-label="Your feedback message"
                     />
                   </div>
 

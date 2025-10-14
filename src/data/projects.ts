@@ -45,113 +45,8 @@ export type Project = {
 };
 
 export const projects: Project[] = [
-  // {
-  //   id: 1,
-  //   title: 'UI/UX Design',
-  //   description: 'Modern mobile app interface design with intuitive user experience',
-  //   mockupType: 'ui-ux',
-  //   technologies: ['Figma', 'Adobe XD', 'Principle'],
-  //   category: 'Design',
-  //   slug: 'ui-ux-design',
-  //   fullDescription:
-  //     'A comprehensive mobile app design project focusing on user-centered design principles and modern interface patterns. This project showcases the complete design process from user research to final prototype, emphasizing accessibility and usability across different devices and user contexts.',
-  //   images: ['/project1-1.jpg', '/project1-2.jpg', '/project1-3.jpg'],
-  //   liveUrl: '#',
-  //   githubUrl: '#',
-  //   features: ['Responsive Design', 'User Research', 'Prototyping', 'Usability Testing'],
-  //   challenges: [
-  //     'Creating intuitive navigation for complex user flows',
-  //     'Balancing visual appeal with accessibility requirements',
-  //     'Optimizing performance across different device capabilities'
-  //   ],
-  //   outcomes: ['40% increase in user engagement', '25% reduction in task completion time', '95% user satisfaction rating']
-  // },
-  // {
-  //   id: 2,
-  //   title: 'Web Design',
-  //   description: 'Responsive web application with modern design principles',
-  //   mockupType: 'web',
-  //   technologies: ['React', 'TypeScript', 'Tailwind'],
-  //   category: 'Development',
-  //   slug: 'web-design',
-  //   fullDescription:
-  //     'A modern web application built with React and TypeScript, featuring responsive design and optimal performance. The project demonstrates advanced state management, component composition, and modern web development best practices.',
-  //   images: ['/project2-1.jpg', '/project2-2.jpg', '/project2-3.jpg'],
-  //   liveUrl: '#',
-  //   githubUrl: '#',
-  //   features: ['React Framework', 'TypeScript', 'Responsive Design', 'Performance Optimization'],
-  //   challenges: [
-  //     'Implementing complex state management across components',
-  //     'Ensuring type safety throughout the application',
-  //     'Optimizing bundle size and loading performance'
-  //   ],
-  //   outcomes: ['99.9% uptime reliability', '≈2s average page load time', '100% type coverage']
-  // },
-  // {
-  //   id: 3,
-  //   title: 'Landing Page',
-  //   description: 'High-converting landing page with optimized user flow',
-  //   mockupType: 'landing',
-  //   technologies: ['Next.js', 'Framer Motion', 'CSS3'],
-  //   category: 'Development',
-  //   slug: 'landing-page',
-  //   fullDescription:
-  //     'A high-converting landing page designed to maximize user engagement and conversion rates. Features smooth animations, optimized loading performance, and data-driven design decisions based on user behavior analytics.',
-  //   images: ['/project3-1.jpg', '/project3-2.jpg', '/project3-3.jpg'],
-  //   liveUrl: '#',
-  //   githubUrl: '#',
-  //   features: ['Next.js Framework', 'Smooth Animations', 'SEO Optimized', 'Conversion Focused'],
-  //   challenges: [
-  //     'Balancing animation complexity with performance',
-  //     'A/B testing different conversion strategies',
-  //     'Implementing advanced SEO optimization'
-  //   ],
-  //   outcomes: ['150% increase in conversion rate', '95+ PageSpeed Insights score', '300% improvement in organic traffic']
-  // },
-  // {
-  //   id: 4,
-  //   title: 'Mobile App',
-  //   description: 'Cross-platform mobile application with native performance',
-  //   mockupType: 'ui-ux',
-  //   technologies: ['React Native', 'Expo', 'Firebase'],
-  //   category: 'Mobile',
-  //   slug: 'mobile-app',
-  //   fullDescription:
-  //     'A cross-platform mobile application delivering native performance across iOS and Android platforms. Built with React Native and integrated with Firebase for real-time data synchronization and user authentication.',
-  //   images: ['/project4-1.jpg', '/project4-2.jpg', '/project4-3.jpg'],
-  //   liveUrl: '#',
-  //   githubUrl: '#',
-  //   features: ['Cross-platform', 'Native Performance', 'Real-time Data', 'Push Notifications'],
-  //   challenges: [
-  //     'Achieving native performance in cross-platform environment',
-  //     'Implementing offline-first architecture',
-  //     'Handling different platform-specific behaviors'
-  //   ],
-  //   outcomes: ['4.8/5 app store rating', '1M+ downloads', '92% user retention rate']
-  // },
-  // {
-  //   id: 5,
-  //   title: 'E-commerce',
-  //   description: 'Full-featured e-commerce platform with payment integration',
-  //   mockupType: 'web',
-  //   technologies: ['Next.js', 'Stripe', 'MongoDB'],
-  //   category: 'Development',
-  //   slug: 'ecommerce-platform',
-  //   fullDescription:
-  //     'A complete e-commerce solution with secure payment processing and inventory management. Features include user authentication, product catalog, shopping cart, order management, and comprehensive admin dashboard.',
-  //   images: ['/project5-1.jpg', '/project5-2.jpg', '/project5-3.jpg'],
-  //   liveUrl: '#',
-  //   githubUrl: '#',
-  //   features: ['Payment Integration', 'Inventory Management', 'User Authentication', 'Admin Dashboard'],
-  //   challenges: [
-  //     'Implementing secure payment processing',
-  //     'Building scalable inventory management system',
-  //     'Creating intuitive admin interface'
-  //   ],
-  //   outcomes: ['$2M+ in processed transactions', '99.99% payment success rate', '50+ active merchants']
-  // },
   {
-    id: 6,
+    id: 1,
     title: 'Liquid Glass Design System',
     description: 'Advanced glassmorphism UI library with fluid animations and shader effects',
     mockupType: 'web',
@@ -179,7 +74,7 @@ export const projects: Project[] = [
     outcomes: ['>30fps performance', '≈98% browser compatibility']
   },
   {
-    id: 7,
+    id: 2,
     title: 'LLM Privacy Violation Detection',
     description: 'End-to-end system to flag potential privacy violations in Stack Overflow posts using LLMs + heuristics',
     mockupType: 'paper',
@@ -319,7 +214,7 @@ export const projects: Project[] = [
     ]
   },
     {
-    id: 8,
+    id: 3,
     title: 'Interactive Portfolio Website',
     description: 'A personal portfolio website featuring a dynamic, time-based background, a "liquid glass" UI, and an integrated AI assistant.',
     mockupType: 'web',
@@ -360,7 +255,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 9,
+    id: 4,
     title: 'Cliniwatch – iOS Mental Health Companion App',
     description: 'A proactive monitoring system developed for the RMIT First Health iOS Hackathon to detect early signs of mental health deterioration before crisis point.',
     mockupType: 'ui-ux',
@@ -379,7 +274,7 @@ export const projects: Project[] = [
     slug: 'cliniwatch',
     fullDescription:
       'Cliniwatch was developed during the RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. The challenge was: "How might Northern Health create an early warning system that helps detect deteriorating mental health patients before it becomes a crisis — without depending solely on phone calls and clinical visits?" Our team created a comprehensive solution that bridges the gap between patients, carers, and clinical teams through proactive monitoring and early intervention.',
-    images: ['/cliniwatch-1.png'],
+    images: ['/cliniwatch-1.MP4', '/cliniwatch-2.png'],
     liveUrl: '#',
     githubUrl: 'https://github.com/FallenUns/IOS_Hackathon',
     features: [

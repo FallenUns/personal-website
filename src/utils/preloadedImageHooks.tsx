@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCachedImage, getBestCachedImageSrc, areAllImagesPreloaded } from './imagePreloader';
+import { getCachedImage, getCachedImageBlob, areAllImagesPreloaded } from './imagePreloader';
 
 // Hook to use a preloaded image with automatic fallback
 export const usePreloadedImage = (src: string) => {
@@ -7,21 +7,28 @@ export const usePreloadedImage = (src: string) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const checkAndSetImage = () => {
-      const cachedImage = getCachedImage(src);
-      if (cachedImage) {
-        // Use the best cached version (blob URL if available)
-        const bestSrc = getBestCachedImageSrc(src);
-        setImageSrc(bestSrc);
-        setIsLoaded(true);
-        console.log(`🎯 Using cached image for: ${src} -> ${bestSrc !== src ? 'blob URL' : 'original'}`);
-      } else {
-        // Image not cached yet, keep checking
-        setTimeout(checkAndSetImage, 100);
-      }
-    };
+    // Try blob URL first for best performance
+    const blobUrl = getCachedImageBlob(src);
+    if (blobUrl) {
+      console.log(`✅ Using cached image blob for: ${src}`);
+      setImageSrc(blobUrl);
+      setIsLoaded(true);
+      return;
+    }
 
-    checkAndSetImage();
+    // Then try cached image
+    const cachedImage = getCachedImage(src);
+    if (cachedImage) {
+      console.log(`✅ Using cached image for: ${src}`);
+      setImageSrc(cachedImage.src);
+      setIsLoaded(true);
+      return;
+    }
+
+    // Otherwise use original src
+    console.log(`⚠️ Image not cached, using original: ${src}`);
+    setImageSrc(src);
+    setIsLoaded(true);
   }, [src]);
 
   return { src: imageSrc, isLoaded };
@@ -56,18 +63,7 @@ export const PreloadedImage: React.FC<{
   onLoad?: () => void;
   onError?: () => void;
 }> = ({ src, alt, className, style, onLoad, onError }) => {
-  const { src: preloadedSrc, isLoaded } = usePreloadedImage(src);
-
-  if (!isLoaded) {
-    // Return a placeholder or loading state
-    return (
-      <div 
-        className={`${className || ''} bg-gray-200 animate-pulse`} 
-        style={style}
-        aria-label={`Loading ${alt}`}
-      />
-    );
-  }
+  const { src: preloadedSrc } = usePreloadedImage(src);
 
   return (
     <img
