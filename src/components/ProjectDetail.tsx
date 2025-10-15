@@ -82,6 +82,30 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     }
   }, [isVisible, isClosing, isFullscreen]);
 
+  // Handle arrow key navigation in fullscreen mode
+  useEffect(() => {
+    const handleArrowKeys = (event: KeyboardEvent) => {
+      if (!isFullscreen || !project?.images || project.images.length <= 1) return;
+      
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setActiveMediaIndex((prev) => 
+          prev === 0 ? project.images!.length - 1 : prev - 1
+        );
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setActiveMediaIndex((prev) => 
+          prev === project.images!.length - 1 ? 0 : prev + 1
+        );
+      }
+    };
+
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleArrowKeys);
+      return () => document.removeEventListener('keydown', handleArrowKeys);
+    }
+  }, [isFullscreen, project?.images]);
+
   // Handle fullscreen toggle
   const handleFullscreenToggle = () => {
     setIsFullscreen(!isFullscreen);
@@ -556,24 +580,20 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   </div>
                                 )}
                                 
-                                {/* Fullscreen button for videos - top left */}
-                                {(project.images[activeMediaIndex].toLowerCase().endsWith('.mp4') || 
-                                  project.images[activeMediaIndex].toLowerCase().endsWith('.webm') || 
-                                  project.images[activeMediaIndex].toLowerCase().endsWith('.mov')) && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleFullscreenToggle();
-                                    }}
-                                    className="absolute top-2 left-2 z-10 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full border border-white/20 transition-colors group"
-                                    aria-label="Fullscreen video"
-                                    style={{ pointerEvents: 'auto' }}
-                                  >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80 group-hover:text-white">
-                                      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-                                    </svg>
-                                  </button>
-                                )}
+                                {/* Fullscreen button for images and videos - top left */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleFullscreenToggle();
+                                  }}
+                                  className="absolute top-2 left-2 z-[100] p-2 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full border border-white/20 transition-colors group"
+                                  aria-label="Fullscreen"
+                                  style={{ pointerEvents: 'auto' }}
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80 group-hover:text-white">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                                  </svg>
+                                </button>
                                 
                                 {project.images[activeMediaIndex].toLowerCase().endsWith('.mp4') || 
                                  project.images[activeMediaIndex].toLowerCase().endsWith('.webm') || 
@@ -581,7 +601,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   <PreloadedVideo
                                     key={project.images[activeMediaIndex]}
                                     src={project.images[activeMediaIndex]}
-                                    className="rounded-2xl"
+                                    className="rounded-2xl relative z-0"
                                     style={{ 
                                       width: '100%',
                                       height: '100%',
@@ -603,7 +623,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   <PreloadedImage 
                                     src={project.images[activeMediaIndex]} 
                                     alt={project.title}
-                                    className="rounded-2xl"
+                                    className="rounded-2xl relative z-0"
                                     style={{ 
                                       width: '100%',
                                       height: '100%',
@@ -842,7 +862,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
       )}
     </AnimatePresence>
     
-    {/* Fullscreen Video Modal */}
+    {/* Fullscreen Media Modal */}
     <AnimatePresence>
       {isFullscreen && project?.images && (
         <motion.div
@@ -871,22 +891,82 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
               </svg>
             </button>
             
-            {/* Fullscreen video */}
+            {/* Media count indicator - bottom center */}
+            {project.images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+                <div className="bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                  <span className="text-sm text-white/90">
+                    {activeMediaIndex + 1} / {project.images.length}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {/* Navigation buttons for multiple media */}
+            {project.images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveMediaIndex((prev) => 
+                      prev === 0 ? project.images!.length - 1 : prev - 1
+                    );
+                  }}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full border border-white/20 transition-colors group"
+                  aria-label="Previous media"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                  </svg>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveMediaIndex((prev) => 
+                      prev === project.images!.length - 1 ? 0 : prev + 1
+                    );
+                  }}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full border border-white/20 transition-colors group"
+                  aria-label="Next media"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                    <polyline points="9,18 15,12 9,6"></polyline>
+                  </svg>
+                </button>
+              </>
+            )}
+            
+            {/* Fullscreen media - video or image */}
             {project.images && project.images[activeMediaIndex] && (
-              <PreloadedVideo
-                key={project.images[activeMediaIndex]}
-                src={project.images[activeMediaIndex]}
-                className="rounded-2xl max-w-full max-h-full"
-                style={{ 
-                  objectFit: 'contain',
-                  objectPosition: 'center'
-                }}
-                autoPlay
-                loop
-                muted
-                playsInline
-                controls
-              />
+              project.images[activeMediaIndex].toLowerCase().endsWith('.mp4') ||
+              project.images[activeMediaIndex].toLowerCase().endsWith('.webm') ||
+              project.images[activeMediaIndex].toLowerCase().endsWith('.mov') ? (
+                <PreloadedVideo
+                  key={project.images[activeMediaIndex]}
+                  src={project.images[activeMediaIndex]}
+                  className="rounded-2xl max-w-full max-h-full"
+                  style={{ 
+                    objectFit: 'contain',
+                    objectPosition: 'center'
+                  }}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  controls
+                />
+              ) : (
+                <PreloadedImage
+                  key={project.images[activeMediaIndex]}
+                  src={project.images[activeMediaIndex]}
+                  alt={project.title}
+                  className="rounded-2xl max-w-full max-h-full"
+                  style={{ 
+                    objectFit: 'contain',
+                    objectPosition: 'center'
+                  }}
+                />
+              )
             )}
           </motion.div>
         </motion.div>
