@@ -7,6 +7,8 @@ interface LoadingContextType {
   registerLoader: (id: string) => void;
   markLoaded: (id: string) => void;
   setCustomProgress: (progress: number) => void;
+  preventAutoHide: () => void;
+  allowAutoHide: () => void;
 }
 
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
@@ -26,6 +28,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
   const [progress, setProgress] = useState(0);
   const [startTime] = useState(Date.now());
   const [allContentLoaded, setAllContentLoaded] = useState(false);
+  const [autoHidePrevented, setAutoHidePrevented] = useState(false);
 
   const registerLoader = useCallback((id: string) => {
     setLoaders(prev => new Set(prev).add(id));
@@ -37,6 +40,14 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
 
   const setCustomProgress = useCallback((customProgress: number) => {
     setProgress(p => Math.min(100, Math.max(p, customProgress)));
+  }, []);
+
+  const preventAutoHide = useCallback(() => {
+    setAutoHidePrevented(true);
+  }, []);
+
+  const allowAutoHide = useCallback(() => {
+    setAutoHidePrevented(false);
   }, []);
 
   // No safety timeout - wait for actual completion
@@ -93,15 +104,15 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
       setAllContentLoaded(true);
     }
 
-    // Only complete when ALL conditions are met
-    if (allLoaded && minimumTimePassed) {
+    // Only complete when ALL conditions are met AND auto-hide is not prevented
+    if (allLoaded && minimumTimePassed && !autoHidePrevented) {
       setProgress(100);
       setTimeout(() => {
         console.log('🎉 Loading complete, hiding loading screen');
         setIsLoading(false);
       }, 300); // Give a moment for 100% to be visible
     }
-  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded, progress]);
+  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded, progress, autoHidePrevented]);
 
   return (
     <LoadingContext.Provider value={{
@@ -109,7 +120,9 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
       progress,
       registerLoader,
       markLoaded,
-      setCustomProgress
+      setCustomProgress,
+      preventAutoHide,
+      allowAutoHide
     }}>
       {children}
     </LoadingContext.Provider>

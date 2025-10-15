@@ -15,7 +15,7 @@ import ProjectDetail from './components/ProjectDetail';
 import BirthdayPage from './components/BirthdayPage';
 import Navbar from './components/NavBar';
 import Contact from './components/Contact';
-import CircularLoader from './components/CircularLoader';
+import DustToOrbLoader from './components/DustToOrbLoader';
 import FloatingAssistant from './components/FloatingAssistant';
 import { FeedbackButton } from './components/FeedbackButton';
 import { FeedbackManager } from './components/FeedbackManager';
@@ -233,7 +233,7 @@ const AppContent: React.FC = () => {
             transition={{ duration: 0.5 }}
             style={{ backgroundColor: loaderBackgroundColor }}
           >
-            <CircularLoader />
+            <DustToOrbLoader />
           </motion.div>
         )}
       </AnimatePresence>
