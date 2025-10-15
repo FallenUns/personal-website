@@ -231,7 +231,7 @@ export const projects: Project[] = [
     slug: 'interactive-portfolio',
     fullDescription:
       'This is a personal portfolio website designed to showcase my skills and projects in an engaging and interactive way. The site features a unique "liquid glass" aesthetic, a dynamic background that changes with the time of day, and a conversational AI assistant to help users navigate the site and learn more about my work. The entire project is built with a modern tech stack, focusing on performance and user experience.',
-    images: ['/portfolio-1.png'],
+    images: ['/portfolio-1.png', 'portfolio-2.png'],
     liveUrl: 'https://patrickadrianus.com',
     githubUrl: 'https://github.com/FallenUns/personal-website',
     features: [

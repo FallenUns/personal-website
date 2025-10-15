@@ -26,13 +26,8 @@ export const getAllImages = (): string[] => {
     }
   });
 
-  // Additional static images
-  const staticImages = [
-    '/portfolio-1.png'
-  ];
-
   // Combine and deduplicate all images
-  const allUniqueImages = [...new Set([...heroImages, ...projectImages, ...staticImages])];
+  const allUniqueImages = [...new Set([...heroImages, ...projectImages])];
   
   return allUniqueImages;
 };
