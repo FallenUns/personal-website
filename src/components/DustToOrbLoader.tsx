@@ -11,6 +11,8 @@ const DustToOrbLoader: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [displayProgress, setDisplayProgress] = useState(0);
   const hasReached100 = useRef(false);
+  const greetingTimerRef = useRef<number | null>(null);
+  const throwTimerRef = useRef<number | null>(null);
   
   // Smooth progress animation
   useEffect(() => {
@@ -259,13 +261,13 @@ const DustToOrbLoader: React.FC = () => {
       preventAutoHide();
       
       // Show greeting message first with a slight delay
-      setTimeout(() => {
+      greetingTimerRef.current = window.setTimeout(() => {
         setAnimationPhase('greeting');
         setShowWelcome(true);
       }, 500); // 500ms delay after reaching 100%
       
       // Then do the parabolic throw after user can read the message extensively (2 seconds total)
-      setTimeout(() => {
+      throwTimerRef.current = window.setTimeout(() => {
         setAnimationPhase('throwing');
         // Fade out particles when throwing
         if (canvasRef.current) {
@@ -281,6 +283,18 @@ const DustToOrbLoader: React.FC = () => {
       setAnimationPhase('forming');
       setShowWelcome(false);
     }
+    
+    // Cleanup function to clear timers if component unmounts or progress changes
+    return () => {
+      if (greetingTimerRef.current) {
+        window.clearTimeout(greetingTimerRef.current);
+        greetingTimerRef.current = null;
+      }
+      if (throwTimerRef.current) {
+        window.clearTimeout(throwTimerRef.current);
+        throwTimerRef.current = null;
+      }
+    };
   }, [progress, preventAutoHide, allowAutoHide]);
 
   return (

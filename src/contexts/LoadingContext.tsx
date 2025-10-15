@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 
 interface LoadingContextType {
@@ -30,6 +30,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
   const [allContentLoaded, setAllContentLoaded] = useState(false);
   const [autoHidePrevented, setAutoHidePrevented] = useState(false);
   const [hasLoadersRegistered, setHasLoadersRegistered] = useState(false);
+  const hideTimeoutRef = useRef<number | null>(null);
 
   const registerLoader = useCallback((id: string) => {
     setLoaders(prev => new Set(prev).add(id));
@@ -112,15 +113,35 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
       setAllContentLoaded(true);
     }
 
-    // Only complete when ALL conditions are met AND auto-hide is not prevented
-    if (allLoaded && minimumTimePassed && !autoHidePrevented) {
+    // Set progress to 100% when all content is loaded, regardless of autoHidePrevented
+    if (allLoaded && minimumTimePassed) {
       setProgress(100);
-      setTimeout(() => {
-        console.log('🎉 Loading complete, hiding loading screen');
-        setIsLoading(false);
-      }, 300); // Give a moment for 100% to be visible
+      
+      // Only schedule hide once if auto-hide is not prevented
+      if (!autoHidePrevented && !hideTimeoutRef.current) {
+        hideTimeoutRef.current = window.setTimeout(() => {
+          console.log('🎉 Loading complete, hiding loading screen');
+          setIsLoading(false);
+          hideTimeoutRef.current = null;
+        }, 300); // Give a moment for 100% to be visible
+      }
     }
-  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded, progress, autoHidePrevented, hasLoadersRegistered]);
+    
+    // Clear timeout if autoHidePrevented becomes true
+    if (autoHidePrevented && hideTimeoutRef.current) {
+      window.clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    
+    // Allow hiding when autoHidePrevented is lifted and all conditions are met
+    if (!autoHidePrevented && allLoaded && minimumTimePassed && progress === 100 && isLoading && !hideTimeoutRef.current) {
+      hideTimeoutRef.current = window.setTimeout(() => {
+        console.log('🎉 Loading complete (delayed), hiding loading screen');
+        setIsLoading(false);
+        hideTimeoutRef.current = null;
+      }, 300);
+    }
+  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded, progress, autoHidePrevented, hasLoadersRegistered, isLoading]);
 
   return (
     <LoadingContext.Provider value={{
