@@ -29,9 +29,11 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
   const [startTime] = useState(Date.now());
   const [allContentLoaded, setAllContentLoaded] = useState(false);
   const [autoHidePrevented, setAutoHidePrevented] = useState(false);
+  const [hasLoadersRegistered, setHasLoadersRegistered] = useState(false);
 
   const registerLoader = useCallback((id: string) => {
     setLoaders(prev => new Set(prev).add(id));
+    setHasLoadersRegistered(true);
   }, []);
 
   const markLoaded = useCallback((id: string) => {
@@ -59,11 +61,17 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     const loadedCount = loadedItems.size;
     const elapsedTime = Date.now() - startTime;
 
-    // If no loaders have registered yet, keep progress at 0
+    // Wait for loaders to register before making decisions
+    // Give a small grace period for loaders to register (200ms)
+    if (!hasLoadersRegistered && elapsedTime < 200) {
+        return;
+    }
+
+    // If no loaders have registered after grace period, keep progress at 0
     if (totalLoaders === 0) {
         setProgress(0);
         // If minimum time passes and still no loaders, finish loading
-        if (elapsedTime >= minimumLoadTime) {
+        if (elapsedTime >= minimumLoadTime && hasLoadersRegistered) {
             console.log('⚠️ No loaders registered, completing loading');
             setProgress(100);
             setTimeout(() => setIsLoading(false), 100);
@@ -112,7 +120,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
         setIsLoading(false);
       }, 300); // Give a moment for 100% to be visible
     }
-  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded, progress, autoHidePrevented]);
+  }, [loaders, loadedItems, startTime, minimumLoadTime, allContentLoaded, progress, autoHidePrevented, hasLoadersRegistered]);
 
   return (
     <LoadingContext.Provider value={{
