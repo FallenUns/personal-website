@@ -313,6 +313,7 @@ export const preloadAllVideos = (
 };
 
 // Preload all media (images + videos) with combined progress tracking
+// LOADS VIDEOS FIRST since they are the heaviest resources
 export const preloadAllMedia = (
   onProgress?: (loaded: number, total: number, currentAsset: string) => void
 ): Promise<{ 
@@ -340,12 +341,15 @@ export const preloadAllMedia = (
     onProgress?.(totalLoaded, totalAssets, current);
   };
   
-  return Promise.all([
-    preloadAllImages(imageProgressHandler),
-    preloadAllVideos(videoProgressHandler)
-  ]).then(([images, videos]) => {
-    console.log(`🎉 All media preloaded! Images: ${images.loaded.length}, Videos: ${videos.loaded.length}`);
-    return { images, videos };
+  // Load videos FIRST (sequential) since they're large resources
+  // Then load images (can be faster since they're smaller)
+  console.log('🎬 Starting video preloading first (heavy resources)...');
+  return preloadAllVideos(videoProgressHandler).then(videos => {
+    console.log('✅ Videos done, now loading images...');
+    return preloadAllImages(imageProgressHandler).then(images => {
+      console.log(`🎉 All media preloaded! Videos: ${videos.loaded.length}, Images: ${images.loaded.length}`);
+      return { images, videos };
+    });
   });
 };
 
