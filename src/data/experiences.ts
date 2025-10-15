@@ -95,7 +95,7 @@ export const experiences: Experience[] = [
       'Demonstrated ability to deliver functional solutions under extreme time pressure'
     ],
     links: [
-      { label: 'RMIT News', url: 'https://www.rmit.edu.au' }
+      { label: 'RMIT News', url: 'https://www.linkedin.com/posts/rmit-stem-college_apple-xcode-mentalhealth-activity-7354012465384337410-tD-9?utm_source=share&utm_medium=member_desktop&rcm=ACoAADz4CCgB3KyOkm0vPcSkqD_dPmmdWftzLHQ' }
     ]
   },
   {
@@ -154,7 +154,7 @@ export const experiences: Experience[] = [
       'Enhanced understanding of user-centered design and its application in mobile app development'
     ],
     links: [
-      { label: 'Apple Foundation Program', url: 'https://developer.apple.com/foundation-program/' }
+      { label: 'Apple Foundation Program', url: 'https://www.rmit.edu.au/study-with-us/apple-foundation-program' }
     ]
   },
   {

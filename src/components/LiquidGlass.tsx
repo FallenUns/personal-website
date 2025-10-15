@@ -682,6 +682,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 justifyContent: 'center',
                 color: 'inherit',
                 textShadow: actualOverLight ? '0px 2px 12px rgba(0, 0, 0, 0)' : '0px 2px 12px rgba(0, 0, 0, 0.4)',
+                pointerEvents: 'auto', // Ensure content layer receives pointer events
                 // Hardware acceleration for content layer
                 transform: 'translateZ(0)',
                 willChange: 'contents',

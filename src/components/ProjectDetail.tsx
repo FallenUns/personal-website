@@ -561,9 +561,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   project.images[activeMediaIndex].toLowerCase().endsWith('.webm') || 
                                   project.images[activeMediaIndex].toLowerCase().endsWith('.mov')) && (
                                   <button
-                                    onClick={handleFullscreenToggle}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleFullscreenToggle();
+                                    }}
                                     className="absolute top-2 left-2 z-10 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full border border-white/20 transition-colors group"
                                     aria-label="Fullscreen video"
+                                    style={{ pointerEvents: 'auto' }}
                                   >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80 group-hover:text-white">
                                       <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
@@ -648,13 +652,17 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                         
                         {/* Media navigation - for multiple images/videos */}
                         {project.images && project.images.length > 1 && !project.charts && (
-                          <div className="flex justify-center items-center gap-3 mt-4 mb-2">
+                          <div className="flex justify-center items-center gap-3 mt-4 mb-2" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                             <button
-                              onClick={() => setActiveMediaIndex((prev) => 
-                                prev === 0 ? project.images!.length - 1 : prev - 1
-                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMediaIndex((prev) => 
+                                  prev === 0 ? project.images!.length - 1 : prev - 1
+                                );
+                              }}
                               className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
                               aria-label="Previous media"
+                              style={{ pointerEvents: 'auto' }}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
                                 <polyline points="15,18 9,12 15,6"></polyline>
@@ -664,22 +672,30 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               {project.images.map((_, index) => (
                                 <button
                                   key={index}
-                                  onClick={() => setActiveMediaIndex(index)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveMediaIndex(index);
+                                  }}
                                   className={`w-2 h-2 rounded-full transition-all ${
                                     index === activeMediaIndex 
                                       ? 'bg-white' 
                                       : 'bg-white/40 hover:bg-white/60'
                                   }`}
                                   aria-label={`View media ${index + 1}`}
+                                  style={{ pointerEvents: 'auto' }}
                                 />
                               ))}
                             </div>
                             <button
-                              onClick={() => setActiveMediaIndex((prev) => 
-                                prev === project.images!.length - 1 ? 0 : prev + 1
-                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMediaIndex((prev) => 
+                                  prev === project.images!.length - 1 ? 0 : prev + 1
+                                );
+                              }}
                               className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
                               aria-label="Next media"
+                              style={{ pointerEvents: 'auto' }}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
                                 <polyline points="9,18 15,12 9,6"></polyline>
@@ -690,13 +706,17 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                         
                         {/* Chart navigation - positioned outside chart container */}
                         {project.charts && project.charts.length > 1 && (
-                          <div className="flex justify-center items-center gap-3 mt-4 mb-2">
+                          <div className="flex justify-center items-center gap-3 mt-4 mb-2" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                             <button
-                              onClick={() => setActiveChartIndex((prev) => 
-                                prev === 0 ? project.charts!.length - 1 : prev - 1
-                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveChartIndex((prev) => 
+                                  prev === 0 ? project.charts!.length - 1 : prev - 1
+                                );
+                              }}
                               className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
                               aria-label="Previous chart"
+                              style={{ pointerEvents: 'auto' }}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
                                 <polyline points="15,18 9,12 15,6"></polyline>
@@ -706,22 +726,30 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               {project.charts.map((_, index) => (
                                 <button
                                   key={index}
-                                  onClick={() => setActiveChartIndex(index)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveChartIndex(index);
+                                  }}
                                   className={`w-2 h-2 rounded-full transition-all ${
                                     index === activeChartIndex 
                                       ? 'bg-white' 
                                       : 'bg-white/40 hover:bg-white/60'
                                   }`}
                                   aria-label={`View chart ${index + 1}`}
+                                  style={{ pointerEvents: 'auto' }}
                                 />
                               ))}
                             </div>
                             <button
-                              onClick={() => setActiveChartIndex((prev) => 
-                                prev === project.charts!.length - 1 ? 0 : prev + 1
-                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveChartIndex((prev) => 
+                                  prev === project.charts!.length - 1 ? 0 : prev + 1
+                                );
+                              }}
                               className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
                               aria-label="Next chart"
+                              style={{ pointerEvents: 'auto' }}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
                                 <polyline points="9,18 15,12 9,6"></polyline>
@@ -731,13 +759,17 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                         )}
                       </div>
                       {/* Action buttons */}
-                      <div className="flex gap-3 mt-6">
+                      <div className="flex gap-3 mt-6" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                         {project.liveUrl && project.liveUrl !== '#' && (
                           <motion.button
                             className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:bg-gradient-to-r hover:from-green-500/30 hover:to-green-600/30 transition-all"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => window.open(project.liveUrl, '_blank')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(project.liveUrl, '_blank');
+                            }}
+                            style={{ pointerEvents: 'auto' }}
                           >
                             Live Demo
                           </motion.button>
@@ -747,7 +779,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                             className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-violet-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:bg-gradient-to-r hover:from-purple-500/30 hover:to-violet-600/30 transition-all"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => window.open(project.githubUrl, '_blank')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(project.githubUrl, '_blank');
+                            }}
+                            style={{ pointerEvents: 'auto' }}
                           >
                             GitHub
                           </motion.button>
@@ -759,7 +795,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                     <div className="w-1/2 border-l border-white/10 flex flex-col">
                       {/* Tab navigation */}
                       <div className="p-6 border-b border-white/10">
-                        <div className="flex space-x-1 bg-white/10 rounded-lg p-1">
+                        <div className="flex space-x-1 bg-white/10 rounded-lg p-1" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                           {(['overview', 'features', 'challenges', 'outcomes'] as const).map((tab) => (
                             <motion.button
                               key={tab}
@@ -768,9 +804,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   ? 'bg-white/20 text-white shadow-sm'
                                   : 'text-white/70 hover:text-white hover:bg-white/10'
                               }`}
-                              onClick={() => setActiveTab(tab)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveTab(tab);
+                              }}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
+                              style={{ pointerEvents: 'auto' }}
                             >
                               {tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </motion.button>

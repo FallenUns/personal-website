@@ -387,14 +387,18 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                       </div>
 
                       {/* Action buttons */}
-                      <div className="flex gap-3 mt-6">
+                      <div className="flex gap-3 mt-6" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                         {experience.links?.map((link, index) => (
                           <motion.button
                             key={index}
                             className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-blue-600/30 transition-all"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => window.open(link.url, '_blank')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(link.url, '_blank');
+                            }}
+                            style={{ pointerEvents: 'auto' }}
                           >
                             {link.label}
                           </motion.button>
@@ -406,7 +410,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                     <div className="w-1/2 border-l border-white/10 flex flex-col">
                       {/* Tab navigation */}
                       <div className="p-6 border-b border-white/10">
-                        <div className="flex space-x-1 bg-white/10 rounded-lg p-1">
+                        <div className="flex space-x-1 bg-white/10 rounded-lg p-1" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                           {(['overview', 'responsibilities', 'achievements', 'impact'] as const).map((tab) => (
                             <motion.button
                               key={tab}
@@ -415,9 +419,13 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                                   ? 'bg-white/20 text-white shadow-sm'
                                   : 'text-white/70 hover:text-white hover:bg-white/10'
                               }`}
-                              onClick={() => setActiveTab(tab)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveTab(tab);
+                              }}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
+                              style={{ pointerEvents: 'auto' }}
                             >
                               {tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </motion.button>
