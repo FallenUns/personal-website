@@ -68,6 +68,9 @@ const DustToOrbLoader: React.FC = () => {
     const originalPositions = new Float32Array(particleCount * 3);
     const targetPositions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3); // Add velocity for smooth movement
+    const particleProgress = new Float32Array(particleCount); // Individual progress for each particle
+    const particleStartTime = new Float32Array(particleCount); // When each particle starts moving
     
     // Orb radius in 3D space - smaller size during formation
     const sphereRadius = 0.5; // Reduced from 0.8 to make it smaller
@@ -96,6 +99,15 @@ const DustToOrbLoader: React.FC = () => {
       positions[i3 + 1] = originalPositions[i3 + 1];
       positions[i3 + 2] = originalPositions[i3 + 2];
       
+      // Initialize velocity to zero
+      velocities[i3] = 0;
+      velocities[i3 + 1] = 0;
+      velocities[i3 + 2] = 0;
+      
+      // Initialize particle progress
+      particleProgress[i] = 0;
+      particleStartTime[i] = -1; // Not started yet
+      
       // Color gradient (orange to blue)
       const intensity = (targetPositions[i3 + 1] / sphereRadius + 1) / 2;
       colors[i3] = 1.0 - intensity * 0.8;
@@ -121,10 +133,12 @@ const DustToOrbLoader: React.FC = () => {
     // Animation state
     let currentProgress = 0;
     let shouldFadeOut = false;
+    const animationStartTime = Date.now();
     
     // Animation loop
     const animate = () => {
       const time = Date.now() * 0.001;
+      const elapsedTime = (Date.now() - animationStartTime) * 0.001; // Time since animation started
       const posArray = geometry.attributes.position.array as Float32Array;
       
       if (shouldFadeOut) {
@@ -136,15 +150,44 @@ const DustToOrbLoader: React.FC = () => {
         for (let i = 0; i < particleCount; i++) {
           const i3 = i * 3;
           
-          // Calculate which particles should be formed based on progress
-          const particleProgress = i / particleCount; // 0 to 1
+          // Calculate which particles should start moving based on progress
+          const particleThreshold = i / particleCount; // 0 to 1
           
-          if (particleProgress <= currentProgress) {
-            // This particle should be in orb position with smooth easing
-            const easeProgress = currentProgress * currentProgress * (3 - 2 * currentProgress); // Smoothstep easing
-            posArray[i3] = originalPositions[i3] + (targetPositions[i3] - originalPositions[i3]) * easeProgress;
-            posArray[i3 + 1] = originalPositions[i3 + 1] + (targetPositions[i3 + 1] - originalPositions[i3 + 1]) * easeProgress;
-            posArray[i3 + 2] = originalPositions[i3 + 2] + (targetPositions[i3 + 2] - originalPositions[i3 + 2]) * easeProgress;
+          // Check if this particle should start moving
+          if (particleThreshold <= currentProgress) {
+            // Start the particle if it hasn't started yet
+            if (particleStartTime[i] < 0) {
+              particleStartTime[i] = elapsedTime;
+            }
+            
+            // Calculate time since this particle started moving
+            const particleElapsed = elapsedTime - particleStartTime[i];
+            const moveDuration = 1.2; // 1.2 seconds for each particle to reach the orb
+            
+            // Update particle progress (0 to 1)
+            particleProgress[i] = Math.min(particleElapsed / moveDuration, 1);
+            
+            if (particleProgress[i] < 1) {
+              // Particle is still traveling - use smooth easing
+              const easeProgress = particleProgress[i] * particleProgress[i] * (3 - 2 * particleProgress[i]); // Smoothstep
+              
+              // Calculate direction to target
+              const dx = targetPositions[i3] - originalPositions[i3];
+              const dy = targetPositions[i3 + 1] - originalPositions[i3 + 1];
+              const dz = targetPositions[i3 + 2] - originalPositions[i3 + 2];
+              
+              // Apply velocity-based smooth movement
+              posArray[i3] = originalPositions[i3] + dx * easeProgress;
+              posArray[i3 + 1] = originalPositions[i3 + 1] + dy * easeProgress;
+              posArray[i3 + 2] = originalPositions[i3 + 2] + dz * easeProgress;
+            } else {
+              // Particle has reached the orb - keep it there with slight orbit
+              const orbitSpeed = 0.5;
+              const orbitRadius = 0.02;
+              posArray[i3] = targetPositions[i3] + Math.cos(time * orbitSpeed + i * 0.1) * orbitRadius;
+              posArray[i3 + 1] = targetPositions[i3 + 1] + Math.sin(time * orbitSpeed * 0.7 + i * 0.1) * orbitRadius;
+              posArray[i3 + 2] = targetPositions[i3 + 2] + Math.sin(time * orbitSpeed + i * 0.1) * orbitRadius;
+            }
           } else {
             // Still floating as dust with gentler movement
             posArray[i3] = originalPositions[i3] + Math.sin(time * 0.3 + i * 0.05) * 0.05;
