@@ -167,6 +167,7 @@ export const experiences: Experience[] = [
     category: 'Full‑Stack',
     skills: [
       'Python',
+      'XML',
       'ERP System Management',
       'Data Integration',
       'Problem Solving',

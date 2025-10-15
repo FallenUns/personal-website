@@ -66,7 +66,8 @@ const addImageToDocumentCache = (src: string) => {
   link.rel = 'preload';
   link.as = 'image';
   link.href = src;
-  link.crossOrigin = 'anonymous';
+  // Don't set crossorigin for same-origin resources to avoid mismatch warnings
+  // crossorigin is only needed for cross-origin resources
   document.head.appendChild(link);
 };
 
@@ -81,8 +82,11 @@ export const preloadImage = (src: string): Promise<HTMLImageElement> => {
     // First, add to browser's preload cache
     addImageToDocumentCache(src);
     
-    // Fetch as blob for better caching
-    fetch(src)
+    // Fetch as blob for better caching - use same-origin mode for local resources
+    fetch(src, { 
+      mode: 'same-origin',
+      credentials: 'same-origin'
+    })
       .then(response => response.blob())
       .then(blob => {
         // Create blob URL for the image
@@ -110,7 +114,8 @@ export const preloadImage = (src: string): Promise<HTMLImageElement> => {
         console.warn(`⚠️ Fetch failed for ${src}, falling back to direct load`);
         const img = new Image();
         
-        img.crossOrigin = 'anonymous';
+        // Don't set crossOrigin for same-origin resources
+        // img.crossOrigin = 'anonymous';
         
         img.onload = () => {
           console.log(`✅ Successfully preloaded (fallback): ${src}`);
@@ -138,7 +143,10 @@ export const preloadVideo = (src: string): Promise<HTMLVideoElement> => {
 
   return new Promise((resolve, reject) => {
     // First, fetch the video as a blob to ensure it's fully cached
-    fetch(src)
+    fetch(src, {
+      mode: 'same-origin',
+      credentials: 'same-origin'
+    })
       .then(response => response.blob())
       .then(blob => {
         // Create a blob URL for the video

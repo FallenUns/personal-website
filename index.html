@@ -39,17 +39,9 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo.png" />
     
-    <!-- Critical Image Preloading -->
-    <link rel="preload" as="image" href="/cliniwatch-1.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/portfolio-1.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/Subject.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/logo.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/react-logo.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/python-logo.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/js-logo.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/tensorflow-logo.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/r-logo.png" crossorigin="anonymous" />
-    <link rel="preload" as="image" href="/sql-logo.png" crossorigin="anonymous" />
+    <!-- Critical Image Preloading - Only preload above-the-fold critical images -->
+    <!-- Removed preload tags - let the preloader handle all images dynamically -->
+    <!-- This prevents "not used within a few seconds" warnings and crossorigin mismatches -->
     
     <!-- HTTP Cache Headers for Images -->
     <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable" />
