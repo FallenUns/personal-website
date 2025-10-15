@@ -19,6 +19,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -66,8 +67,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   // Handle ESC key press
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isVisible && !isClosing) {
-        handleClose();
+      if (event.key === 'Escape') {
+        if (isFullscreen) {
+          setIsFullscreen(false);
+        } else if (isVisible && !isClosing) {
+          handleClose();
+        }
       }
     };
 
@@ -75,7 +80,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
       document.addEventListener('keydown', handleEscKey);
       return () => document.removeEventListener('keydown', handleEscKey);
     }
-  }, [isVisible, isClosing]);
+  }, [isVisible, isClosing, isFullscreen]);
+
+  // Handle fullscreen toggle
+  const handleFullscreenToggle = () => {
+    setIsFullscreen(!isFullscreen);
+  };
 
 
   if (!project) {
@@ -285,13 +295,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
   };
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          className="fixed inset-0 z-[9999] bg-black/30"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+    <>
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            className="fixed inset-0 z-[9999] bg-black/30"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           onClick={handleBackdropClick}
         >
@@ -344,7 +355,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                     {/* Left side - Hero */}
                     <div 
                       ref={leftPanelRef}
-                      className="w-1/2 p-6 flex flex-col overflow-y-auto relative"
+                      className="w-1/2 p-4 flex flex-col overflow-y-auto relative"
                       onScroll={handleScroll}
                     >
                       {/* Simple arrow indicator - fixed position */}
@@ -383,7 +394,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                           {project.title}
                         </motion.h1>
                         <motion.p
-                          className="text-lg text-white/80 leading-relaxed"
+                          className="text-sm text-white/80 leading-relaxed"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.3 }}
@@ -525,7 +536,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               mode="shader"
                               overLight={false}
                             >
-                              <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden relative flex items-center justify-center">
+                              <div 
+                                className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden relative"
+                                style={{ 
+                                  aspectRatio: '16 / 9',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
                                 {/* Media count indicator - top right */}
                                 {project.images.length > 1 && (
                                   <div className="absolute top-2 right-2 z-10">
@@ -536,13 +555,35 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                     </div>
                                   </div>
                                 )}
+                                
+                                {/* Fullscreen button for videos - top left */}
+                                {(project.images[activeMediaIndex].toLowerCase().endsWith('.mp4') || 
+                                  project.images[activeMediaIndex].toLowerCase().endsWith('.webm') || 
+                                  project.images[activeMediaIndex].toLowerCase().endsWith('.mov')) && (
+                                  <button
+                                    onClick={handleFullscreenToggle}
+                                    className="absolute top-2 left-2 z-10 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full border border-white/20 transition-colors group"
+                                    aria-label="Fullscreen video"
+                                  >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80 group-hover:text-white">
+                                      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                                    </svg>
+                                  </button>
+                                )}
+                                
                                 {project.images[activeMediaIndex].toLowerCase().endsWith('.mp4') || 
                                  project.images[activeMediaIndex].toLowerCase().endsWith('.webm') || 
                                  project.images[activeMediaIndex].toLowerCase().endsWith('.mov') ? (
                                   <PreloadedVideo
                                     key={project.images[activeMediaIndex]}
                                     src={project.images[activeMediaIndex]}
-                                    className="max-w-full max-h-full object-contain rounded-2xl"
+                                    className="rounded-2xl"
+                                    style={{ 
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'contain',
+                                      objectPosition: 'center'
+                                    }}
                                     autoPlay
                                     loop
                                     muted
@@ -558,7 +599,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   <PreloadedImage 
                                     src={project.images[activeMediaIndex]} 
                                     alt={project.title}
-                                    className="max-w-full max-h-full object-contain rounded-2xl"
+                                    className="rounded-2xl"
+                                    style={{ 
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'contain',
+                                      objectPosition: 'center'
+                                    }}
                                     onLoad={() => {
                                       console.log(`✅ Using preloaded image: ${project.images?.[activeMediaIndex] || 'unknown'}`);
                                     }}
@@ -754,6 +801,58 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
         </motion.div>
       )}
     </AnimatePresence>
+    
+    {/* Fullscreen Video Modal */}
+    <AnimatePresence>
+      {isFullscreen && project?.images && (
+        <motion.div
+          className="fixed inset-0 z-[10001] bg-black/95 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleFullscreenToggle}
+        >
+          <motion.div
+            className="relative w-full h-full flex items-center justify-center p-8"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={handleFullscreenToggle}
+              className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full border border-white/20 transition-colors group"
+              aria-label="Exit fullscreen"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            
+            {/* Fullscreen video */}
+            {project.images && project.images[activeMediaIndex] && (
+              <PreloadedVideo
+                key={project.images[activeMediaIndex]}
+                src={project.images[activeMediaIndex]}
+                className="rounded-2xl max-w-full max-h-full"
+                style={{ 
+                  objectFit: 'contain',
+                  objectPosition: 'center'
+                }}
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls
+              />
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 
