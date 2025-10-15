@@ -83,10 +83,7 @@ export const projects: Project[] = [
       'FastAPI',
       'scikit-learn',
       'TensorFlow',
-      'spaCy',
       'Hugging Face',
-      'SQLite',
-      'Docker',
     ],
     category: 'Research',
     slug: 'software-engineering-project',
@@ -268,7 +265,6 @@ export const projects: Project[] = [
       'Natural Language Processing',
       'iOS Development',
       'Apple Health Integration (Future)',
-      'Firebase'
     ],
     category: 'Mobile',
     slug: 'cliniwatch',
