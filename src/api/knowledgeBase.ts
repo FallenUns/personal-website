@@ -207,15 +207,17 @@ Patrick is a recent graduate from RMIT with experience in:
 - **UI/UX**: Advanced glassmorphism effects, interactive designs, healthcare app UX
 
 **Key Skills:**
-- Programming: Python, Swift, JavaScript/TypeScript, React
+- Programming: Python, Swift, JavaScript/TypeScript, React, R
+- Data Science: Data Visualization, Interactive Dashboards, Statistical Computing, Data Wrangling, ETL, Spatial Data Analysis
 - Mobile: iOS development, SwiftUI, Xcode, MapKit, Core Data, Firebase
-- Web: React, Next.js, Three.js, WebGL, GLSL Shaders
-- Research: Machine Learning, LLMs, Privacy Analysis, Natural Language Processing
+- Web: React, Next.js, Three.js, WebGL, GLSL Shaders, Shiny (R)
+- Research: Machine Learning, LLMs, Privacy Analysis, Natural Language Processing, Environmental Data Analysis
 - Design: UI/UX, Glassmorphism, Interactive Design, Accessibility, Healthcare UX
 - Collaboration: Team projects, hackathon development, industry partnerships
 
 **Notable Projects:**
 - **Cliniwatch**: iOS mental health companion app built with team during RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. Addresses early warning system challenge for mental health crisis prevention
+- **Interactive CO₂ & GDP Explorer**: R Shiny dashboard (Jun 2023) for data visualization coursework. Interactive world map comparing countries' CO₂ emissions and GDP from 1960-2020. Features year slider, multi-country selection (up to 20), synchronized time-series and bar charts. Includes 7+ academic citations and built-in guidance. Demonstrates data science, spatial visualization, and R programming skills
 - **Liquid Glass Design System**: Advanced glassmorphism UI library with GLSL shaders and physics-based animations
 - **LLM Privacy Detection**: Research system analyzing Stack Overflow posts for privacy violations using GPT-4o and DeepSeek
 - **Interactive Portfolio**: This website featuring dynamic backgrounds, AI assistant, and advanced web technologies
@@ -225,6 +227,8 @@ Patrick is a recent graduate from RMIT with experience in:
 - Completed Apple Foundation Program
 - Successfully collaborated with industry partners (Apple, Northern Health, Bilue) on healthcare innovation
 - Conducted academic research on LLM privacy detection with published results
+- Certificate of Recognition from RMIT for contributions to student community
+- Certificate of Recognition from RMIT for achieving 3.8 GPA in semester 1 and semester 2 of 2023
 
 **Website Features:**
 - Interactive portfolio with dynamic time-of-day backgrounds
