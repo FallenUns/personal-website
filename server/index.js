@@ -21,7 +21,7 @@ app.use(cors({
 }));
 
 // Body parser with size limits
-app.use(express.json({ limit: '10kb' })); // Limit request body size
+app.use(express.json({ limit: '50kb' })); // Increased to 50kb to accommodate system prompts with knowledge base
 
 // Trust proxy (important for rate limiting behind nginx)
 app.set('trust proxy', 1);
