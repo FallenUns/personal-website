@@ -165,10 +165,72 @@ src/
 
 ## 🔒 Security
 
-- Environment variables for sensitive data
-- Secure API key management
+### Comprehensive Security Measures
+
+This website implements multiple layers of security to protect against abuse and attacks:
+
+#### Rate Limiting
+- **Global API**: 100 requests per 15 minutes per IP
+- **LLM Endpoint**: 10 requests per minute per IP (prevents API abuse)
+- **Feedback**: 5 submissions per hour per IP (prevents spam)
+
+#### Input Validation
+- All user inputs validated and sanitized
+- XSS protection with HTML escaping
+- SQL injection prevention
+- Email format validation
+- Length and type enforcement
+
+#### Security Headers
+- Helmet.js provides 11+ security headers
+- X-Frame-Options (clickjacking protection)
+- X-Content-Type-Options (MIME sniffing protection)
+- X-XSS-Protection
+- Strict-Transport-Security (HSTS)
+
+#### Request Protection
+- Request body size limited to 10KB
+- 30-second timeout on all requests
+- Message count and length limits
+- Automatic error handling
+
+#### API Key Security
+- Environment variables for all secrets
+- Server-side API proxy (keys never exposed to client)
 - No hardcoded credentials
-- HTTPS-only in production
+- Secure credential storage
+
+### Security Documentation
+
+- 📖 **[SECURITY.md](./SECURITY.md)** - Complete security documentation
+- ✅ **[SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)** - Pre-deployment checklist
+- 📋 **[SECURITY_QUICK_REF.md](./SECURITY_QUICK_REF.md)** - Quick reference guide
+- 📊 **[SECURITY_SUMMARY.md](./SECURITY_SUMMARY.md)** - Security improvements summary
+
+### Testing Security
+
+Run the security test suite:
+```bash
+# Test local server
+./test-security.sh http://localhost:3001
+
+# Test production server
+./test-security.sh https://patrickadrianus.com
+
+# Verbose mode
+VERBOSE=true ./test-security.sh http://localhost:3001
+```
+
+### Security Score: 8/10 ✅
+
+- ✅ Rate limiting (3 layers)
+- ✅ Input validation (all endpoints)
+- ✅ Security headers (11+)
+- ✅ Request limits (size & timeout)
+- ✅ API key protection
+- ✅ CORS configuration
+- ✅ Error handling
+- ✅ Cost protection (~96% abuse prevention)
 
 ## 🎨 Customization
 

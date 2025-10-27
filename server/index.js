@@ -2,13 +2,66 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
-const fetch = require('node-fetch'); // Add fetch for LLM API calls
-require('dotenv').config(); // Load environment variables
+const fetch = require('node-fetch');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const { body, validationResult } = require('express-validator');
+require('dotenv').config();
+
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security Middleware
+app.use(helmet()); // Adds various HTTP headers for security
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+  methods: ['GET', 'POST', 'DELETE'],
+  credentials: true
+}));
+
+// Body parser with size limits
+app.use(express.json({ limit: '10kb' })); // Limit request body size
+
+// Trust proxy (important for rate limiting behind nginx)
+app.set('trust proxy', 1);
+
+// Global rate limiter - general protection
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: { success: false, message: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Strict rate limiter for LLM endpoint
+const llmLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 LLM requests per minute
+  message: { 
+    success: false, 
+    message: 'Too many AI requests. Please wait a moment before trying again.' 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false, // Count all requests
+});
+
+// Feedback submission rate limiter
+const feedbackLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 feedback submissions per hour
+  message: { 
+    success: false, 
+    message: 'You have submitted too much feedback. Please try again later.' 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply global rate limiter to all routes
+app.use('/api/', globalLimiter);
 
 // Feedback storage file paths
 const FEEDBACK_FILE = path.join(__dirname, 'data', 'feedback.json');
@@ -99,18 +152,31 @@ async function saveCSVToServer(feedbackArray) {
 
 // API Routes
 
-// Submit feedback
-app.post('/api/feedback', async (req, res) => {
+// Submit feedback with validation and rate limiting
+app.post('/api/feedback', 
+  feedbackLimiter,
+  [
+    body('name').trim().notEmpty().isLength({ max: 100 }).escape(),
+    body('email').optional().trim().isEmail().normalizeEmail(),
+    body('rating').isInt({ min: 1, max: 5 }),
+    body('category').trim().notEmpty().isIn(['design', 'content', 'functionality', 'performance', 'general']),
+    body('message').trim().notEmpty().isLength({ min: 10, max: 1000 }).escape(),
+    body('userAgent').optional().trim().isLength({ max: 500 }),
+    body('referrer').optional().trim().isLength({ max: 500 })
+  ],
+  async (req, res) => {
   try {
-    const { name, email, rating, category, message, userAgent, referrer } = req.body;
-    
-    // Validate required fields
-    if (!name || !rating || !category || !message) {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: name, rating, category, message'
+        message: 'Invalid input data',
+        errors: errors.array()
       });
     }
+
+    const { name, email, rating, category, message, userAgent, referrer } = req.body;
 
     const feedback = {
       id: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -277,9 +343,27 @@ app.delete('/api/feedback', async (req, res) => {
   }
 });
 
-// LLM Chat endpoint (proxy to protect API key)
-app.post('/api/llm/chat', async (req, res) => {
+// LLM Chat endpoint with strict rate limiting and validation
+app.post('/api/llm/chat', 
+  llmLimiter,
+  [
+    body('messages').isArray({ min: 1, max: 20 }),
+    body('messages.*.role').isIn(['user', 'assistant', 'system']),
+    body('messages.*.content').isString().isLength({ min: 1, max: 2000 }),
+    body('model').optional().isString().isLength({ max: 100 })
+  ],
+  async (req, res) => {
   try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message format',
+        errors: errors.array()
+      });
+    }
+
     const { messages, model } = req.body;
     
     if (!process.env.LLM_API_KEY) {
@@ -289,29 +373,44 @@ app.post('/api/llm/chat', async (req, res) => {
       });
     }
 
-    const response = await fetch(process.env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.LLM_API_KEY}`
-      },
-      body: JSON.stringify({
-        messages,
-        model: model || process.env.VITE_LLM_MODEL || 'gpt-4.1-mini',
-        temperature: 0.5,
-        max_tokens: 300
-      })
-    });
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    if (!response.ok) {
-      throw new Error(`LLM API error: ${response.status}`);
+    try {
+      const response = await fetch(process.env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.LLM_API_KEY}`
+        },
+        body: JSON.stringify({
+          messages,
+          model: model || process.env.VITE_LLM_MODEL || 'gpt-4.1-mini',
+          temperature: 0.5,
+          max_tokens: 300
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error(`LLM API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json({
+        success: true,
+        data
+      });
+    } catch (fetchError) {
+      clearTimeout(timeout);
+      if (fetchError.name === 'AbortError') {
+        throw new Error('Request timeout');
+      }
+      throw fetchError;
     }
-
-    const data = await response.json();
-    res.json({
-      success: true,
-      data
-    });
   } catch (error) {
     console.error('Error calling LLM API:', error);
     res.status(500).json({
