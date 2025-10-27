@@ -349,7 +349,8 @@ app.post('/api/llm/chat',
   [
     body('messages').isArray({ min: 1, max: 20 }),
     body('messages.*.role').isIn(['user', 'assistant', 'system']),
-    body('messages.*.content').isString().isLength({ min: 1, max: 2000 }),
+    // Allow longer content for system messages (up to 10000 chars), shorter for user messages
+    body('messages.*.content').isString().isLength({ min: 1, max: 10000 }),
     body('model').optional().isString().isLength({ max: 100 })
   ],
   async (req, res) => {
