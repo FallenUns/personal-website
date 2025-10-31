@@ -63,9 +63,9 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
     setIsAITyping(true);
     setMessages(prev => [...prev, { role: 'user', text: input }]);
 
-    // Add user message to conversation history
+    // Add user message to conversation history (keep only last 6 messages)
     const newConversationHistory: LLMMessage[] = [
-      ...conversationHistory,
+      ...conversationHistory.slice(-5), // Keep last 5 messages to make room for new one
       { role: 'user', content: input }
     ];
 
@@ -83,15 +83,15 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
       } else {
         // Handle API error
         const errorMessage = response.error || 'Sorry, I encountered an error. Please try again.';
-        setMessages(prev => [...prev, { role: 'model', text: errorMessage }]);
+        setMessages(prev => [...prev, { role: 'model', text: `⚠️ ${errorMessage}` }]);
       }
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = error instanceof Error 
-        ? `Error: ${error.message}` 
+        ? error.message
         : 'Sorry, I\'m having trouble connecting. Please check your configuration and try again.';
       
-      setMessages(prev => [...prev, { role: 'model', text: errorMessage }]);
+      setMessages(prev => [...prev, { role: 'model', text: `⚠️ ${errorMessage}` }]);
     } finally {
       // Show the new output and re-enable the input
       setShowOutput(true);

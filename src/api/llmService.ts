@@ -187,9 +187,12 @@ ${relevantContext}
 
 Remember: Prioritize brevity while staying informative and engaging.`;
 
+      // Keep only the last 6 messages (3 exchanges) to prevent payload from growing too large
+      const recentMessages = messages.slice(-6);
+
       const messagesWithSystem: LLMMessage[] = [
         { role: 'system', content: enhancedSystemPrompt },
-        ...messages
+        ...recentMessages
       ];
 
       // 4) Send to backend API (which handles LLM authentication)
@@ -206,6 +209,16 @@ Remember: Prioritize brevity while staying informative and engaging.`;
 
       if (!response.ok) {
         const text = await response.text();
+        
+        // Handle specific error cases
+        if (response.status === 413) {
+          throw new Error('Message too long. Please try a shorter question or start a new conversation.');
+        }
+        
+        if (response.status === 429) {
+          throw new Error('Too many requests. Please wait a moment before asking again.');
+        }
+        
         throw new Error(`Backend API request failed ${response.status} ${response.statusText}: ${text}`);
       }
 
