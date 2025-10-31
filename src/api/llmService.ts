@@ -160,13 +160,11 @@ You are Zora, Patrick Adrianus's portfolio AI assistant. Be helpful, friendly, a
     }
 
     try {
-      // 2) Get relevant context based on user query - use full context for detailed requests
+      // 2) Get relevant context based on user query - ALWAYS use relevant context (never full)
+      // to keep system prompt manageable
       let relevantContext = '';
       if (latestUserMessage) {
-        const isDetailedRequest = this.isDetailedInformationRequest(latestUserMessage.content);
-        relevantContext = isDetailedRequest 
-          ? knowledgeBaseService.getFullContext()
-          : knowledgeBaseService.getRelevantContext(latestUserMessage.content);
+        relevantContext = knowledgeBaseService.getRelevantContext(latestUserMessage.content);
       } else {
         relevantContext = knowledgeBaseService.getBasicContext();
       }
@@ -260,31 +258,6 @@ Remember: Prioritize brevity while staying informative and engaging.`;
     const h = Math.floor(time);
     const m = Math.round((time % 1) * 60);
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-  }
-
-  private isDetailedInformationRequest(message: string): boolean {
-    const detailedRequestPatterns = [
-      /tell me more/i,
-      /more information/i,
-      /more details/i,
-      /elaborate/i,
-      /explain more/i,
-      /go into detail/i,
-      /comprehensive/i,
-      /in depth/i,
-      /detailed/i,
-      /specifics/i,
-      /everything about/i,
-      /all about/i,
-      /complete information/i,
-      /full details/i,
-      /can you expand/i,
-      /expand on/i,
-      /deeper dive/i,
-      /more about/i
-    ];
-
-    return detailedRequestPatterns.some(pattern => pattern.test(message));
   }
 
   updateSystemPrompt(newPrompt: string): void {
