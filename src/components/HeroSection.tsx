@@ -177,12 +177,12 @@ const HeroSection: React.FC = () => {
                 overLight={false}
                 onClick={() => {
                   try {
-                    window.open('/resume.pdf', '_blank');
+                    window.open('/Resume-new.pdf', '_blank');
                   } catch (error) {
                     console.error('Failed to open resume:', error);
                     // Fallback to download
                     const link = document.createElement('a');
-                    link.href = '/resume.pdf';
+                    link.href = '/Resume-new.pdf';
                     link.download = 'Patrick_Resume.pdf';
                     document.body.appendChild(link);
                     link.click();
