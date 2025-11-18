@@ -177,13 +177,13 @@ const HeroSection: React.FC = () => {
                 overLight={false}
                 onClick={() => {
                   try {
-                    window.open('/Resume-new.pdf', '_blank');
+                    window.open('/CV.pdf', '_blank');
                   } catch (error) {
-                    console.error('Failed to open resume:', error);
+                    console.error('Failed to open CV:', error);
                     // Fallback to download
                     const link = document.createElement('a');
-                    link.href = '/Resume-new.pdf';
-                    link.download = 'Patrick_Resume.pdf';
+                    link.href = '/CV.pdf';
+                    link.download = 'Patrick_Adrianus_CV.pdf';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -191,7 +191,7 @@ const HeroSection: React.FC = () => {
                 }}
             >
                 <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center">
-                    My Resume 
+                    My CV 
                     <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
