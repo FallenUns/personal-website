@@ -177,12 +177,12 @@ const HeroSection: React.FC = () => {
                 overLight={false}
                 onClick={() => {
                   try {
-                    window.open('/CV.pdf', '_blank');
+                    window.open('/CV-new.pdf', '_blank');
                   } catch (error) {
                     console.error('Failed to open CV:', error);
                     // Fallback to download
                     const link = document.createElement('a');
-                    link.href = '/CV.pdf';
+                    link.href = '/CV-new.pdf';
                     link.download = 'Patrick_Adrianus_CV.pdf';
                     document.body.appendChild(link);
                     link.click();
