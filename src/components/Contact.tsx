@@ -10,7 +10,7 @@ const Contact: React.FC = () => {
     return (
         <motion.section 
             id="contact" 
-            className="h-screen flex items-center justify-center py-16 px-4 w-full pt-24"
+            className="h-screen flex flex-col justify-between py-16 px-4 w-full pt-24"
             initial={{ opacity: 0, y: 30 }}
             animate={{ 
                 opacity: isLoading ? 0 : 1, 
@@ -22,7 +22,8 @@ const Contact: React.FC = () => {
                 delay: isLoading ? 0 : 1.0
             }}
         >
-          <div className="text-white text-center">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-white text-center">
             <motion.h2 
                 className="text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]"
                 initial={{ opacity: 0, y: 20 }}
@@ -110,7 +111,24 @@ const Contact: React.FC = () => {
                 </span>
               </LiquidGlass>
             </motion.div>
+            </div>
           </div>
+
+          {/* Copyright Footer - Fixed at bottom */}
+          <motion.div 
+              className="text-center text-white/60 text-sm [text-shadow:0_1px_2px_rgba(0,0,0,0.5)] pb-4"
+              initial={{ opacity: 0 }}
+              animate={{ 
+                  opacity: isLoading ? 0 : 1
+              }}
+              transition={{ 
+                  duration: 0.6, 
+                  ease: 'easeOut',
+                  delay: isLoading ? 0 : 1.8
+              }}
+          >
+              © {new Date().getFullYear()} Patrick Adrianus. All rights reserved.
+          </motion.div>
         </motion.section>
     );
 }
