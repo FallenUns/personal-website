@@ -34,15 +34,15 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
   const handleOrbClick = () => {
     setIsChatOpen(prev => {
       const newChatState = !prev;
-      // If we are closing the chat, also hide the output window.
+      // If we are closing the chat, just hide the output window but keep messages
       if (!newChatState) {
         setShowOutput(false);
-        // Clear conversation history when closing chat
-        setConversationHistory([]);
+        // Don't clear messages or history - keep them for when user reopens
       } else {
-        // When opening, reset messages for a new session.
-        setMessages([]);
-        setConversationHistory([]);
+        // When opening, show output if we have messages from previous session
+        if (messages.length > 0) {
+          setShowOutput(true);
+        }
       }
       return newChatState;
     });
@@ -52,7 +52,7 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
   const handleCloseChat = () => {
     setIsChatOpen(false);
     setShowOutput(false);
-    setConversationHistory([]);
+    // Don't clear messages or history - keep them for when user reopens
   };
 
   const handleSendMessage = async (input: string) => {

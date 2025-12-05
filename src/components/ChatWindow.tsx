@@ -33,6 +33,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [input, setInput] = useState('');
   const [displayedText, setDisplayedText] = useState('');
   const [responseHeight, setResponseHeight] = useState(110);
+  const [lastTypedMessageId, setLastTypedMessageId] = useState<string | null>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const responseRef = useRef<HTMLDivElement>(null);
@@ -49,9 +50,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [isChatOpen]);
 
-  // Typing animation for the response text
+  // Typing animation for the response text - only for new messages
   useEffect(() => {
     if (latestResponse && showOutput) {
+      // Create a unique ID for this message based on its content and position
+      const messageId = `${messages.length}-${latestResponse.text.slice(0, 50)}`;
+      
+      // If this message was already typed, show it instantly
+      if (lastTypedMessageId === messageId) {
+        setDisplayedText(latestResponse.text);
+        return;
+      }
+      
+      // New message - animate typing
       let index = 0;
       setDisplayedText('');
       const typeInterval = setInterval(() => {
@@ -60,11 +71,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           setDisplayedText(latestResponse.text.slice(0, index));
         } else {
           clearInterval(typeInterval);
+          // Mark this message as typed
+          setLastTypedMessageId(messageId);
         }
       }, 30);
       return () => clearInterval(typeInterval);
     }
-  }, [latestResponse, showOutput]);
+  }, [latestResponse, showOutput, messages.length]);
 
   // Handle clicking outside the chat windows to close
   useEffect(() => {
