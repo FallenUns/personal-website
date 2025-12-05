@@ -77,7 +77,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       }, 30);
       return () => clearInterval(typeInterval);
     }
-  }, [latestResponse, showOutput, messages.length]);
+  }, [latestResponse, showOutput, messages.length, lastTypedMessageId]);
 
   // Handle clicking outside the chat windows to close
   useEffect(() => {
