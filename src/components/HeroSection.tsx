@@ -158,7 +158,7 @@ const HeroSection: React.FC = () => {
                 </span>
             </LiquidGlass>
             
-            {/* Download CV Button - Transparent with border */}
+            {/* Download Resume Button - Transparent with border */}
             <LiquidGlass
                 width={180}
                 height={45}
@@ -177,13 +177,13 @@ const HeroSection: React.FC = () => {
                 overLight={false}
                 onClick={() => {
                   try {
-                    window.open('/CV-new.pdf', '_blank');
+                    window.open('/resume.pdf', '_blank');
                   } catch (error) {
-                    console.error('Failed to open CV:', error);
+                    console.error('Failed to open Resume:', error);
                     // Fallback to download
                     const link = document.createElement('a');
-                    link.href = '/CV-new.pdf';
-                    link.download = 'Patrick_Adrianus_CV.pdf';
+                    link.href = '/resume.pdf';
+                    link.download = 'Patrick_Adrianus_Resume.pdf';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -191,7 +191,7 @@ const HeroSection: React.FC = () => {
                 }}
             >
                 <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center">
-                    My CV 
+                    My Resume
                     <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
