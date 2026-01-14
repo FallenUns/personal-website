@@ -4,7 +4,7 @@ import LiquidGlass from './LiquidGlass';
 import { useComponentLoader } from '../contexts/LoadingContext';
 import { navigateTo } from '../utils/router';
 import './performance.css';
-import { projects} from '../data/projects';
+import { projects } from '../data/projects';
 
 // Device mockup component (no changes)
 const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => {
@@ -36,7 +36,7 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
       </div>
     );
   }
-  
+
   if (type === 'web') {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -61,7 +61,7 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
           {/* Paper header with title area */}
           <div className="absolute top-1 left-1 right-1 h-2 bg-white/40 rounded-sm"></div>
           <div className="absolute top-4 left-1 right-1 h-1 bg-white/25 rounded-sm"></div>
-          
+
           {/* Abstract/content lines */}
           <div className="absolute top-6 left-1 right-1 space-y-0.5">
             <div className="h-0.5 bg-orange-400/60 rounded w-full"></div>
@@ -70,7 +70,7 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
             <div className="h-0.5 bg-white/30 rounded w-full"></div>
             <div className="h-0.5 bg-white/30 rounded w-3/4"></div>
           </div>
-          
+
           {/* Chart/graph representation */}
           <div className="absolute bottom-3 left-1 right-1 h-6 bg-gradient-to-t from-orange-400/40 to-orange-300/20 rounded-sm flex items-end justify-center space-x-0.5">
             <div className="w-1 h-2 bg-orange-500/70 rounded-sm"></div>
@@ -83,7 +83,7 @@ const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => 
       </div>
     );
   }
-  
+
   return (
     <div className="flex space-x-1 items-center">
       <div className={`w-16 h-20 ${color} rounded border border-white/40 relative overflow-hidden`}>
@@ -175,7 +175,7 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
   const cardHeight = 380; // Increased from 340px to 380px for more height
   const [isHovered, setIsHovered] = useState(false);
-  
+
   // Special liquid glass configuration for the liquid glass project
   const isLiquidGlassProject = project.slug === 'liquid-glass-design';
 
@@ -291,36 +291,36 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                   ))}
                 </div>
               </div>
-              <motion.div 
-                className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300" 
-                animate={{ 
-                  scale: isHovered ? 1.1 : 1, 
-                  rotate: isHovered ? 45 : 0 
+              <motion.div
+                className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
+                animate={{
+                  scale: isHovered ? 1.1 : 1,
+                  rotate: isHovered ? 45 : 0
                 }}
-                transition={{ 
-                  duration: 0.3, 
-                  ease: "easeOut" 
+                transition={{
+                  duration: 0.3,
+                  ease: "easeOut"
                 }}
                 whileTap={{ scale: 0.9 }}
-                style={{ 
-                  transformOrigin: "center" 
+                style={{
+                  transformOrigin: "center"
                 }}
               >
-                <motion.svg 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
+                <motion.svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   className="text-white transition-colors duration-300"
-                  animate={{ 
+                  animate={{
                     rotate: isHovered ? [0, 5, -5, 0] : 0
                   }}
-                  transition={{ 
-                    duration: isHovered ? 0.6 : 0.3, 
+                  transition={{
+                    duration: isHovered ? 0.6 : 0.3,
                     ease: "easeInOut",
                     repeat: isHovered ? Infinity : 0,
                     repeatDelay: isHovered ? 2 : 0
@@ -342,7 +342,7 @@ ProjectCard.displayName = 'ProjectCard';
 const ProjectsSection: React.FC = () => {
   useComponentLoader('ProjectsSection');
   const [currentPage, setCurrentPage] = useState(0);
-  
+
   // Create a ref for the slider container
   const sliderContainerRef = useRef<HTMLDivElement>(null);
 
@@ -361,13 +361,13 @@ const ProjectsSection: React.FC = () => {
     return projects.slice(startIndex, startIndex + visibleCards);
   };
   const visibleProjects = getVisibleProjects();
-  
+
   const isPrevDisabled = currentPage === 0;
   const isNextDisabled = currentPage >= totalPages - 1;
 
   return (
-    <motion.section 
-      id="projects" 
+    <motion.section
+      id="projects"
       className="min-h-screen flex flex-col items-center justify-center py-8 px-4 sm:px-6 lg:px-8 w-full"
     >
       <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-screen">
@@ -385,63 +385,63 @@ const ProjectsSection: React.FC = () => {
             Explore my latest projects and creative solutions
           </p>
         </motion.div>
-        
+
         {/* Attach the ref to this container */}
         <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8 px-4">
           {/* Left Navigation Button */}
           <motion.button
-              onClick={handlePrevious}
-              disabled={isPrevDisabled}
-              className={`z-30 flex-shrink-0 transition-opacity duration-300 mr-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
-              whileHover={{ scale: isPrevDisabled ? 1 : 1.05 }}
-              whileTap={{ scale: isPrevDisabled ? 1 : 0.95 }}
-              aria-label="Previous project"
+            onClick={handlePrevious}
+            disabled={isPrevDisabled}
+            className={`z-30 flex-shrink-0 transition-opacity duration-300 mr-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+            whileHover={{ scale: isPrevDisabled ? 1 : 1.05 }}
+            whileTap={{ scale: isPrevDisabled ? 1 : 0.95 }}
+            aria-label="Previous project"
           >
-              <div className="relative w-14 h-14 flex items-center justify-center">
-                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M15 18L9 12L15 6" /></svg>
-                  </div>
+            <div className="relative w-14 h-14 flex items-center justify-center">
+              <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M15 18L9 12L15 6" /></svg>
               </div>
+            </div>
           </motion.button>
 
           {/* Cards Viewport */}
-          <div className="flex justify-center items-center flex-1" style={{ maxWidth: `${viewportWidth}px`}}>
-              <motion.div 
-                  key={currentPage}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="flex gap-4 md:gap-6 justify-center items-center"
-                  style={{ minHeight: '460px' }}
-              >
-                  {visibleProjects.map((project, index) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        index={index}
-                        cardWidth={cardWidth}
-                      />
-                  ))}
-              </motion.div>
+          <div className="flex justify-center items-center flex-1" style={{ maxWidth: `${viewportWidth}px` }}>
+            <motion.div
+              key={currentPage}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex gap-4 md:gap-6 justify-center items-center"
+              style={{ minHeight: '460px' }}
+            >
+              {visibleProjects.map((project, index) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  index={index}
+                  cardWidth={cardWidth}
+                />
+              ))}
+            </motion.div>
           </div>
 
           {/* Right Navigation Button */}
           <motion.button
-              onClick={handleNext}
-              disabled={isNextDisabled}
-              className={`z-30 flex-shrink-0 transition-opacity duration-300 ml-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
-              whileHover={{ scale: isNextDisabled ? 1 : 1.05 }}
-              whileTap={{ scale: isNextDisabled ? 1 : 0.95 }}
-              aria-label="Next project"
+            onClick={handleNext}
+            disabled={isNextDisabled}
+            className={`z-30 flex-shrink-0 transition-opacity duration-300 ml-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+            whileHover={{ scale: isNextDisabled ? 1 : 1.05 }}
+            whileTap={{ scale: isNextDisabled ? 1 : 0.95 }}
+            aria-label="Next project"
           >
-              <div className="relative w-14 h-14 flex items-center justify-center">
-                  <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M9 18L15 12L9 6" /></svg>
-                  </div>
+            <div className="relative w-14 h-14 flex items-center justify-center">
+              <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M9 18L15 12L9 6" /></svg>
               </div>
+            </div>
           </motion.button>
         </div>
 
@@ -466,7 +466,7 @@ const ProjectsSection: React.FC = () => {
         </div>
 
         {/* Project Counter */}
-        <motion.div 
+        <motion.div
           className="text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

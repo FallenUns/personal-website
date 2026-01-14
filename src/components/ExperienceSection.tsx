@@ -3,19 +3,19 @@ import { motion, useInView } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 import { navigateTo } from '../utils/router';
-import { 
-  experiences, 
-  formatPeriod, 
-  diffMonths 
+import {
+  experiences,
+  formatPeriod,
+  diffMonths
 } from '../data/experiences';
-import type { 
-  Experience 
+import type {
+  Experience
 } from '../data/experiences';
 
 
 
 const Tag: React.FC<{ text: string; index?: number }> = ({ text, index = 0 }) => (
-  <motion.span 
+  <motion.span
     className="text-xs px-2.5 py-1 bg-white/10 text-white/85 rounded-full backdrop-blur-sm border border-white/10 hover:bg-white/20 hover:scale-105 transition-all duration-200 cursor-default"
     initial={{ opacity: 0, scale: 0.8 }}
     whileInView={{ opacity: 1, scale: 1 }}
@@ -76,7 +76,7 @@ const ExperienceItem: React.FC<{
 }> = ({ exp, index, cardWidth, onViewDetails }) => {
   const period = formatPeriod(exp.start, exp.end);
   const durationMonths = diffMonths(exp.start, exp.end);
-  const durationStr = durationMonths >= 12 ? `${(durationMonths/12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`;
+  const durationStr = durationMonths >= 12 ? `${(durationMonths / 12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`;
 
   const [isHovered, setIsHovered] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement>(null);
@@ -101,13 +101,13 @@ const ExperienceItem: React.FC<{
         <motion.div
           className="relative w-4 h-4 bg-orange-400 rounded-full shadow-lg"
           animate={isInView ? {
-            boxShadow: isHovered 
+            boxShadow: isHovered
               ? ["0 0 0 0 rgba(251, 146, 60, 0.4)", "0 0 0 15px rgba(251, 146, 60, 0)"]
               : "0 0 0 0 rgba(251, 146, 60, 0.4)"
           } : {}}
-          transition={{ 
-            boxShadow: { 
-              duration: isHovered ? 1.5 : 0.3, 
+          transition={{
+            boxShadow: {
+              duration: isHovered ? 1.5 : 0.3,
               repeat: isHovered ? Infinity : 0,
               ease: "easeOut"
             }
@@ -133,15 +133,15 @@ const ExperienceItem: React.FC<{
 
         <motion.div
           initial={{ opacity: 0, y: 20, rotateY: index % 2 === 0 ? -15 : 15 }}
-          animate={isInView ? { 
-            opacity: 1, 
-            y: 0, 
-            rotateY: 0 
+          animate={isInView ? {
+            opacity: 1,
+            y: 0,
+            rotateY: 0
           } : {}}
           viewport={{ once: true, margin: '0px 0px -10% 0px' }}
-          transition={{ 
-            duration: 0.6, 
-            ease: 'easeOut', 
+          transition={{
+            duration: 0.6,
+            ease: 'easeOut',
             delay: index * 0.1,
             rotateY: { duration: 0.8 }
           }}
@@ -151,7 +151,7 @@ const ExperienceItem: React.FC<{
           onMouseLeave={() => {
             setIsHovered(false);
           }}
-          whileHover={{ 
+          whileHover={{
             scale: 1.02,
             rotateY: index % 2 === 0 ? 2 : -2,
             transition: { duration: 0.3 }
@@ -186,21 +186,21 @@ const ExperienceItem: React.FC<{
               {/* Header with company info */}
               <div className="flex flex-wrap items-start justify-between gap-3 mb-4 relative z-10">
                 <div className="flex-1">
-                  <motion.h3 
+                  <motion.h3
                     className="text-lg md:text-xl font-semibold [text-shadow:0_2px_5px_rgba(0,0,0,0.8)] mb-2"
                     animate={isHovered ? { scale: 1.02 } : { scale: 1 }}
                     transition={{ duration: 0.2 }}
                   >
                     {exp.role}
                   </motion.h3>
-                  <motion.div 
+                  <motion.div
                     className="text-white/80 text-sm mb-2"
                     animate={isHovered ? { x: 5 } : { x: 0 }}
                     transition={{ duration: 0.2 }}
                   >
                     {exp.company}{exp.location ? ` • ${exp.location}` : ''}
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="text-white/70 text-xs"
                     animate={isHovered ? { x: 5 } : { x: 0 }}
                     transition={{ duration: 0.2, delay: 0.05 }}
@@ -223,7 +223,7 @@ const ExperienceItem: React.FC<{
               </div>
 
               {/* Quick stats row */}
-              <motion.div 
+              <motion.div
                 className="flex gap-4 mb-4 relative z-10"
                 initial={{ opacity: 0, y: 10 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -231,7 +231,7 @@ const ExperienceItem: React.FC<{
               >
                 {stats.map((stat, statIndex) => (
                   <div key={stat.label} className="text-center">
-                    <motion.div 
+                    <motion.div
                       className="text-lg font-bold text-orange-300"
                       animate={isInView ? { scale: [0.8, 1.1, 1] } : {}}
                       transition={{ delay: index * 0.1 + 0.4 + statIndex * 0.1, duration: 0.5 }}
@@ -268,38 +268,38 @@ const ExperienceItem: React.FC<{
                     </motion.span>
                   )}
                 </div>
-                
+
                 {/* Enhanced action button - matching ProjectsSection arrow style */}
-                <motion.div 
-                  className="p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300" 
-                  animate={{ 
-                    scale: isHovered ? 1.1 : 1, 
-                    rotate: isHovered ? 45 : 0 
+                <motion.div
+                  className="p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
+                  animate={{
+                    scale: isHovered ? 1.1 : 1,
+                    rotate: isHovered ? 45 : 0
                   }}
-                  transition={{ 
-                    duration: 0.3, 
-                    ease: "easeOut" 
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeOut"
                   }}
                   whileTap={{ scale: 0.9 }}
-                  style={{ 
-                    transformOrigin: "center" 
+                  style={{
+                    transformOrigin: "center"
                   }}
                 >
-                  <motion.svg 
-                    width="16" 
-                    height="16" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
+                  <motion.svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     className="text-white transition-colors duration-300"
-                    animate={{ 
+                    animate={{
                       rotate: isHovered ? [0, 5, -5, 0] : 0
                     }}
-                    transition={{ 
-                      duration: isHovered ? 0.6 : 0.3, 
+                    transition={{
+                      duration: isHovered ? 0.6 : 0.3,
                       ease: "easeInOut",
                       repeat: isHovered ? Infinity : 0,
                       repeatDelay: isHovered ? 2 : 0
@@ -331,7 +331,7 @@ const ExperienceSection: React.FC = () => {
   const sectionRef = React.useRef<HTMLElement>(null);
   const [containerWidth, setContainerWidth] = React.useState(860);
   const [isMdUp, setIsMdUp] = React.useState<boolean>(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
-  
+
   const isInView = useInView(sectionRef, { margin: '-20%' });
 
   React.useEffect(() => {
@@ -348,11 +348,11 @@ const ExperienceSection: React.FC = () => {
 
   const sorted = React.useMemo(() => {
     return [...experiences].sort((a, b) => {
-      const aEnd = a.end ? new Date(a.end.year, a.end.month-1, 1).getTime() : Number.POSITIVE_INFINITY;
-      const bEnd = b.end ? new Date(b.end.year, b.end.month-1, 1).getTime() : Number.POSITIVE_INFINITY;
+      const aEnd = a.end ? new Date(a.end.year, a.end.month - 1, 1).getTime() : Number.POSITIVE_INFINITY;
+      const bEnd = b.end ? new Date(b.end.year, b.end.month - 1, 1).getTime() : Number.POSITIVE_INFINITY;
       if (aEnd !== bEnd) return bEnd - aEnd; // current first
-      const aStart = new Date(a.start.year, a.start.month-1, 1).getTime();
-      const bStart = new Date(b.start.year, b.start.month-1, 1).getTime();
+      const aStart = new Date(a.start.year, a.start.month - 1, 1).getTime();
+      const bStart = new Date(b.start.year, b.start.month - 1, 1).getTime();
       return bStart - aStart;
     });
   }, []);
@@ -398,11 +398,11 @@ const ExperienceSection: React.FC = () => {
         } : {}}
         transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
       />
-      
+
       <div className="w-full max-w-6xl relative z-10" ref={containerRef}>
         {/* Enhanced Header with metrics */}
         <div className="text-center text-white mb-12">
-          <motion.h2 
+          <motion.h2
             className="text-4xl md:text-5xl font-bold mb-4 [text-shadow:0_2px_4px_rgba(0,0,0,0.6)]"
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -411,7 +411,7 @@ const ExperienceSection: React.FC = () => {
           >
             Experiences
           </motion.h2>
-          
+
           <motion.p
             className="text-white/85 max-w-2xl mx-auto mb-8 text-lg"
             initial={{ opacity: 0, y: 20 }}
@@ -441,13 +441,13 @@ const ExperienceSection: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-                <motion.div 
+                <motion.div
                   className="text-2xl md:text-3xl font-bold text-orange-400 mb-1"
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ 
-                    delay: 0.3 + index * 0.1, 
+                  transition={{
+                    delay: 0.3 + index * 0.1,
                     duration: 0.5,
                     type: "spring",
                     stiffness: 150
@@ -482,7 +482,7 @@ const ExperienceSection: React.FC = () => {
                 cardWidth={computedCardWidth}
                 onViewDetails={() => handleViewDetails(exp.id)}
               />
-              
+
               {/* Optional: Add connecting elements between timeline items */}
               {idx < sorted.length - 1 && (
                 <motion.div

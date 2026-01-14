@@ -97,7 +97,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
 
   const period = formatPeriod(experience.start, experience.end);
   const durationMonths = diffMonths(experience.start, experience.end);
-  const durationStr = experience.duration || (durationMonths >= 12 ? `${(durationMonths/12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`);
+  const durationStr = experience.duration || (durationMonths >= 12 ? `${(durationMonths / 12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`);
 
   const tabContent = {
     overview: (
@@ -105,11 +105,11 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-3">About This Role</h3>
           <p className="text-white/80 leading-relaxed">
-            {experience.fullDescription || 
-             `During my time as ${experience.role} at ${experience.company}, I gained valuable experience in ${experience.category.toLowerCase()} development and contributed to various projects that enhanced my technical and professional skills.`}
+            {experience.fullDescription ||
+              `During my time as ${experience.role} at ${experience.company}, I gained valuable experience in ${experience.category.toLowerCase()} development and contributed to various projects that enhanced my technical and professional skills.`}
           </p>
         </div>
-        
+
         <div>
           <h3 className="text-xl font-semibold text-white mb-3">Key Highlights</h3>
           <div className="grid gap-3">
@@ -127,7 +127,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
             ))}
           </div>
         </div>
-        
+
         <div>
           <h3 className="text-xl font-semibold text-white mb-3">Skills & Technologies</h3>
           <div className="flex flex-wrap gap-2">
@@ -164,7 +164,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
             </motion.div>
           ))}
         </div>
-        
+
         {experience.technologies && (
           <div className="mt-6">
             <h4 className="text-lg font-semibold text-white mb-3">Technologies & Tools</h4>
@@ -221,22 +221,22 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
               <span className="text-white/90">{impact}</span>
             </motion.div>
           )) || (
-            <div className="space-y-3">
-              <p className="text-white/70 mb-4">Key outcomes from this role:</p>
-              {experience.achievements?.map((achievement, index) => (
-                <motion.div
-                  key={index}
-                  className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-white/90">{achievement}</span>
-                </motion.div>
-              )) || <p className="text-white/70">Growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
-            </div>
-          )}
+              <div className="space-y-3">
+                <p className="text-white/70 mb-4">Key outcomes from this role:</p>
+                {experience.achievements?.map((achievement, index) => (
+                  <motion.div
+                    key={index}
+                    className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg border border-white/10"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
+                    <span className="text-white/90">{achievement}</span>
+                  </motion.div>
+                )) || <p className="text-white/70">Growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
+              </div>
+            )}
         </div>
       </div>
     ),
@@ -414,11 +414,10 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                           {(['overview', 'responsibilities', 'achievements', 'impact'] as const).map((tab) => (
                             <motion.button
                               key={tab}
-                              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all ${
-                                activeTab === tab
+                              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all ${activeTab === tab
                                   ? 'bg-white/20 text-white shadow-sm'
                                   : 'text-white/70 hover:text-white hover:bg-white/10'
-                              }`}
+                                }`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setActiveTab(tab);

@@ -151,7 +151,7 @@ const AppContent: React.FC = () => {
     getAutoSync: () => isAuto,
     navigateToSection: (sectionId: string) => {
       console.log(`🎯 App.tsx navigateToSection called with: ${sectionId}`);
-      
+
       try {
         // Use the proven navigation utility function directly
         console.log(`🚀 Using navigation utility for ${sectionId}`);
@@ -190,14 +190,14 @@ const AppContent: React.FC = () => {
 
   const handleToggleAuto = useCallback(() => {
     setIsAuto(prev => {
-        const newIsAuto = !prev;
-        if (newIsAuto) {
-            const now = new Date();
-            const newTime = now.getHours() + now.getMinutes() / 60;
-            setCurrentTime(newTime);
-            setIsDarkMode(newTime >= 17 || newTime < 5);
-        }
-        return newIsAuto;
+      const newIsAuto = !prev;
+      if (newIsAuto) {
+        const now = new Date();
+        const newTime = now.getHours() + now.getMinutes() / 60;
+        setCurrentTime(newTime);
+        setIsDarkMode(newTime >= 17 || newTime < 5);
+      }
+      return newIsAuto;
     });
   }, []);
 
@@ -222,7 +222,7 @@ const AppContent: React.FC = () => {
     <>
       {/* Show mobile coming soon screen for mobile devices */}
       {isMobile && <MobileComingSoon />}
-      
+
       {/* Show loading screen immediately with background color */}
       <AnimatePresence>
         {isLoading && (
@@ -237,10 +237,10 @@ const AppContent: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Render main content - hidden during loading but allows components to mount */}
       <TimeProvider hour={currentTime} isDarkMode={isDarkMode}>
-        <div style={{ 
+        <div style={{
           opacity: isLoading ? 0 : 1,
           visibility: isLoading ? 'hidden' : 'visible',
           transition: isLoading ? 'none' : 'opacity 0.8s ease-out'
@@ -256,14 +256,14 @@ const AppContent: React.FC = () => {
               <div className="flex items-center justify-center gap-3 text-sm">
                 <motion.div
                   className="w-2 h-2 bg-orange-400 rounded-full"
-                  animate={{ 
+                  animate={{
                     opacity: [0.5, 1, 0.5],
                     scale: [0.8, 1.2, 0.8]
                   }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
                   }}
                 />
                 <span className="text-white/80 font-medium">
@@ -274,13 +274,13 @@ const AppContent: React.FC = () => {
                 </span>
                 <motion.div
                   className="w-2 h-2 bg-orange-400 rounded-full"
-                  animate={{ 
+                  animate={{
                     opacity: [0.5, 1, 0.5],
                     scale: [0.8, 1.2, 0.8]
                   }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity, 
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
                     ease: "easeInOut",
                     delay: 1
                   }}
@@ -290,7 +290,7 @@ const AppContent: React.FC = () => {
           </motion.div>
 
           <TechBackground hour={currentTime} />
-          
+
           <Navbar
             time={currentTime}
             onTimeChange={handleTimeChange}
@@ -299,14 +299,14 @@ const AppContent: React.FC = () => {
             isAuto={isAuto}
             onToggleAuto={handleToggleAuto}
           />
-          
+
           <main className="relative z-10 pt-8">
             <HeroSection />
             <ExperienceSection />
             <ProjectsSection />
             <Contact />
           </main>
-          
+
           <FloatingAssistant isLoading={isLoading} />
           <FeedbackButton />
           <FeedbackManager />
