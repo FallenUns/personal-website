@@ -26,12 +26,43 @@ interface InteractiveChartProps {
   className?: string;
 }
 
+// Type definitions for recharts custom components
+interface PieLabelProps {
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
+}
+
+interface TooltipPayloadItem {
+  dataKey: string;
+  value: number | string;
+  color: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  label?: string;
+}
+
+interface LegendPayloadItem {
+  color: string;
+  value: string;
+}
+
+interface CustomLegendProps {
+  payload?: LegendPayloadItem[];
+}
+
 const RADIAN = Math.PI / 180;
 
 // Custom label function for pie charts
 const renderCustomizedLabel = ({
-  cx, cy, midAngle, innerRadius, outerRadius, percent
-}: any) => {
+  cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, percent = 0
+}: PieLabelProps) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -52,12 +83,12 @@ const renderCustomizedLabel = ({
 };
 
 // Custom tooltip with dark theme
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-3 shadow-lg">
         <p className="text-white/90 font-medium mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: TooltipPayloadItem, index: number) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
             {`${entry.dataKey}: ${entry.value}`}
           </p>
@@ -69,10 +100,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 // Custom legend with dark theme
-const CustomLegend = ({ payload }: any) => {
+const CustomLegend = ({ payload }: CustomLegendProps) => {
   return (
     <div className="flex justify-center gap-4 mt-4">
-      {payload.map((entry: any, index: number) => (
+      {payload?.map((entry: LegendPayloadItem, index: number) => (
         <div key={index} className="flex items-center gap-2">
           <div 
             className="w-3 h-3 rounded-sm" 

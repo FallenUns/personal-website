@@ -602,7 +602,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                       muted
                                       playsInline
                                       onLoadedData={() => {
-                                        console.log(`✅ Video loaded: ${project.images?.[activeMediaIndex] || 'unknown'}`);
+                                        if (import.meta.env.DEV) console.log(`Video loaded: ${project.images?.[activeMediaIndex] || 'unknown'}`);
                                       }}
                                       onError={() => {
                                         console.error(`❌ Failed to load video: ${project.images?.[activeMediaIndex] || 'unknown'}`);
@@ -620,7 +620,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                         objectPosition: 'center'
                                       }}
                                       onLoad={() => {
-                                        console.log(`✅ Using preloaded image: ${project.images?.[activeMediaIndex] || 'unknown'}`);
+                                        if (import.meta.env.DEV) console.log(`Using preloaded image: ${project.images?.[activeMediaIndex] || 'unknown'}`);
                                       }}
                                       onError={() => {
                                         console.error(`❌ Failed to load preloaded image: ${project.images?.[activeMediaIndex] || 'unknown'}`);

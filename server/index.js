@@ -46,9 +46,15 @@ const app = express();
 // Security Middleware
 app.use(helmet()); // Adds various HTTP headers for security
 
-// CORS configuration
+// CORS configuration - Use specific origins in production
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : process.env.NODE_ENV === 'production'
+    ? ['https://patrickadrianus.com', 'https://www.patrickadrianus.com']
+    : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'DELETE'],
   credentials: true
 }));
@@ -93,6 +99,32 @@ const feedbackLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Admin API key authentication middleware
+const adminAuth = (req, res, next) => {
+  const apiKey = req.headers['x-admin-api-key'];
+  const validApiKey = process.env.ADMIN_API_KEY;
+  
+  if (!validApiKey) {
+    // If no admin key is configured, only allow in development
+    if (process.env.NODE_ENV !== 'production') {
+      return next();
+    }
+    return res.status(503).json({
+      success: false,
+      message: 'Admin API not configured'
+    });
+  }
+  
+  if (!apiKey || apiKey !== validApiKey) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized: Invalid or missing API key'
+    });
+  }
+  
+  next();
+};
 
 // Apply global rate limiter to all routes
 app.use('/api/', globalLimiter);
@@ -262,8 +294,8 @@ app.post('/api/feedback',
   }
 });
 
-// Get all feedback (for dashboard)
-app.get('/api/feedback', async (req, res) => {
+// Get all feedback (for dashboard) - Admin only
+app.get('/api/feedback', adminAuth, async (req, res) => {
   try {
     const feedbackArray = await readFeedback();
     res.json({
@@ -325,8 +357,8 @@ app.get('/api/feedback/stats', async (req, res) => {
   }
 });
 
-// Export CSV
-app.get('/api/feedback/export-csv', async (req, res) => {
+// Export CSV - Admin only
+app.get('/api/feedback/export-csv', adminAuth, async (req, res) => {
   try {
     const feedbackArray = await readFeedback();
     
@@ -353,8 +385,8 @@ app.get('/api/feedback/export-csv', async (req, res) => {
   }
 });
 
-// Delete all feedback (with confirmation)
-app.delete('/api/feedback', async (req, res) => {
+// Delete all feedback (with confirmation) - Admin only
+app.delete('/api/feedback', adminAuth, async (req, res) => {
   try {
     const { confirm } = req.body;
     

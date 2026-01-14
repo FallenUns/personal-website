@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 import { PreloadedImage } from '../utils/preloadedImageHooks';
+import { scrollToSection } from '../utils/navigation';
 
 const HeroSection: React.FC = () => {
   useComponentLoader('HeroSection');
@@ -24,24 +25,6 @@ const HeroSection: React.FC = () => {
 
   const handleTechLeave = () => {
     setHoveredTech(null);
-  };
-
-  const scrollToSection = (sectionId: string) => {
-    console.log(`${sectionId} button clicked`);
-
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-      console.log(`${sectionId} section found:`, targetSection);
-
-      // With scroll-snap removed, this should work smoothly
-      targetSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest'
-      });
-    } else {
-      console.error(`${sectionId} section not found`);
-    }
   };
 
   return (

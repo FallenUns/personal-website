@@ -220,6 +220,14 @@ const AppContent: React.FC = () => {
 
   return (
     <>
+      {/* Skip navigation link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10002] focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Skip to main content
+      </a>
+
       {/* Show mobile coming soon screen for mobile devices */}
       {isMobile && <MobileComingSoon />}
 
@@ -256,7 +264,7 @@ const AppContent: React.FC = () => {
             onToggleAuto={handleToggleAuto}
           />
 
-          <main className="relative z-10 pt-8">
+          <main id="main-content" className="relative z-10 pt-8">
             <HeroSection />
             <ExperienceSection />
             <ProjectsSection />

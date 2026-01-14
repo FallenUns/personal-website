@@ -82,11 +82,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   // Handle clicking outside the chat windows to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
+      // Don't close while AI is typing
+      if (isAITyping) return;
+      
+      const target = event.target as HTMLElement;
       const isOutsideResponse = responseRef.current && !responseRef.current.contains(target);
       const isOutsideInput = inputContainerRef.current && !inputContainerRef.current.contains(target);
+      
+      // Check if clicked on the assistant icon (don't close - let the orb handle its own click)
+      const isAssistantIcon = target.closest('.assistant-icon-container') || target.closest('.assistant-icon-wrapper');
 
-      if (isChatOpen && isOutsideResponse && isOutsideInput) {
+      if (isChatOpen && isOutsideResponse && isOutsideInput && !isAssistantIcon) {
         onClose();
       }
     };
@@ -96,7 +102,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isChatOpen, onClose]);
+  }, [isChatOpen, isAITyping, onClose]);
 
   // Dynamically adjust the height of the response window and auto-scroll
   useEffect(() => {
@@ -123,7 +129,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (e.key === 'Enter') {
       handleSend();
     }
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' && !isAITyping) {
       onClose();
     }
   };
@@ -227,4 +233,4 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   );
 };
 
-export default ChatWindow;
+export default React.memo(ChatWindow);

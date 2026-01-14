@@ -4,6 +4,8 @@ import { useComponentLoader } from '../contexts/LoadingContext';
 import LiquidGlass from './LiquidGlass';
 import Logo from './Logo';
 import { useScrollSpy } from '../hooks/useScrollSpy';
+import { debounce } from '../utils/throttle';
+import { scrollToSection } from '../utils/navigation';
 
 // Interfaces for component props
 interface NavbarProps {
@@ -128,24 +130,9 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   const sectionIds = ['about', 'experience', 'projects', 'contact'];
   const activeSection = useScrollSpy(sectionIds, { offset: 100 }); // Reduced offset for better accuracy
 
-  // Improved scroll function
-  const scrollToSection = useCallback((sectionId: string) => {
-    console.log('Attempting to scroll to section:', sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      console.log('Element found:', element);
-      
-      // Use scrollIntoView with block: 'start' for better positioning
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest'
-      });
-      
-      console.log('Scrolling to:', sectionId);
-    } else {
-      console.error('Element not found:', sectionId);
-    }
+  // Use scrollToSection from navigation utils
+  const handleScrollToSection = useCallback((sectionId: string) => {
+    scrollToSection(sectionId);
   }, []);
 
   // Close dropdown when clicking outside
@@ -186,24 +173,25 @@ const Navbar: React.FC<NavbarProps> = (props) => {
       }
     };
 
+    // Debounced version for resize events
+    const debouncedMeasure = debounce(measureContent, 100);
+
     // Initial measurement
     measureContent();
 
-    // Create ResizeObserver for dynamic updates
-    const observer = new ResizeObserver(() => {
-      measureContent();
-    });
+    // Create ResizeObserver for dynamic updates with debounce
+    const observer = new ResizeObserver(debouncedMeasure);
 
     if (rightContentRef.current) {
       observer.observe(rightContentRef.current);
     }
 
-    // Also measure on window resize
-    window.addEventListener('resize', measureContent);
+    // Also measure on window resize (debounced)
+    window.addEventListener('resize', debouncedMeasure);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('resize', measureContent);
+      window.removeEventListener('resize', debouncedMeasure);
     };
   }, [activeSection]); // Re-measure when active section changes
 
@@ -241,7 +229,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
           onMouseDown={() => setIsLogoPressed(true)}
           onMouseUp={() => setIsLogoPressed(false)}
           onMouseLeave={() => setIsLogoPressed(false)}
-          onClick={() => scrollToSection('about')}
+          onClick={() => handleScrollToSection('about')}
           animate={{
             scale: isLogoPressed ? 0.95 : 1,
           }}
@@ -342,7 +330,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                   {navLinks.map((link) => (
                     <motion.button
                       key={link.id}
-                      onClick={() => scrollToSection(link.id)}
+                      onClick={() => handleScrollToSection(link.id)}
                       className={`relative hover:text-white transition-colors duration-300 [text-shadow:0_1px_4px_rgba(0,0,0,1)] font-medium cursor-pointer bg-transparent border-none py-2 whitespace-nowrap
                         ${activeSection === link.id
                           ? 'text-white'

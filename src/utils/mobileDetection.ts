@@ -1,6 +1,7 @@
 // src/utils/mobileDetection.ts
 
 import React from 'react';
+import { debounce } from './throttle';
 
 /**
  * Detects if the user is on a mobile device
@@ -43,11 +44,14 @@ export const useMobileDetection = (): boolean => {
     // Initial check
     checkDevice();
     
+    // Debounced resize handler to prevent excessive re-renders
+    const debouncedCheckDevice = debounce(checkDevice, 150);
+    
     // Listen for resize events (orientation change, window resize)
-    window.addEventListener('resize', checkDevice);
+    window.addEventListener('resize', debouncedCheckDevice);
     
     return () => {
-      window.removeEventListener('resize', checkDevice);
+      window.removeEventListener('resize', debouncedCheckDevice);
     };
   }, []);
   

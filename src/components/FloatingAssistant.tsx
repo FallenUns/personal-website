@@ -30,26 +30,34 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
     }
   }, [isLoading]);
 
-  // The orb click is now a simple toggle for the entire chat UI.
+  // The orb click handles all chat interactions
   const handleOrbClick = () => {
-    setIsChatOpen(prev => {
-      const newChatState = !prev;
-      // If we are closing the chat, just hide the output window but keep messages
-      if (!newChatState) {
-        setShowOutput(false);
-        // Don't clear messages or history - keep them for when user reopens
-      } else {
-        // When opening, show output if we have messages from previous session
-        if (messages.length > 0) {
-          setShowOutput(true);
-        }
+    // If AI is currently typing, do nothing - don't interrupt
+    if (isAITyping) {
+      return;
+    }
+    
+    // If chat is closed, open it
+    if (!isChatOpen) {
+      setIsChatOpen(true);
+      // Show previous messages if any
+      if (messages.length > 0) {
+        setShowOutput(true);
       }
-      return newChatState;
-    });
+      return;
+    }
+    
+    // If chat is open and AI is done, toggle closed
+    setIsChatOpen(false);
+    setShowOutput(false);
   };
 
   // This handles closing when clicking outside the chat windows.
   const handleCloseChat = () => {
+    // Don't allow closing while AI is typing
+    if (isAITyping) {
+      return;
+    }
     setIsChatOpen(false);
     setShowOutput(false);
     // Don't clear messages or history - keep them for when user reopens
