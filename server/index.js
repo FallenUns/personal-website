@@ -8,6 +8,39 @@ const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
 require('dotenv').config();
 
+// Environment validation - fail fast if critical variables are missing
+if (!process.env.LLM_API_KEY) {
+  console.error('❌ FATAL: LLM_API_KEY environment variable is not set');
+  console.error('Please configure the required environment variables before starting the server.');
+  process.exit(1);
+}
+
+// Configuration Constants
+const CONFIG = {
+  PORT: process.env.PORT || 3001,
+  MAX_FEEDBACK_ENTRIES: 1000,
+  MAX_FEEDBACK_AGE_DAYS: 365,
+  LLM_TIMEOUT_MS: 30000,
+  LLM_API_URL: process.env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions',
+  LLM_MODEL: process.env.VITE_LLM_MODEL || 'gpt-4.1-mini',
+};
+
+// Rate Limiting Constants
+const RATE_LIMITS = {
+  GLOBAL: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // requests per window
+  },
+  LLM: {
+    windowMs: 60 * 1000, // 1 minute
+    max: 10, // requests per window
+  },
+  FEEDBACK: {
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5, // submissions per window
+  },
+};
+
 const app = express();
 
 // Security Middleware
@@ -24,12 +57,13 @@ app.use(cors({
 app.use(express.json({ limit: '50kb' })); // Increased to 50kb to accommodate system prompts with knowledge base
 
 // Trust proxy (important for rate limiting behind nginx)
-app.set('trust proxy', 1);
+// Only trust loopback, link-local, and unique local addresses
+app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 
 // Global rate limiter - general protection
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: RATE_LIMITS.GLOBAL.windowMs,
+  max: RATE_LIMITS.GLOBAL.max,
   message: { success: false, message: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -37,8 +71,8 @@ const globalLimiter = rateLimit({
 
 // Strict rate limiter for LLM endpoint
 const llmLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // Limit each IP to 10 LLM requests per minute
+  windowMs: RATE_LIMITS.LLM.windowMs,
+  max: RATE_LIMITS.LLM.max,
   message: { 
     success: false, 
     message: 'Too many AI requests. Please wait a moment before trying again.' 
@@ -50,8 +84,8 @@ const llmLimiter = rateLimit({
 
 // Feedback submission rate limiter
 const feedbackLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // Limit each IP to 5 feedback submissions per hour
+  windowMs: RATE_LIMITS.FEEDBACK.windowMs,
+  max: RATE_LIMITS.FEEDBACK.max,
   message: { 
     success: false, 
     message: 'You have submitted too much feedback. Please try again later.' 
@@ -196,9 +230,9 @@ app.post('/api/feedback',
     // Add new feedback
     feedbackArray.push(feedback);
     
-    // Keep only last 1000 entries
-    if (feedbackArray.length > 1000) {
-      feedbackArray.splice(0, feedbackArray.length - 1000);
+    // Keep only last N entries as configured
+    if (feedbackArray.length > CONFIG.MAX_FEEDBACK_ENTRIES) {
+      feedbackArray.splice(0, feedbackArray.length - CONFIG.MAX_FEEDBACK_ENTRIES);
     }
 
     // Save to file
@@ -245,10 +279,13 @@ app.get('/api/feedback', async (req, res) => {
   }
 });
 
-// Get feedback statistics
+// Get feedback statistics (with caching)
 app.get('/api/feedback/stats', async (req, res) => {
   try {
     const feedbackArray = await readFeedback();
+    
+    // Add cache control header - cache for 60 seconds
+    res.setHeader('Cache-Control', 'public, max-age=60');
     
     if (feedbackArray.length === 0) {
       return res.json({
@@ -366,20 +403,13 @@ app.post('/api/llm/chat',
     }
 
     const { messages, model } = req.body;
-    
-    if (!process.env.LLM_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        message: 'LLM API key not configured'
-      });
-    }
 
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeout = setTimeout(() => controller.abort(), CONFIG.LLM_TIMEOUT_MS);
 
     try {
-      const response = await fetch(process.env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions', {
+      const response = await fetch(CONFIG.LLM_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -387,7 +417,7 @@ app.post('/api/llm/chat',
         },
         body: JSON.stringify({
           messages,
-          model: model || process.env.VITE_LLM_MODEL || 'gpt-4.1-mini',
+          model: model || CONFIG.LLM_MODEL,
           temperature: 0.5,
           max_tokens: 300
         }),
@@ -431,11 +461,12 @@ async function startServer() {
   await ensureDirectories();
   await initializeDataFile();
   
-  const PORT = process.env.PORT || 3001;
-  app.listen(PORT, () => {
-    console.log(`Feedback server running on port ${PORT}`);
-    console.log(`Feedback data stored in: ${FEEDBACK_FILE}`);
-    console.log(`CSV files stored in: ${CSV_DIR}`);
+  app.listen(CONFIG.PORT, () => {
+    console.log(`✅ Server running on port ${CONFIG.PORT}`);
+    console.log(`📊 Feedback data: ${FEEDBACK_FILE}`);
+    console.log(`📁 CSV files: ${CSV_DIR}`);
+    console.log(`🤖 LLM Model: ${CONFIG.LLM_MODEL}`);
+    console.log(`⚡ Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }
 

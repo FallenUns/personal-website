@@ -34,12 +34,26 @@ class FeedbackService {
       } else {
         // Server error, fall back to localStorage
         console.warn('Server submission failed, using localStorage backup');
-        return await this.submitToLocalStorage(feedbackData);
+        const offlineResult = await this.submitToLocalStorage(feedbackData);
+        return {
+          ...offlineResult,
+          message: offlineResult.success 
+            ? '✅ Feedback saved offline! It will sync automatically when you\'re back online. 🙏'
+            : offlineResult.message,
+          offline: true
+        };
       }
     } catch (error) {
       // Network error, fall back to localStorage
       console.warn('Network error, using localStorage backup:', error);
-      return await this.submitToLocalStorage(feedbackData);
+      const offlineResult = await this.submitToLocalStorage(feedbackData);
+      return {
+        ...offlineResult,
+        message: offlineResult.success
+          ? '✅ You\'re offline! Feedback saved locally and will sync when connection is restored. 🙏'
+          : offlineResult.message,
+        offline: true
+      };
     }
   }
 

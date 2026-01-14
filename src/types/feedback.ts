@@ -22,4 +22,5 @@ export interface FeedbackSubmissionResponse {
   success: boolean;
   message: string;
   id?: string;
+  offline?: boolean; // Indicates if feedback was saved locally due to connectivity issues
 }
