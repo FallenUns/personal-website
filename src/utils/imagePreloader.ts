@@ -1,4 +1,5 @@
 import { projects } from '../data/projects';
+import { experiences } from '../data/experiences';
 
 // Helper to check if a file is a video
 const isVideoFile = (src: string): boolean => {
@@ -26,8 +27,16 @@ export const getAllImages = (): string[] => {
     }
   });
 
+  // Collect experience photos from data
+  const experiencePhotos: string[] = [];
+  experiences.forEach((experience) => {
+    if (experience.photos && experience.photos.length > 0) {
+      experiencePhotos.push(...experience.photos.map(photo => photo.url));
+    }
+  });
+
   // Combine and deduplicate all images
-  const allUniqueImages = [...new Set([...heroImages, ...projectImages])];
+  const allUniqueImages = [...new Set([...heroImages, ...projectImages, ...experiencePhotos])];
   
   return allUniqueImages;
 };
