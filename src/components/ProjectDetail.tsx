@@ -569,17 +569,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                     justifyContent: 'center'
                                   }}
                                 >
-                                  {/* Media count indicator - top right */}
-                                  {project.images.length > 1 && (
-                                    <div className="absolute top-2 right-2 z-10">
-                                      <div className="bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20">
-                                        <span className="text-xs text-white/80">
-                                          {activeMediaIndex + 1}/{project.images.length}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-
                                   {/* Fullscreen button for images and videos - top left */}
                                   <button
                                     onClick={(e) => {
@@ -638,6 +627,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                       }}
                                     />
                                   )}
+
+                                  {/* Caption overlay */}
+                                  {project.imageCaptions && project.imageCaptions[activeMediaIndex] && (
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
+                                      <p className="text-white/90 text-xs">{project.imageCaptions[activeMediaIndex]}</p>
+                                    </div>
+                                  )}
                                 </div>
                               </LiquidGlass>
                             ) : (
@@ -688,7 +684,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   <polyline points="15,18 9,12 15,6"></polyline>
                                 </svg>
                               </button>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 items-center">
                                 {project.images.map((_, index) => (
                                   <button
                                     key={index}
@@ -696,9 +692,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                       e.stopPropagation();
                                       setActiveMediaIndex(index);
                                     }}
-                                    className={`w-2 h-2 rounded-full transition-all ${index === activeMediaIndex
-                                        ? 'bg-white'
-                                        : 'bg-white/40 hover:bg-white/60'
+                                    className={`h-2 rounded-full transition-all ${index === activeMediaIndex
+                                        ? 'bg-white w-6'
+                                        : 'bg-white/40 hover:bg-white/60 w-2'
                                       }`}
                                     aria-label={`View media ${index + 1}`}
                                     style={{ pointerEvents: 'auto' }}
@@ -741,7 +737,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   <polyline points="15,18 9,12 15,6"></polyline>
                                 </svg>
                               </button>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 items-center">
                                 {project.charts.map((_, index) => (
                                   <button
                                     key={index}
@@ -749,9 +745,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                       e.stopPropagation();
                                       setActiveChartIndex(index);
                                     }}
-                                    className={`w-2 h-2 rounded-full transition-all ${index === activeChartIndex
-                                        ? 'bg-white'
-                                        : 'bg-white/40 hover:bg-white/60'
+                                    className={`h-2 rounded-full transition-all ${index === activeChartIndex
+                                        ? 'bg-white w-6'
+                                        : 'bg-white/40 hover:bg-white/60 w-2'
                                       }`}
                                     aria-label={`View chart ${index + 1}`}
                                     style={{ pointerEvents: 'auto' }}
@@ -964,6 +960,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                     }}
                   />
                 )
+              )}
+
+              {/* Caption overlay in fullscreen */}
+              {project.imageCaptions && project.imageCaptions[activeMediaIndex] && (
+                <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 max-w-2xl">
+                  <div className="bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20">
+                    <p className="text-white/90 text-sm text-center">{project.imageCaptions[activeMediaIndex]}</p>
+                  </div>
+                </div>
               )}
             </motion.div>
           </motion.div>

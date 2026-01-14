@@ -78,8 +78,8 @@ const HeroSection: React.FC = () => {
         </div>
       )}
 
-      <section id="about" className="h-screen flex flex-col lg:flex-row items-center px-6 sm:px-12 md:px-20 lg:px-32 pt-20 relative">
-        <div className="flex flex-col lg:flex-row items-center justify-between w-full">
+      <section id="about" className="h-screen flex flex-col lg:flex-row items-center justify-center px-6 sm:px-12 md:px-20 lg:px-32 relative">
+        <div className="flex flex-col lg:flex-row items-center justify-between w-full -mt-16">
           {/* Left side - Text content */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -731,7 +731,7 @@ const HeroSection: React.FC = () => {
             ease: 'easeOut',
             delay: isLoading ? 0 : 1
           }}
-          className="w-full max-w-4xl mt-8 lg:absolute lg:bottom-8 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:mt-0"
+          className="w-full max-w-4xl mt-8 lg:absolute lg:bottom-16 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:mt-0"
         >
           <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 sm:gap-x-6 md:gap-x-8 px-4 text-white/80 text-sm font-medium">
             <div className="flex items-center space-x-2">

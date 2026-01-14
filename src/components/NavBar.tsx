@@ -229,7 +229,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
         style={{
           position: 'fixed',
           zIndex: 50,
-          top: '60px', // Increased from 20px to account for banner
+          top: '20px',
           left: 'clamp(16px, 5vw, 48px)', // Using consistent pixel values
         }}
       >
@@ -263,7 +263,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
         style={{
           position: 'fixed',
           zIndex: 50,
-          top: '60px', // Increased from 20px to account for banner
+          top: '20px',
           right: 'clamp(16px, 5vw, 48px)', // Using consistent pixel values
           width: `${rightContentDimensions.width}px`,
           height: `${rightContentDimensions.height}px`,

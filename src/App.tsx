@@ -245,50 +245,6 @@ const AppContent: React.FC = () => {
           visibility: isLoading ? 'hidden' : 'visible',
           transition: isLoading ? 'none' : 'opacity 0.8s ease-out'
         }}>
-          {/* Work in Progress Banner */}
-          <motion.div
-            className="fixed top-0 left-0 right-0 z-[100] bg-gradient-to-r from-orange-500/10 to-yellow-500/10 backdrop-blur-md border-b border-orange-400/20"
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: isLoading ? -100 : 0, opacity: isLoading ? 0 : 1 }}
-            transition={{ duration: 0.6, delay: isLoading ? 0 : 1, ease: "easeOut" }}
-          >
-            <div className="max-w-7xl mx-auto px-4 py-2">
-              <div className="flex items-center justify-center gap-3 text-sm">
-                <motion.div
-                  className="w-2 h-2 bg-orange-400 rounded-full"
-                  animate={{
-                    opacity: [0.5, 1, 0.5],
-                    scale: [0.8, 1.2, 0.8]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-                <span className="text-white/80 font-medium">
-                  🚧 Work in Progress
-                </span>
-                <span className="text-white/60 hidden sm:inline">
-                  • Chatbots and projects are not fully completed yet.
-                </span>
-                <motion.div
-                  className="w-2 h-2 bg-orange-400 rounded-full"
-                  animate={{
-                    opacity: [0.5, 1, 0.5],
-                    scale: [0.8, 1.2, 0.8]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 1
-                  }}
-                />
-              </div>
-            </div>
-          </motion.div>
-
           <TechBackground hour={currentTime} />
 
           <Navbar

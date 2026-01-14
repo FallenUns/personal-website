@@ -163,7 +163,7 @@ export const experiences: Experience[] = [
     ],
     photos: [
       { url: '/experiences/apple-foundation-1.jpg', caption: 'Apple Foundation Program at RMIT - Learning SwiftUI development' },
-      { url: '/experiences/apple-foundation-2.jpg', caption: 'Chemica app prototype - Chemical hazard identification' }
+      { url: '/experiences/apple-foundation-2.jpg', caption: 'Presenting our App Chemica in the final showcase' }
     ]
   },
   {
@@ -223,7 +223,7 @@ export const experiences: Experience[] = [
       { label: 'Company Website', url: 'https://urbanwaste.com.au' }
     ],
     photos: [
-      { url: '/experiences/urban-waste-1.jpg', caption: 'Working on ERP system development at Urban Waste office' }
+      { url: '/experiences/urban-waste-1.jpg', caption: 'Receiving certificate from the Australian Chamber of Commerce and Industry with Urban Waste and Professor Andy Song' }
     ]
   }
 ];

@@ -33,6 +33,7 @@ export type Project = {
   // Rich detail fields (used by ProjectDetail)
   fullDescription?: string;
   images?: string[];
+  imageCaptions?: string[]; // Optional captions for each image
   liveUrl?: string;
   githubUrl?: string;
 
@@ -229,6 +230,7 @@ export const projects: Project[] = [
     fullDescription:
       'This is a personal portfolio website designed to showcase my skills and projects in an engaging and interactive way. The site features a unique "liquid glass" aesthetic, a dynamic background that changes with the time of day, and a conversational AI assistant to help users navigate the site and learn more about my work. The entire project is built with a modern tech stack, focusing on performance and user experience.',
     images: ['/portfolio-1.png', '/portfolio-2.png'],
+    imageCaptions: ['Hero Section of the portfolio website showcasing the liquid glass design.', 'AI Assistant interface for conversational navigation.'],
     liveUrl: 'https://patrickadrianus.com',
     githubUrl: 'https://github.com/FallenUns/personal-website',
     features: [
@@ -271,6 +273,7 @@ export const projects: Project[] = [
     fullDescription:
       'Cliniwatch was developed during the RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. The challenge was: "How might Northern Health create an early warning system that helps detect deteriorating mental health patients before it becomes a crisis — without depending solely on phone calls and clinical visits?" Our team created a comprehensive solution that bridges the gap between patients, carers, and clinical teams through proactive monitoring and early intervention.',
     images: ['/cliniwatch-1.MP4', '/cliniwatch-2.png'],
+    imageCaptions: ['Cliniwatch App Demo showcasing daily check-in and mood calendar features.', 'Nearby Support feature with MapKit integration to find local mental health services.'],
     liveUrl: '#',
     githubUrl: 'https://github.com/FallenUns/IOS_Hackathon',
     features: [
@@ -331,6 +334,7 @@ export const projects: Project[] = [
     fullDescription:
       'An interactive R Shiny dashboard developed for data visualization coursework to explore the relationship between economic development (GDP) and environmental impact (CO₂ emissions) across countries and time periods. The application combines spatial visualization with temporal analysis, allowing users to compare up to 20 countries simultaneously and observe how their emissions and economic indicators evolve from 1960 to 2020. The project demonstrates expertise in data wrangling, interactive visualization, and creating user-friendly interfaces for complex datasets.',
     images: ['/gdpco2-1.png'],
+    imageCaptions: ['Interactive dashboard showcasing CO₂ emissions and GDP visualizations with world map and charts.'],
     liveUrl: 'https://ryfaeg-patrick-adrianus.shinyapps.io/Assignment_3/',
     githubUrl: '#',
     features: [

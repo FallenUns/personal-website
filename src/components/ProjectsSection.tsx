@@ -388,23 +388,6 @@ const ProjectsSection: React.FC = () => {
 
         {/* Attach the ref to this container */}
         <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8 px-4">
-          {/* Left Navigation Button */}
-          <motion.button
-            onClick={handlePrevious}
-            disabled={isPrevDisabled}
-            className={`z-30 flex-shrink-0 transition-opacity duration-300 mr-4 ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
-            whileHover={{ scale: isPrevDisabled ? 1 : 1.05 }}
-            whileTap={{ scale: isPrevDisabled ? 1 : 0.95 }}
-            aria-label="Previous project"
-          >
-            <div className="relative w-14 h-14 flex items-center justify-center">
-              <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M15 18L9 12L15 6" /></svg>
-              </div>
-            </div>
-          </motion.button>
-
           {/* Cards Viewport */}
           <div className="flex justify-center items-center flex-1" style={{ maxWidth: `${viewportWidth}px` }}>
             <motion.div
@@ -426,68 +409,72 @@ const ProjectsSection: React.FC = () => {
               ))}
             </motion.div>
           </div>
-
-          {/* Right Navigation Button */}
-          <motion.button
-            onClick={handleNext}
-            disabled={isNextDisabled}
-            className={`z-30 flex-shrink-0 transition-opacity duration-300 ml-4 ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
-            whileHover={{ scale: isNextDisabled ? 1 : 1.05 }}
-            whileTap={{ scale: isNextDisabled ? 1 : 0.95 }}
-            aria-label="Next project"
-          >
-            <div className="relative w-14 h-14 flex items-center justify-center">
-              <LiquidGlass width={56} height={56} positioning="relative" style={{ borderRadius: '50%' }} elasticity={0.15} saturation={150} aberrationIntensity={1.5} displacementScale={60} blurAmount={6} mode='shader' />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white drop-shadow-lg"><path d="M9 18L15 12L9 6" /></svg>
-              </div>
-            </div>
-          </motion.button>
         </div>
 
-        {/* Navigation Dots */}
-        <div className="flex justify-center space-x-3 mb-6">
-          {Array.from({ length: totalPages }).map((_, pageIndex) => {
-            const isActive = currentPage === pageIndex;
-            return (
-              <motion.button
-                key={`dot-${pageIndex}`}
-                onClick={() => handleDotClick(pageIndex)}
-                className={`relative w-3 h-3 rounded-full transition-all duration-300 ${isActive ? 'bg-orange-500 scale-125' : 'bg-white/30 hover:bg-white/50'}`}
-                whileHover={{ scale: isActive ? 1.25 : 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                {isActive && (
-                  <motion.div className="absolute inset-0 rounded-full bg-orange-400" animate={{ scale: [1, 1.3, 1], opacity: [1, 0.3, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
-                )}
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Project Counter */}
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
+        {/* Navigation Bar with Arrows and Dots */}
+        <div className="flex justify-center items-center mb-6">
           <LiquidGlass
-            width={215}
-            height={56}
+            width={200}
+            height={48}
             positioning="relative"
-            style={{ borderRadius: '28px' }}
+            style={{ borderRadius: '24px' }}
             elasticity={0.12}
             saturation={140}
-            displacementScale={150}
-            blurAmount={8}
+            displacementScale={80}
+            blurAmount={6}
             mode="shader"
           >
-            <span className="text-white text-base font-semibold [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-              Page {currentPage + 1} of {totalPages} • {totalCards} Projects
-            </span>
+            <div className="flex items-center justify-center gap-4 px-4">
+              {/* Left Arrow */}
+              <motion.button
+                onClick={handlePrevious}
+                disabled={isPrevDisabled}
+                className={`p-1.5 rounded-full transition-all ${isPrevDisabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/20'}`}
+                whileHover={{ scale: isPrevDisabled ? 1 : 1.1 }}
+                whileTap={{ scale: isPrevDisabled ? 1 : 0.9 }}
+                aria-label="Previous project"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white">
+                  <path d="M15 18L9 12L15 6" />
+                </svg>
+              </motion.button>
+
+              {/* Navigation Dots */}
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }).map((_, pageIndex) => {
+                  const isActive = currentPage === pageIndex;
+                  return (
+                    <motion.button
+                      key={`dot-${pageIndex}`}
+                      onClick={() => handleDotClick(pageIndex)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        isActive 
+                          ? 'bg-white w-6' 
+                          : 'bg-white/40 hover:bg-white/60 w-2'
+                      }`}
+                      whileHover={{ scale: isActive ? 1.05 : 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Right Arrow */}
+              <motion.button
+                onClick={handleNext}
+                disabled={isNextDisabled}
+                className={`p-1.5 rounded-full transition-all ${isNextDisabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/20'}`}
+                whileHover={{ scale: isNextDisabled ? 1 : 1.1 }}
+                whileTap={{ scale: isNextDisabled ? 1 : 0.9 }}
+                aria-label="Next project"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white">
+                  <path d="M9 18L15 12L9 6" />
+                </svg>
+              </motion.button>
+            </div>
           </LiquidGlass>
-        </motion.div>
+        </div>
       </div>
     </motion.section>
   );
