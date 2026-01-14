@@ -22,6 +22,7 @@ export type Experience = {
   responsibilities?: string[];
   technologies?: string[];
   impact?: string[];
+  photos?: { url: string; caption?: string }[]; // 1-2 photos per experience
 };
 
 export const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] as const;
@@ -96,6 +97,10 @@ export const experiences: Experience[] = [
     ],
     links: [
       { label: 'RMIT News', url: 'https://www.linkedin.com/posts/rmit-stem-college_apple-xcode-mentalhealth-activity-7354012465384337410-tD-9?utm_source=share&utm_medium=member_desktop&rcm=ACoAADz4CCgB3KyOkm0vPcSkqD_dPmmdWftzLHQ' }
+    ],
+    photos: [
+      { url: '/experiences/ios-hackathon-1.jpg', caption: 'Team collaboration during the RMIT iOS Hackathon with Northern Health & Bilue' },
+      { url: '/experiences/ios-hackathon-2.jpg', caption: 'Presenting Cliniwatch - Mental health support app prototype' }
     ]
   },
   {
@@ -155,6 +160,10 @@ export const experiences: Experience[] = [
     ],
     links: [
       { label: 'Apple Foundation Program', url: 'https://www.rmit.edu.au/study-with-us/apple-foundation-program' }
+    ],
+    photos: [
+      { url: '/experiences/apple-foundation-1.jpg', caption: 'Apple Foundation Program at RMIT - Learning SwiftUI development' },
+      { url: '/experiences/apple-foundation-2.jpg', caption: 'Chemica app prototype - Chemical hazard identification' }
     ]
   },
   {
@@ -212,6 +221,9 @@ export const experiences: Experience[] = [
     ],
     links: [
       { label: 'Company Website', url: 'https://urbanwaste.com.au' }
+    ],
+    photos: [
+      { url: '/experiences/urban-waste-1.jpg', caption: 'Working on ERP system development at Urban Waste office' }
     ]
   }
 ];

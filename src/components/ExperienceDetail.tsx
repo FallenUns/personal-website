@@ -13,6 +13,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'responsibilities' | 'achievements' | 'impact'>('overview');
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -339,52 +340,177 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                         </motion.div>
                       </div>
 
-                      {/* Experience visual/stats */}
-                      <div className="flex-1 flex items-center justify-center">
-                        <motion.div
-                          className="w-full max-w-md"
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.4 }}
-                        >
-                          <LiquidGlass
-                            width={0}
-                            height={0}
-                            positioning="relative"
-                            style={{ borderRadius: '16px', width: '100%', height: '200px', minWidth: '100%', minHeight: '200px' }}
-                            elasticity={0.2}
-                            saturation={140}
-                            displacementScale={60}
-                            blurAmount={4}
-                            mode="prominent"
-                            overLight={false}
+                      {/* Photos Section */}
+                      {experience.photos && experience.photos.length > 0 ? (
+                        <div className="flex-1 flex flex-col justify-center">
+                          <motion.div
+                            className="w-full"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.4 }}
                           >
-                            <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex flex-col items-center justify-center p-6">
-                              <motion.div
-                                className="text-center"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.6 }}
+                            <LiquidGlass
+                              width={0}
+                              height={0}
+                              positioning="relative"
+                              style={{ borderRadius: '16px', width: '100%', height: '100%' }}
+                              elasticity={0.2}
+                              saturation={140}
+                              displacementScale={60}
+                              blurAmount={4}
+                              mode="shader"
+                              overLight={false}
+                            >
+                              <div
+                                className="w-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden relative"
+                                style={{
+                                  aspectRatio: '16 / 9',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
                               >
-                                <div className="text-3xl font-bold text-white mb-2">{experience.skills.length}</div>
-                                <div className="text-white/70 text-sm mb-4">Skills Developed</div>
-                                <div className="flex flex-wrap gap-1 justify-center">
-                                  {experience.skills.slice(0, 3).map((skill, index) => (
-                                    <span key={index} className="text-xs px-2 py-1 bg-white/20 text-white/80 rounded-full">
-                                      {skill}
-                                    </span>
+                                {/* Photo count indicator */}
+                                {experience.photos.length > 1 && (
+                                  <div className="absolute top-2 right-2 z-10">
+                                    <div className="bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20">
+                                      <span className="text-xs text-white/80">
+                                        {activePhotoIndex + 1}/{experience.photos.length}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Photo display */}
+                                <motion.img
+                                  key={activePhotoIndex}
+                                  src={experience.photos[activePhotoIndex].url}
+                                  alt={experience.photos[activePhotoIndex].caption || `Experience photo ${activePhotoIndex + 1}`}
+                                  className="rounded-2xl"
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    objectPosition: 'center'
+                                  }}
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  loading="lazy"
+                                />
+
+                                {/* Caption overlay */}
+                                {experience.photos[activePhotoIndex].caption && (
+                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
+                                    <p className="text-white/90 text-xs">{experience.photos[activePhotoIndex].caption}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </LiquidGlass>
+
+                            {/* Photo navigation */}
+                            {experience.photos.length > 1 && (
+                              <div className="flex justify-center items-center gap-3 mt-3" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActivePhotoIndex((prev) =>
+                                      prev === 0 ? experience.photos!.length - 1 : prev - 1
+                                    );
+                                  }}
+                                  className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                                  aria-label="Previous photo"
+                                  style={{ pointerEvents: 'auto' }}
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                                    <polyline points="15,18 9,12 15,6"></polyline>
+                                  </svg>
+                                </button>
+                                <div className="flex gap-2">
+                                  {experience.photos.map((_, index) => (
+                                    <button
+                                      key={index}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActivePhotoIndex(index);
+                                      }}
+                                      className={`w-2 h-2 rounded-full transition-all ${
+                                        index === activePhotoIndex
+                                          ? 'bg-white w-4'
+                                          : 'bg-white/50 hover:bg-white/70'
+                                      }`}
+                                      aria-label={`Go to photo ${index + 1}`}
+                                      style={{ pointerEvents: 'auto' }}
+                                    />
                                   ))}
-                                  {experience.skills.length > 3 && (
-                                    <span className="text-xs px-2 py-1 bg-white/20 text-white/80 rounded-full">
-                                      +{experience.skills.length - 3} more
-                                    </span>
-                                  )}
                                 </div>
-                              </motion.div>
-                            </div>
-                          </LiquidGlass>
-                        </motion.div>
-                      </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActivePhotoIndex((prev) =>
+                                      prev === experience.photos!.length - 1 ? 0 : prev + 1
+                                    );
+                                  }}
+                                  className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                                  aria-label="Next photo"
+                                  style={{ pointerEvents: 'auto' }}
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                                    <polyline points="9,18 15,12 9,6"></polyline>
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+                          </motion.div>
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex items-center justify-center">
+                          <motion.div
+                            className="w-full max-w-md"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.4 }}
+                          >
+                            <LiquidGlass
+                              width={0}
+                              height={0}
+                              positioning="relative"
+                              style={{ borderRadius: '16px', width: '100%', height: '200px', minWidth: '100%', minHeight: '200px' }}
+                              elasticity={0.2}
+                              saturation={140}
+                              displacementScale={60}
+                              blurAmount={4}
+                              mode="prominent"
+                              overLight={false}
+                            >
+                              <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex flex-col items-center justify-center p-6">
+                                <motion.div
+                                  className="text-center"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  transition={{ delay: 0.6 }}
+                                >
+                                  <div className="text-3xl font-bold text-white mb-2">{experience.skills.length}</div>
+                                  <div className="text-white/70 text-sm mb-4">Skills Developed</div>
+                                  <div className="flex flex-wrap gap-1 justify-center">
+                                    {experience.skills.slice(0, 3).map((skill, index) => (
+                                      <span key={index} className="text-xs px-2 py-1 bg-white/20 text-white/80 rounded-full">
+                                        {skill}
+                                      </span>
+                                    ))}
+                                    {experience.skills.length > 3 && (
+                                      <span className="text-xs px-2 py-1 bg-white/20 text-white/80 rounded-full">
+                                        +{experience.skills.length - 3} more
+                                      </span>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              </div>
+                            </LiquidGlass>
+                          </motion.div>
+                        </div>
+                      )}
 
                       {/* Action buttons */}
                       <div className="flex gap-3 mt-6" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
