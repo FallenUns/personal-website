@@ -162,7 +162,7 @@ export const experiences: Experience[] = [
       { label: 'Apple Foundation Program', url: 'https://www.rmit.edu.au/study-with-us/apple-foundation-program' }
     ],
     photos: [
-      { url: '/experiences/apple-foundation-1.jpg', caption: 'Apple Foundation Program at RMIT - Learning SwiftUI development' },
+      { url: '/experiences/apple-foundation-3.jpg', caption: 'Apple Foundation Program at RMIT - Learning SwiftUI development' },
       { url: '/experiences/apple-foundation-2.jpg', caption: 'Presenting our App Chemica in the final showcase' }
     ]
   },
