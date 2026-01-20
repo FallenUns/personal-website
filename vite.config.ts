@@ -35,7 +35,18 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion', 'three', '@react-three/fiber', '@react-three/drei']
+    include: [
+      'react',
+      'react-dom',
+      'framer-motion',
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei',
+      'troika-three-text',
+      '@mediapipe/tasks-vision',
+      'three-stdlib',
+      'unified'
+    ]
   },
   assetsInclude: ['**/*.glsl']
 })
