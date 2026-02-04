@@ -6,6 +6,22 @@ import { navigateTo } from '../utils/router';
 import './performance.css';
 import { projects } from '../data/projects';
 
+// SVG filter for pixelated blur effect
+const PixelateFilter = memo(() => (
+  <svg className="absolute w-0 h-0" aria-hidden="true">
+    <defs>
+      <filter id="pixelate-filter">
+        <feFlood x="4" y="4" height="2" width="2" />
+        <feComposite width="8" height="8" />
+        <feTile result="a" />
+        <feComposite in="SourceGraphic" in2="a" operator="in" />
+        <feMorphology operator="dilate" radius="4" />
+      </filter>
+    </defs>
+  </svg>
+));
+PixelateFilter.displayName = 'PixelateFilter';
+
 // Animated Data Pipeline Mockup for Data Science projects
 const DataPipelineMockup = memo(() => {
   return (
@@ -377,6 +393,47 @@ const NeuralNetwork231Mockup = memo(() => {
   );
 });
 NeuralNetwork231Mockup.displayName = 'NeuralNetwork231Mockup';
+
+// Coming Soon Mockup - Blurred placeholder
+const ComingSoonMockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center relative">
+      {/* Blurred background shapes */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute top-2 left-4 w-12 h-8 bg-white/20 rounded-lg blur-sm"
+          animate={{ opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 3, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute top-4 right-6 w-8 h-8 bg-white/15 rounded-full blur-sm"
+          animate={{ opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
+        />
+        <motion.div
+          className="absolute bottom-4 left-8 w-16 h-6 bg-white/15 rounded blur-sm"
+          animate={{ opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 2.8, repeat: Infinity, delay: 1 }}
+        />
+        <motion.div
+          className="absolute bottom-6 right-4 w-10 h-10 bg-white/10 rounded-lg blur-sm"
+          animate={{ opacity: [0.15, 0.3, 0.15] }}
+          transition={{ duration: 3.2, repeat: Infinity, delay: 0.8 }}
+        />
+      </div>
+
+      {/* Question mark icon */}
+      <motion.div
+        className="relative z-10 w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm"
+        animate={{ scale: [1, 1.05, 1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <span className="text-2xl text-white/60 font-bold">?</span>
+      </motion.div>
+    </div>
+  );
+});
+ComingSoonMockup.displayName = 'ComingSoonMockup';
 
 // iOS App Mockup for Cliniwatch - Mental Health Companion
 const IOSAppMockup = memo(() => {
@@ -812,6 +869,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
 
   // Special liquid glass configuration for the liquid glass project
   const isLiquidGlassProject = project.slug === 'liquid-glass-design';
+  const isComingSoon = project.comingSoon === true;
 
   const optimizedProps = useMemo(() => ({
     width: cardWidth,
@@ -827,6 +885,8 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
 
   // Handle project card click - navigate to project detail page
   const handleProjectClick = () => {
+    // Don't navigate for coming soon projects
+    if (isComingSoon) return;
     // Navigate using the router utility
     navigateTo(`/projects/${project.slug}`);
   };
@@ -838,19 +898,65 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
       viewport={{ once: true, margin: "0px 0px -10% 0px" }}
       transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
-      className="group cursor-pointer flex-shrink-0"
+      className={`group flex-shrink-0 ${isComingSoon ? 'cursor-default' : 'cursor-pointer'}`}
       onClick={handleProjectClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <motion.div
-        whileHover={{ scale: 1.02, y: -5, transition: { duration: 0.3, ease: "easeOut" } }}
-        whileTap={{ scale: 0.98, transition: { duration: 0.2 } }}
+        whileHover={isComingSoon ? {} : { scale: 1.02, y: -5, transition: { duration: 0.3, ease: "easeOut" } }}
+        whileTap={isComingSoon ? {} : { scale: 0.98, transition: { duration: 0.2 } }}
       >
         <LiquidGlass {...optimizedProps}>
           <div className="w-full h-full flex flex-col relative p-6 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
+            {/* Coming Soon overlay */}
+            {isComingSoon && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <div
+                  className="px-6 py-3 bg-white/30 backdrop-blur-md rounded-full border-2 border-white/50 shadow-2xl"
+                  style={{
+                    boxShadow: '0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(255,255,255,0.2), inset 0 0 20px rgba(255,255,255,0.1)'
+                  }}
+                >
+                  <span className="text-base font-bold text-white tracking-wide" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.5)' }}>Coming Soon</span>
+                </div>
+              </div>
+            )}
             {/* Enhanced background effects based on project type */}
-            {isLiquidGlassProject ? (
+            {isComingSoon ? (
+              <div className="absolute inset-0 opacity-30">
+                <motion.div
+                  className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gray-400/30 to-transparent rounded-full blur-xl"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.2, 0.5, 0.2],
+                    x: [0, -15, 0],
+                    y: [0, 15, 0]
+                  }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-gray-500/30 to-transparent rounded-full blur-xl"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.2, 0.5, 0.2],
+                    x: [0, 20, 0],
+                    y: [0, -20, 0]
+                  }}
+                  transition={{ duration: 5, repeat: Infinity, delay: 1.5, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute top-1/2 left-1/2 w-20 h-20 bg-gradient-to-r from-gray-400/20 to-transparent rounded-full blur-xl"
+                  animate={{
+                    scale: [1, 1.4, 1],
+                    opacity: [0.1, 0.4, 0.1],
+                    rotate: [0, 180, 360]
+                  }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  style={{ transform: 'translate(-50%, -50%)' }}
+                />
+              </div>
+            ) : isLiquidGlassProject ? (
               <div className="absolute inset-0 opacity-20">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/30 to-transparent rounded-full blur-xl"></div>
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/30 to-transparent rounded-full blur-xl"></div>
@@ -911,287 +1017,355 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400/20 to-transparent rounded-full blur-xl"></div>
               </div>
             )}
-            <div className="relative z-10 mb-3">
-              <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
-                <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">{project.title}</h3>
-                <span className="px-2.5 py-1 text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5">{project.category}</span>
-              </div>
-              <div className="max-h-[72px] overflow-hidden">
-                <p className="text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-4 break-words">{project.description}</p>
-              </div>
-            </div>
-            <div className="flex-1 flex items-center justify-center mb-4 relative h-[140px]">
-              {isLiquidGlassProject ? (
-                // Special liquid glass showcase
-                <div className="relative w-full h-32 grid grid-cols-3 gap-2">
-                  <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
-                    <div className="absolute inset-2 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-lg flex items-center justify-center">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                        className="w-4 h-4 border border-white/60 border-t-transparent rounded-full"
-                      />
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
-                    <div className="absolute inset-2 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-lg flex items-center justify-center">
-                      <motion.div
-                        animate={{ scale: [1, 1.3, 1] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-3 h-3 bg-white/50 rounded-full"
-                      />
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
-                    <div className="absolute inset-2 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-lg flex items-center justify-center">
-                      <motion.div
-                        animate={{ y: [-4, 4, -4] }}
-                        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-2 h-6 bg-white/50 rounded-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : project.slug === 'job-ads-data-parsing' ? (
-                // Data Pipeline visualization for Job Ads project
-                <div className="relative w-full h-32 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl backdrop-blur-sm border border-cyan-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <DataPipelineMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-cyan-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-green-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                  <motion.div
-                    className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                  />
-                </div>
-              ) : project.slug === 'co2-gdp-explorer' ? (
-                // Interactive Dashboard visualization for CO2 & GDP Explorer
-                <div className="relative w-full h-32 bg-gradient-to-br from-blue-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-blue-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <DashboardMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-green-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                  <motion.div
-                    className="absolute bottom-3 left-3 w-2 h-2 bg-teal-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                  />
-                </div>
-              ) : project.slug === 'cliniwatch' ? (
-                // iOS App visualization for Cliniwatch
-                <div className="relative w-full h-32 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-2xl backdrop-blur-sm border border-teal-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-2 flex items-center justify-center">
-                    <IOSAppMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-teal-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-cyan-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                </div>
-              ) : project.slug === 'interactive-portfolio' ? (
-                // Web visualization for Interactive Portfolio
-                <div className="relative w-full h-32 bg-gradient-to-br from-orange-500/10 to-pink-500/10 rounded-2xl backdrop-blur-sm border border-orange-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <InteractiveWebMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-orange-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-pink-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                </div>
-              ) : project.slug === 'software-engineering-project' ? (
-                // LLM Detection visualization
-                <div className="relative w-full h-32 bg-gradient-to-br from-purple-500/10 to-red-500/10 rounded-2xl backdrop-blur-sm border border-purple-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <LLMDetectionMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-purple-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-red-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                </div>
-              ) : project.slug === 'life-expectancy-prediction' ? (
-                // Regression Plot visualization for Life Expectancy
-                <div className="relative w-full h-32 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-emerald-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <RegressionPlotMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-emerald-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-teal-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                </div>
-              ) : project.slug === 'persuasion-detection-memes' ? (
-                // Neural Network 2-3-1 visualization for Persuasion Detection
-                <div className="relative w-full h-32 bg-gradient-to-br from-purple-500/10 to-violet-500/10 rounded-2xl backdrop-blur-sm border border-purple-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <NeuralNetwork231Mockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-purple-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-pink-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                  <motion.div
-                    className="absolute bottom-3 left-3 w-2 h-2 bg-violet-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                  />
-                </div>
-              ) : project.category === 'Machine Learning' ? (
-                // Neural Network visualization for other ML projects
-                <div className="relative w-full h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl backdrop-blur-sm border border-indigo-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <NeuralNetworkMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-indigo-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-purple-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                  <motion.div
-                    className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                  />
-                </div>
-              ) : project.category === 'Data Science' ? (
-                // Data Pipeline visualization for other Data Science projects
-                <div className="relative w-full h-32 bg-gradient-to-br from-cyan-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-cyan-400/20 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <DataPipelineMockup />
-                  </div>
-                  <motion.div
-                    className="absolute top-3 left-3 w-2 h-2 bg-cyan-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute top-3 right-3 w-2 h-2 bg-teal-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                  <motion.div
-                    className="absolute bottom-3 left-3 w-2 h-2 bg-green-400/60 rounded-full"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                  />
-                </div>
-              ) : (
-                // Standard mockup for other projects
-                <div className="relative w-full h-32 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
-                  <div className="absolute inset-4 flex items-center justify-center">
-                    <DeviceMockup type={project.mockupType} color="bg-white/30" />
-                  </div>
-                  <div className="absolute top-3 left-3 w-2 h-2 bg-green-400/60 rounded-full animate-pulse"></div>
-                  <div className="absolute top-3 right-3 w-2 h-2 bg-orange-400/60 rounded-full animate-pulse delay-300"></div>
-                  <div className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full animate-pulse delay-700"></div>
-                </div>
-              )}
-            </div>
-            <div className="relative z-10 flex items-center justify-between mt-auto">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap gap-1.5">
-                  {project.technologies.slice(0, 3).map((tech, i) => (
-                    <motion.span key={i} className="text-[11px] px-2.5 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative whitespace-nowrap" whileHover={{ scale: 1.05 }}>
-                      {tech}
-                    </motion.span>
-                  ))}
-                </div>
-              </div>
-              <motion.div
-                className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
-                animate={{
-                  scale: isHovered ? 1.1 : 1,
-                  rotate: isHovered ? 45 : 0
-                }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeOut"
-                }}
-                whileTap={{ scale: 0.9 }}
-                style={{
-                  transformOrigin: "center"
-                }}
+            {isComingSoon ? (
+              <div
+                className="relative z-10 mb-3 select-none"
+                style={{ filter: 'url(#pixelate-filter)' }}
               >
-                <motion.svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-white transition-colors duration-300"
+                <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
+                  <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
+                    Mystery Project Title Here
+                  </h3>
+                  <motion.span
+                    className="px-2.5 py-1 text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5"
+                    style={{ filter: 'url(#pixelate-filter)' }}
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                      scale: [0.95, 1.05, 0.95]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                  >
+                    Category
+                  </motion.span>
+                </div>
+                <div className="max-h-[72px] overflow-hidden">
+                  <p className="text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-4 break-words">
+                    This is a placeholder description for an exciting new project that is currently in development. Stay tuned for more details coming soon.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="relative z-10 mb-3">
+                <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
+                  <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
+                    {project.title}
+                  </h3>
+                  <span className="px-2.5 py-1 text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5">
+                    {project.category}
+                  </span>
+                </div>
+                <div className="max-h-[72px] overflow-hidden">
+                  <p className="text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-4 break-words">
+                    {project.description}
+                  </p>
+                </div>
+              </div>
+            )}
+            {isComingSoon ? (
+              <div
+                className="flex-1 flex items-center justify-center mb-4 relative h-[140px]"
+                style={{ filter: 'url(#pixelate-filter)' }}
+              >
+                {/* Coming Soon blurred mockup */}
+                <div className="relative w-full h-32 bg-gradient-to-br from-gray-500/10 to-gray-600/10 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <ComingSoonMockup />
+                  </div>
+                  <div className="absolute top-3 left-3 w-2 h-2 bg-gray-400/60 rounded-full" />
+                  <div className="absolute top-3 right-3 w-2 h-2 bg-gray-400/60 rounded-full" />
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center mb-4 relative h-[140px]">
+                {isLiquidGlassProject ? (
+                  // Special liquid glass showcase
+                  <div className="relative w-full h-32 grid grid-cols-3 gap-2">
+                    <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
+                      <div className="absolute inset-2 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-lg flex items-center justify-center">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                          className="w-4 h-4 border border-white/60 border-t-transparent rounded-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
+                      <div className="absolute inset-2 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-lg flex items-center justify-center">
+                        <motion.div
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          className="w-3 h-3 bg-white/50 rounded-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-white/15 to-white/5 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden shadow-2xl relative">
+                      <div className="absolute inset-2 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-lg flex items-center justify-center">
+                        <motion.div
+                          animate={{ y: [-4, 4, -4] }}
+                          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                          className="w-2 h-6 bg-white/50 rounded-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : project.slug === 'job-ads-data-parsing' ? (
+                  // Data Pipeline visualization for Job Ads project
+                  <div className="relative w-full h-32 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl backdrop-blur-sm border border-cyan-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <DataPipelineMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-cyan-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-green-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                    <motion.div
+                      className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    />
+                  </div>
+                ) : project.slug === 'co2-gdp-explorer' ? (
+                  // Interactive Dashboard visualization for CO2 & GDP Explorer
+                  <div className="relative w-full h-32 bg-gradient-to-br from-blue-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-blue-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <DashboardMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-green-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                    <motion.div
+                      className="absolute bottom-3 left-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    />
+                  </div>
+                ) : project.slug === 'cliniwatch' ? (
+                  // iOS App visualization for Cliniwatch
+                  <div className="relative w-full h-32 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-2xl backdrop-blur-sm border border-teal-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-2 flex items-center justify-center">
+                      <IOSAppMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-cyan-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                  </div>
+                ) : project.slug === 'interactive-portfolio' ? (
+                  // Web visualization for Interactive Portfolio
+                  <div className="relative w-full h-32 bg-gradient-to-br from-orange-500/10 to-pink-500/10 rounded-2xl backdrop-blur-sm border border-orange-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <InteractiveWebMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-orange-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-pink-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                  </div>
+                ) : project.slug === 'software-engineering-project' ? (
+                  // LLM Detection visualization
+                  <div className="relative w-full h-32 bg-gradient-to-br from-purple-500/10 to-red-500/10 rounded-2xl backdrop-blur-sm border border-purple-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <LLMDetectionMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-purple-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-red-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                  </div>
+                ) : project.slug === 'life-expectancy-prediction' ? (
+                  // Regression Plot visualization for Life Expectancy
+                  <div className="relative w-full h-32 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-emerald-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <RegressionPlotMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-emerald-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                  </div>
+                ) : project.slug === 'persuasion-detection-memes' ? (
+                  // Neural Network 2-3-1 visualization for Persuasion Detection
+                  <div className="relative w-full h-32 bg-gradient-to-br from-purple-500/10 to-violet-500/10 rounded-2xl backdrop-blur-sm border border-purple-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <NeuralNetwork231Mockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-purple-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-pink-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                    <motion.div
+                      className="absolute bottom-3 left-3 w-2 h-2 bg-violet-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    />
+                  </div>
+                ) : project.category === 'Machine Learning' ? (
+                  // Neural Network visualization for other ML projects
+                  <div className="relative w-full h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl backdrop-blur-sm border border-indigo-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <NeuralNetworkMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-indigo-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-purple-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                    <motion.div
+                      className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    />
+                  </div>
+                ) : project.category === 'Data Science' ? (
+                  // Data Pipeline visualization for other Data Science projects
+                  <div className="relative w-full h-32 bg-gradient-to-br from-cyan-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-cyan-400/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <DataPipelineMockup />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-cyan-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                    <motion.div
+                      className="absolute bottom-3 left-3 w-2 h-2 bg-green-400/60 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    />
+                  </div>
+                ) : (
+                  // Standard mockup for other projects
+                  <div className="relative w-full h-32 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <DeviceMockup type={project.mockupType} color="bg-white/30" />
+                    </div>
+                    <div className="absolute top-3 left-3 w-2 h-2 bg-green-400/60 rounded-full animate-pulse"></div>
+                    <div className="absolute top-3 right-3 w-2 h-2 bg-orange-400/60 rounded-full animate-pulse delay-300"></div>
+                    <div className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full animate-pulse delay-700"></div>
+                  </div>
+                )}
+              </div>
+            )}
+            {isComingSoon ? (
+              <div
+                className="relative z-10 flex items-center justify-between mt-auto select-none"
+                style={{ filter: 'url(#pixelate-filter)' }}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap gap-1.5">
+                    {['Tech 1', 'Tech 2', 'Tech 3'].map((tech, i) => (
+                      <span key={i} className="text-[11px] px-2.5 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative whitespace-nowrap">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative z-10 flex items-center justify-between mt-auto">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap gap-1.5">
+                    {project.technologies.slice(0, 3).map((tech, i) => (
+                      <motion.span key={i} className="text-[11px] px-2.5 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative whitespace-nowrap" whileHover={{ scale: 1.05 }}>
+                        {tech}
+                      </motion.span>
+                    ))}
+                  </div>
+                </div>
+                <motion.div
+                  className="ml-4 p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
                   animate={{
-                    rotate: isHovered ? [0, 5, -5, 0] : 0
+                    scale: isHovered ? 1.1 : 1,
+                    rotate: isHovered ? 45 : 0
                   }}
                   transition={{
-                    duration: isHovered ? 0.6 : 0.3,
-                    ease: "easeInOut",
-                    repeat: isHovered ? Infinity : 0,
-                    repeatDelay: isHovered ? 2 : 0
+                    duration: 0.3,
+                    ease: "easeOut"
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                  style={{
+                    transformOrigin: "center"
                   }}
                 >
-                  <path d="M7 17L17 7" />
-                  <path d="M7 7L17 7L17 17" />
-                </motion.svg>
-              </motion.div>
-            </div>
+                  <motion.svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-white transition-colors duration-300"
+                    animate={{
+                      rotate: isHovered ? [0, 5, -5, 0] : 0
+                    }}
+                    transition={{
+                      duration: isHovered ? 0.6 : 0.3,
+                      ease: "easeInOut",
+                      repeat: isHovered ? Infinity : 0,
+                      repeatDelay: isHovered ? 2 : 0
+                    }}
+                  >
+                    <path d="M7 17L17 7" />
+                    <path d="M7 7L17 7L17 17" />
+                  </motion.svg>
+                </motion.div>
+              </div>
+            )}
           </div>
         </LiquidGlass>
       </motion.div>
@@ -1231,6 +1405,9 @@ const ProjectsSection: React.FC = () => {
       id="projects"
       className="min-h-screen flex flex-col items-center justify-center py-8 px-4 sm:px-6 lg:px-8 w-full"
     >
+      {/* SVG filter for pixelated effect */}
+      <PixelateFilter />
+
       <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-screen">
         <motion.div
           initial={{ opacity: 0, y: -20 }}

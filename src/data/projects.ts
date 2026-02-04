@@ -29,6 +29,7 @@ export type Project = {
   technologies: string[];
   category: ProjectCategory;
   slug: string;
+  comingSoon?: boolean; // Flag for coming soon projects
 
   // Rich detail fields (used by ProjectDetail)
   fullDescription?: string;
@@ -46,6 +47,17 @@ export type Project = {
 };
 
 export const projects: Project[] = [
+  {
+    id: 0,
+    title: 'New Project Coming Soon',
+    description: 'Something exciting is in the works. Stay tuned for updates on this upcoming project.',
+    mockupType: 'web',
+    technologies: ['???', '???', '???'],
+    category: 'Development',
+    slug: 'coming-soon',
+    comingSoon: true,
+    features: [],
+  },
   {
     id: 1,
     title: 'Liquid Glass Design System',
