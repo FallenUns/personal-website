@@ -99,8 +99,10 @@ export const experiences: Experience[] = [
       { label: 'RMIT News', url: 'https://www.linkedin.com/posts/rmit-stem-college_apple-xcode-mentalhealth-activity-7354012465384337410-tD-9?utm_source=share&utm_medium=member_desktop&rcm=ACoAADz4CCgB3KyOkm0vPcSkqD_dPmmdWftzLHQ' }
     ],
     photos: [
-      { url: '/experiences/ios-hackathon-1.jpg', caption: 'Team collaboration during the RMIT iOS Hackathon with Northern Health & Bilue' },
-      { url: '/experiences/ios-hackathon-2.jpg', caption: 'Presenting Cliniwatch - Mental health support app prototype' }
+      { url: '/experiences/hackathon-1.jpg', caption: 'Conversation with Northern Health mentor about mental health challenges' },
+      { url: '/experiences/hackathon-2.jpg', caption: 'Appbuilding session during the RMIT iOS Hackathon with Northern Health & Bilue' },
+      { url: '/experiences/hackathon-3.jpg', caption: 'Designing prototype screens for Cliniwatch app' },
+      { url: '/experiences/hackathon-4.jpg', caption: 'Presenting Cliniwatch - Mental health support app prototype' }
     ]
   },
   {
