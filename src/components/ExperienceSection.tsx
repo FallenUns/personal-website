@@ -245,8 +245,8 @@ const ExperienceItem: React.FC<{
               </motion.div>
 
               {/* Main content - simplified without show more/less functionality */}
-              <div className="flex-1 mb-4 relative z-10">
-                <p className="text-white/90 text-sm leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+              <div className="flex-1 mb-4 relative z-10 min-h-[60px]">
+                <p className="text-white/90 text-sm leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] break-words">
                   {exp.highlights[0]}
                 </p>
               </div>

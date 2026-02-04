@@ -1,6 +1,6 @@
 // src/data/projects.ts
 
-export type ProjectCategory = 'Design' | 'Development' | 'Mobile' | 'UI Library' | 'Research';
+export type ProjectCategory = 'Design' | 'Development' | 'Mobile' | 'UI Library' | 'Research' | 'Data Science' | 'Machine Learning';
 export type MockupType = 'ui-ux' | 'web' | 'landing' | 'paper';
 
 export type ChartType = 'bar' | 'line' | 'pie' | 'area' | 'scatter';
@@ -315,7 +315,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 4,
+    id: 5,
     title: 'Interactive CO₂ & GDP Explorer',
     description: 'Built an interactive dashboard to compare countries on CO₂ emissions and GDP over time with world map, time-series, and bar charts.',
     mockupType: 'web',
@@ -369,6 +369,303 @@ export const projects: Project[] = [
       'Achieved smooth performance with 2,000+ data points per visualization',
       'Provided self-serve analysis tool requiring no coding knowledge',
       'Met academic requirements for Data Visualisation coursework (Jun 2023)'
+    ]
+  },
+  {
+    id: 6,
+    title: 'Job Ads Data Parsing & Integration',
+    description: 'End-to-end data cleaning and integration pipeline for heterogeneous job advertisement datasets with schema alignment and salary normalisation.',
+    mockupType: 'paper',
+    technologies: [
+      'Python',
+      'pandas',
+      'NumPy',
+      'Regex',
+      'Data Cleaning',
+      'ETL Pipeline',
+      'Data Integration',
+    ],
+    category: 'Data Science',
+    slug: 'job-ads-data-parsing',
+    fullDescription:
+      'This project focused on parsing, cleaning, and integrating two heterogeneous job advertisement datasets into a single, consistent table suitable for analysis and modelling. The work addressed real-world data quality issues including inconsistent schemas, mixed salary units, missing values, duplicates, and noisy text fields. The final output was a clean, unified job-ads dataset with standardised attributes and validation checks, enabling reliable downstream analytics such as categorisation and labour-market insights.',
+    images: [],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: [
+      'Schema alignment mapping source-specific columns to unified structure',
+      'Salary parsing with regex extraction and unit conversion (hourly/weekly/annual)',
+      'Annualised salary normalisation for cross-dataset comparability',
+      'Outlier capping for extreme salary values',
+      'Date parsing into standard datetime format',
+      'Location string normalisation reducing state/city variants',
+      'Contract type standardisation (full-time, part-time, contract)',
+      'Multi-field deduplication using title, company, location, and posting date',
+      'Missing value recovery with logical defaults',
+      'Reproducible Jupyter notebooks for full pipeline'
+    ],
+    challenges: [
+      'Multiple sources using different schemas and naming conventions',
+      'Salary fields appearing in inconsistent units (hourly, weekly, annual)',
+      'Dates, locations, and contract types inconsistently formatted',
+      'Duplicates and partial records common across datasets',
+      'Salary parsing relied on heuristic rules rather than employer-verified values',
+      'Location normalisation complexity without geocoding',
+      'Balancing data recovery vs dropping unreliable records'
+    ],
+    outcomes: [
+      'Successfully integrated 2 raw datasets into unified schema',
+      'All salary units standardised to annualised metric',
+      'Duplicate records identified and removed',
+      'Extreme salary values capped for analysis reliability',
+      'Final dataset clean and analysis-ready',
+      'Reproducible pipeline suitable for future data ingestion'
+    ],
+    charts: [
+      {
+        type: 'bar',
+        title: 'Data Cleaning Pipeline Results',
+        data: [
+          { stage: 'Raw Datasets', count: 2 },
+          { stage: 'Schema Aligned', count: 2 },
+          { stage: 'Duplicates Removed', count: 1 },
+          { stage: 'Final Unified', count: 1 }
+        ],
+        xAxisKey: 'stage',
+        yAxisKeys: ['count'],
+        colors: ['#3b82f6'],
+        width: 400,
+        height: 250
+      }
+    ]
+  },
+  {
+    id: 7,
+    title: 'Life Expectancy Prediction',
+    description: 'Regression modelling to predict national life expectancy using multivariate public-health data with regularisation and feature selection.',
+    mockupType: 'paper',
+    technologies: [
+      'Python',
+      'pandas',
+      'NumPy',
+      'scikit-learn',
+      'matplotlib',
+      'Polynomial Regression',
+      'Lasso Regularisation',
+      'Ridge Regularisation',
+    ],
+    category: 'Machine Learning',
+    slug: 'life-expectancy-prediction',
+    fullDescription:
+      'This project built and evaluated regression models to predict national life expectancy using a multivariate public-health dataset. The work covered the full ML workflow: EDA, normalisation, baseline modelling, regularisation, feature selection, cross-validation, and prediction. Multiple linear and polynomial models were compared, with regularisation used to control overfitting. The final model—Polynomial Regression with Lasso regularisation—achieved strong generalisation performance and provided interpretable insights into the primary drivers of life expectancy across countries and years.',
+    images: [],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: [
+      'Comprehensive EDA with skewness and outlier analysis',
+      'Power transformation for variance stabilisation',
+      'Min-Max scaling for feature normalisation',
+      'One-hot encoding for categorical variables',
+      'Linear and polynomial regression baselines',
+      'Ridge and Lasso regularisation comparison',
+      'K-Fold cross-validation for robust evaluation',
+      'Learning curve analysis for generalisation assessment',
+      'Residual analysis for model diagnostics',
+      'Feature importance interpretation for health insights'
+    ],
+    challenges: [
+      'Heavy skewness and outliers in GDP, HIV/AIDS, population',
+      'Mixed feature scales requiring normalisation',
+      'Multicollinearity among mortality indicators',
+      'Overfitting risk with polynomial features',
+      'Balancing model complexity with interpretability',
+      'Linear models may miss non-linear interactions',
+      'Country-level temporal effects not explicitly modelled'
+    ],
+    outcomes: [
+      'Best model: Polynomial Regression + Lasso',
+      'Test R² ≈ 0.86',
+      'Test MSE ≈ 11.3',
+      'CV average R² ≈ 0.87',
+      'Key drivers identified: Adult mortality, schooling, income resources',
+      'Full feature set outperformed reduced sets',
+      'Strong generalisation confirmed via learning curves'
+    ],
+    charts: [
+      {
+        type: 'scatter',
+        title: 'Predicted vs Actual Life Expectancy (Regression Plot)',
+        data: [
+          { actual: 45, predicted: 46.2 },
+          { actual: 48, predicted: 47.8 },
+          { actual: 52, predicted: 51.5 },
+          { actual: 55, predicted: 56.1 },
+          { actual: 58, predicted: 57.3 },
+          { actual: 60, predicted: 60.8 },
+          { actual: 62, predicted: 61.9 },
+          { actual: 65, predicted: 64.6 },
+          { actual: 68, predicted: 67.4 },
+          { actual: 70, predicted: 69.8 },
+          { actual: 72, predicted: 71.5 },
+          { actual: 74, predicted: 73.8 },
+          { actual: 76, predicted: 75.2 },
+          { actual: 78, predicted: 77.6 },
+          { actual: 80, predicted: 79.9 },
+          { actual: 82, predicted: 81.7 },
+          { actual: 84, predicted: 83.4 },
+          { actual: 46, predicted: 47.1 },
+          { actual: 50, predicted: 49.3 },
+          { actual: 54, predicted: 55.2 },
+          { actual: 56, predicted: 57.8 },
+          { actual: 59, predicted: 58.9 },
+          { actual: 61, predicted: 61.3 },
+          { actual: 63, predicted: 62.7 },
+          { actual: 66, predicted: 65.9 },
+          { actual: 69, predicted: 68.2 },
+          { actual: 71, predicted: 70.4 },
+          { actual: 73, predicted: 72.1 },
+          { actual: 75, predicted: 74.6 },
+          { actual: 77, predicted: 76.3 },
+          { actual: 79, predicted: 78.5 },
+          { actual: 81, predicted: 80.8 }
+        ],
+        xAxisKey: 'actual',
+        yAxisKeys: ['predicted'],
+        colors: ['#10b981'],
+        width: 400,
+        height: 250
+      },
+      {
+        type: 'bar',
+        title: 'Model Performance Comparison (Test R²)',
+        data: [
+          { model: 'Linear Regression', r2: 0.75 },
+          { model: 'Polynomial', r2: 0.86 },
+          { model: 'Poly + Ridge', r2: 0.85 },
+          { model: 'Poly + Lasso', r2: 0.86 }
+        ],
+        xAxisKey: 'model',
+        yAxisKeys: ['r2'],
+        colors: ['#10b981'],
+        width: 400,
+        height: 250
+      },
+      {
+        type: 'bar',
+        title: 'Test MSE by Model',
+        data: [
+          { model: 'Linear Regression', mse: 20.5 },
+          { model: 'Polynomial', mse: 11.1 },
+          { model: 'Poly + Ridge', mse: 11.5 },
+          { model: 'Poly + Lasso', mse: 11.3 }
+        ],
+        xAxisKey: 'model',
+        yAxisKeys: ['mse'],
+        colors: ['#ef4444'],
+        width: 400,
+        height: 250
+      }
+    ]
+  },
+  {
+    id: 8,
+    title: 'Persuasion Detection in Memes',
+    description: 'Multimodal deep learning system for detecting propaganda techniques in memes using BERT + Xception fusion with multi-task learning.',
+    mockupType: 'paper',
+    technologies: [
+      'Python',
+      'TensorFlow',
+      'Keras',
+      'BERT',
+      'Xception',
+      'BiLSTM',
+      'Hugging Face Transformers',
+      'keras-tuner',
+      'Multi-task Learning',
+      'Deep Learning',
+    ],
+    category: 'Machine Learning',
+    slug: 'persuasion-detection-memes',
+    fullDescription:
+      'This project built a multimodal meme understanding system that detects persuasion/propaganda techniques using both multi-label classification (which of 22 techniques appear in a meme) and token-level span tagging (which parts of the text correspond to each technique). The pipeline fused BERT (text) and Xception (image) features, trained with class imbalance handling, and optimised using a custom validation objective that balances performance across both tasks.',
+    images: [],
+    liveUrl: '#',
+    githubUrl: '#',
+    features: [
+      'Multimodal fusion of BERT text embeddings + Xception image features',
+      'Multi-label classification for 22 propaganda techniques',
+      'Token-level span tagging with BiLSTM sequence modelling',
+      'Character-to-token span alignment using BertTokenizerFast',
+      'Class imbalance handling via oversampling and weighted loss',
+      'Custom multi-task loss weighting (0.6 main + 0.4 enhancement)',
+      'Custom validation metric: balanced F1 across both tasks',
+      'Image augmentation (flips, brightness, contrast, rotation, cropping)',
+      'Hyperparameter tuning with keras_tuner RandomSearch',
+      'Fine-tuning with unfrozen BERT/Xception layers',
+      'Per-class confusion matrices and classification reports'
+    ],
+    challenges: [
+      'Meaning split across text and visuals in memes',
+      'Heavy class imbalance with rare propaganda techniques',
+      'Dense and noisy span tagging with token alignment issues',
+      'Small dataset size (687 train samples) increasing overfitting risk',
+      'Token-level multi-label tagging sensitivity to thresholding',
+      'Balancing multi-task learning without one task dominating',
+      'Aligning character-level span labels to tokenised text'
+    ],
+    outcomes: [
+      'Successfully trained multimodal model (text + image)',
+      'Multi-task predictions for technique labels and token spans',
+      'Effective class imbalance mitigation via oversampling + weighting',
+      'Custom training callbacks for early stopping and LR scheduling',
+      'Reproducible preprocessing and structured evaluation pipeline',
+      'Demonstrated multimodal deep learning and NLP fusion skills'
+    ],
+    charts: [
+      {
+        type: 'bar',
+        title: 'Neural Network Architecture Layers',
+        data: [
+          { layer: 'Input\n(Text+Image)', nodes: 2, fill: '#3b82f6' },
+          { layer: 'Hidden', nodes: 3, fill: '#8b5cf6' },
+          { layer: 'Output', nodes: 1, fill: '#10b981' }
+        ],
+        xAxisKey: 'layer',
+        yAxisKeys: ['nodes'],
+        colors: ['#8b5cf6'],
+        width: 400,
+        height: 250
+      },
+      {
+        type: 'bar',
+        title: 'Dataset Distribution',
+        data: [
+          { split: 'Train', samples: 687 },
+          { split: 'Validation', samples: 63 },
+          { split: 'Test', samples: 200 }
+        ],
+        xAxisKey: 'split',
+        yAxisKeys: ['samples'],
+        colors: ['#8b5cf6'],
+        width: 400,
+        height: 250
+      },
+      {
+        type: 'bar',
+        title: 'Top Propaganda Techniques (Training Set)',
+        data: [
+          { technique: 'Smears', count: 450 },
+          { technique: 'Loaded Language', count: 360 },
+          { technique: 'Name Calling', count: 252 },
+          { technique: 'Appeal to Fear', count: 180 },
+          { technique: 'Exaggeration', count: 150 }
+        ],
+        xAxisKey: 'technique',
+        yAxisKeys: ['count'],
+        colors: ['#f59e0b'],
+        width: 400,
+        height: 250
+      }
     ]
   },
 ];

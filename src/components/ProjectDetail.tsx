@@ -651,16 +651,161 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 overLight={false}
                               >
                                 <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center overflow-hidden">
-                                  <div className="text-center text-white/60">
-                                    <div className="w-16 h-16 bg-white/20 rounded-xl mb-4 mx-auto flex items-center justify-center">
-                                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                        <polyline points="21,15 16,10 5,21"></polyline>
-                                      </svg>
+                                  {/* Dynamic visualization based on category */}
+                                  {project.category === 'Machine Learning' ? (
+                                    <div className="relative w-full h-full flex items-center justify-center">
+                                      {/* Neural network animation */}
+                                      <div className="relative w-48 h-48">
+                                        {/* Input layer */}
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3">
+                                          {[0, 1, 2, 3].map((i) => (
+                                            <motion.div
+                                              key={`in-${i}`}
+                                              className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400/80 to-blue-500/80 border border-white/40"
+                                              animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                                              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                                            />
+                                          ))}
+                                        </div>
+                                        {/* Hidden layer 1 */}
+                                        <div className="absolute left-1/3 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                                          {[0, 1, 2, 3, 4, 5].map((i) => (
+                                            <motion.div
+                                              key={`h1-${i}`}
+                                              className="w-3 h-3 rounded-full bg-gradient-to-br from-purple-400/70 to-purple-500/70 border border-white/30"
+                                              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
+                                              transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 + i * 0.15 }}
+                                            />
+                                          ))}
+                                        </div>
+                                        {/* Hidden layer 2 */}
+                                        <div className="absolute left-2/3 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                                          {[0, 1, 2, 3, 4, 5].map((i) => (
+                                            <motion.div
+                                              key={`h2-${i}`}
+                                              className="w-3 h-3 rounded-full bg-gradient-to-br from-violet-400/70 to-violet-500/70 border border-white/30"
+                                              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
+                                              transition={{ duration: 1.5, repeat: Infinity, delay: 1 + i * 0.15 }}
+                                            />
+                                          ))}
+                                        </div>
+                                        {/* Output layer */}
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+                                          {[0, 1, 2].map((i) => (
+                                            <motion.div
+                                              key={`out-${i}`}
+                                              className="w-4 h-4 rounded-full bg-gradient-to-br from-green-400/80 to-emerald-500/80 border border-white/40"
+                                              animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                                              transition={{ duration: 2, repeat: Infinity, delay: 1.5 + i * 0.2 }}
+                                            />
+                                          ))}
+                                        </div>
+                                        {/* Connecting lines animation */}
+                                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                                          {[0, 1, 2].map((i) => (
+                                            <motion.line
+                                              key={`line-${i}`}
+                                              x1="15%" y1={`${25 + i * 20}%`}
+                                              x2="33%" y2={`${20 + i * 15}%`}
+                                              stroke="rgba(147, 51, 234, 0.3)"
+                                              strokeWidth="1"
+                                              animate={{ opacity: [0.1, 0.5, 0.1] }}
+                                              transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                                            />
+                                          ))}
+                                        </svg>
+                                      </div>
+                                      <div className="absolute bottom-4 text-center text-white/70 text-sm">
+                                        <span className="px-3 py-1 bg-purple-500/20 rounded-full border border-purple-400/30">Neural Network</span>
+                                      </div>
                                     </div>
-                                    <p className="text-sm">Project Preview</p>
-                                  </div>
+                                  ) : project.category === 'Data Science' ? (
+                                    <div className="relative w-full h-full flex items-center justify-center">
+                                      {/* Data pipeline animation */}
+                                      <div className="relative w-64 h-40 flex items-center justify-between px-4">
+                                        {/* Source datasets */}
+                                        <div className="flex flex-col gap-2">
+                                          <motion.div
+                                            className="w-12 h-10 bg-gradient-to-br from-red-400/60 to-red-500/60 rounded-lg border border-white/30 flex items-center justify-center"
+                                            animate={{ x: [0, 3, 0] }}
+                                            transition={{ duration: 2, repeat: Infinity }}
+                                          >
+                                            <span className="text-[8px] text-white/80">CSV</span>
+                                          </motion.div>
+                                          <motion.div
+                                            className="w-12 h-10 bg-gradient-to-br from-yellow-400/60 to-amber-500/60 rounded-lg border border-white/30 flex items-center justify-center"
+                                            animate={{ x: [0, 3, 0] }}
+                                            transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+                                          >
+                                            <span className="text-[8px] text-white/80">JSON</span>
+                                          </motion.div>
+                                        </div>
+                                        
+                                        {/* Flow arrows */}
+                                        <motion.div
+                                          className="flex items-center gap-1"
+                                          animate={{ opacity: [0.3, 1, 0.3] }}
+                                          transition={{ duration: 1.5, repeat: Infinity }}
+                                        >
+                                          <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-cyan-400/60"></div>
+                                          <div className="w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-cyan-400/60"></div>
+                                        </motion.div>
+                                        
+                                        {/* Processing */}
+                                        <motion.div
+                                          className="w-16 h-20 bg-gradient-to-br from-cyan-400/50 to-blue-500/50 rounded-xl border border-white/40 flex flex-col items-center justify-center"
+                                          animate={{ scale: [1, 1.05, 1] }}
+                                          transition={{ duration: 2, repeat: Infinity }}
+                                        >
+                                          <motion.div
+                                            className="w-6 h-6 border-2 border-white/60 border-t-transparent rounded-full"
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                          />
+                                          <span className="text-[7px] text-white/70 mt-1">ETL</span>
+                                        </motion.div>
+                                        
+                                        {/* Flow arrows */}
+                                        <motion.div
+                                          className="flex items-center gap-1"
+                                          animate={{ opacity: [0.3, 1, 0.3] }}
+                                          transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+                                        >
+                                          <div className="w-8 h-0.5 bg-gradient-to-r from-cyan-400/60 to-green-400/60"></div>
+                                          <div className="w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-green-400/60"></div>
+                                        </motion.div>
+                                        
+                                        {/* Output */}
+                                        <motion.div
+                                          className="w-14 h-16 bg-gradient-to-br from-green-400/60 to-emerald-500/60 rounded-lg border border-white/40 flex flex-col items-center justify-center"
+                                          animate={{ scale: [0.95, 1, 0.95] }}
+                                          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                                        >
+                                          <div className="w-8 h-8 flex flex-col gap-0.5 p-1">
+                                            <div className="h-1 bg-white/50 rounded w-full"></div>
+                                            <div className="h-1 bg-white/40 rounded w-3/4"></div>
+                                            <div className="h-1 bg-white/40 rounded w-full"></div>
+                                            <div className="h-1 bg-white/30 rounded w-2/3"></div>
+                                          </div>
+                                          <span className="text-[7px] text-white/70">Clean</span>
+                                        </motion.div>
+                                      </div>
+                                      <div className="absolute bottom-4 text-center text-white/70 text-sm">
+                                        <span className="px-3 py-1 bg-cyan-500/20 rounded-full border border-cyan-400/30">Data Pipeline</span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="text-center text-white/60">
+                                      <div className="w-16 h-16 bg-white/20 rounded-xl mb-4 mx-auto flex items-center justify-center">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                          <polyline points="21,15 16,10 5,21"></polyline>
+                                        </svg>
+                                      </div>
+                                      <p className="text-sm">Project Preview</p>
+                                    </div>
+                                  )}
                                 </div>
                               </LiquidGlass>
                             )}

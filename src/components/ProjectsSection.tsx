@@ -6,7 +6,641 @@ import { navigateTo } from '../utils/router';
 import './performance.css';
 import { projects } from '../data/projects';
 
-// Device mockup component (no changes)
+// Animated Data Pipeline Mockup for Data Science projects
+const DataPipelineMockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-24 h-20">
+        {/* Data sources - left side */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+          <motion.div
+            className="w-5 h-4 bg-gradient-to-r from-red-400/60 to-red-500/60 rounded border border-white/30"
+            animate={{ x: [0, 2, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+          />
+          <motion.div
+            className="w-5 h-4 bg-gradient-to-r from-yellow-400/60 to-yellow-500/60 rounded border border-white/30"
+            animate={{ x: [0, 2, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+          />
+        </div>
+
+        {/* Data flow arrows */}
+        <motion.div
+          className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-white/40 to-cyan-400/60"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+
+        {/* Processing center */}
+        <motion.div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-10 bg-gradient-to-br from-cyan-400/40 to-blue-500/40 rounded-lg border border-white/40 flex items-center justify-center"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <motion.div
+            className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          />
+        </motion.div>
+
+        {/* Output arrow */}
+        <motion.div
+          className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-cyan-400/60 to-green-400/60"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
+        />
+
+        {/* Output - unified dataset */}
+        <motion.div
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-8 bg-gradient-to-br from-green-400/60 to-emerald-500/60 rounded border border-white/40"
+          animate={{ scale: [0.95, 1, 0.95] }}
+          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+        >
+          <div className="absolute inset-1 space-y-0.5">
+            <div className="h-0.5 bg-white/50 rounded w-full"></div>
+            <div className="h-0.5 bg-white/40 rounded w-3/4"></div>
+            <div className="h-0.5 bg-white/40 rounded w-full"></div>
+            <div className="h-0.5 bg-white/30 rounded w-2/3"></div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+});
+DataPipelineMockup.displayName = 'DataPipelineMockup';
+
+// Animated Neural Network Mockup for ML projects (2 → 3 → 1 architecture)
+const NeuralNetworkMockup = memo(() => {
+  const layers = [2, 3, 1]; // neurons per layer: Input (text+image), Hidden, Output
+
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-28 h-24 flex items-center justify-between px-2">
+        {layers.map((neurons, layerIndex) => (
+          <div key={layerIndex} className="flex flex-col justify-center gap-1">
+            {Array.from({ length: neurons }).map((_, neuronIndex) => (
+              <motion.div
+                key={neuronIndex}
+                className={`w-3 h-3 rounded-full border border-white/40 ${layerIndex === 0 ? 'bg-gradient-to-br from-blue-400/60 to-blue-500/60' :
+                  layerIndex === layers.length - 1 ? 'bg-gradient-to-br from-green-400/60 to-emerald-500/60' :
+                    'bg-gradient-to-br from-purple-400/50 to-purple-500/50'
+                  }`}
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.6, 1, 0.6]
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: (layerIndex * 0.3) + (neuronIndex * 0.1)
+                }}
+              />
+            ))}
+          </div>
+        ))}
+
+        {/* Connection lines overlay */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
+          <motion.line
+            x1="15%" y1="50%" x2="35%" y2="30%"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1"
+            animate={{ opacity: [0.1, 0.4, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.line
+            x1="15%" y1="50%" x2="35%" y2="70%"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1"
+            animate={{ opacity: [0.1, 0.4, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+          />
+          <motion.line
+            x1="65%" y1="40%" x2="85%" y2="35%"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1"
+            animate={{ opacity: [0.1, 0.4, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+          />
+          <motion.line
+            x1="65%" y1="60%" x2="85%" y2="65%"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1"
+            animate={{ opacity: [0.1, 0.4, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.9 }}
+          />
+        </svg>
+      </div>
+    </div>
+  );
+});
+NeuralNetworkMockup.displayName = 'NeuralNetworkMockup';
+
+// Animated Multimodal Mockup (for text + image fusion projects)
+const MultimodalMockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-28 h-20">
+        {/* Text input - left top */}
+        <motion.div
+          className="absolute left-0 top-0 w-10 h-8 bg-gradient-to-br from-blue-400/50 to-blue-500/50 rounded border border-white/30 overflow-hidden"
+          animate={{ y: [0, -2, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="p-1 space-y-0.5">
+            <div className="h-0.5 bg-white/50 rounded w-full"></div>
+            <div className="h-0.5 bg-white/40 rounded w-3/4"></div>
+            <div className="h-0.5 bg-white/40 rounded w-5/6"></div>
+          </div>
+        </motion.div>
+
+        {/* Image input - left bottom */}
+        <motion.div
+          className="absolute left-0 bottom-0 w-10 h-8 bg-gradient-to-br from-pink-400/50 to-pink-500/50 rounded border border-white/30 overflow-hidden"
+          animate={{ y: [0, 2, 0] }}
+          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+        >
+          <div className="w-full h-full flex items-center justify-center">
+            <motion.div
+              className="w-4 h-4 border border-white/50 rounded"
+              animate={{ rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <div className="w-1 h-1 bg-yellow-400/60 rounded-full absolute top-0.5 right-0.5"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-green-400/40 to-transparent"></div>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Fusion arrows */}
+        <motion.div
+          className="absolute left-11 top-4 w-3 h-0.5 bg-gradient-to-r from-blue-400/60 to-purple-400/60"
+          animate={{ scaleX: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute left-11 bottom-4 w-3 h-0.5 bg-gradient-to-r from-pink-400/60 to-purple-400/60"
+          animate={{ scaleX: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+        />
+
+        {/* Fusion center */}
+        <motion.div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-10 bg-gradient-to-br from-purple-400/50 to-violet-500/50 rounded-lg border border-white/40"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="w-full h-full flex items-center justify-center">
+            <motion.div
+              className="w-3 h-3 bg-white/40 rounded"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+          </div>
+        </motion.div>
+
+        {/* Output arrow */}
+        <motion.div
+          className="absolute right-8 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-purple-400/60 to-green-400/60"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
+        />
+
+        {/* Output labels */}
+        <motion.div
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-7 h-12 bg-gradient-to-br from-green-400/50 to-emerald-500/50 rounded border border-white/40 overflow-hidden"
+          animate={{ scale: [0.95, 1, 0.95] }}
+          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+        >
+          <div className="p-1 space-y-1">
+            <motion.div
+              className="h-2 bg-orange-400/60 rounded"
+              animate={{ width: ['60%', '80%', '60%'] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <motion.div
+              className="h-2 bg-cyan-400/60 rounded"
+              animate={{ width: ['40%', '70%', '40%'] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+            />
+            <motion.div
+              className="h-2 bg-pink-400/60 rounded"
+              animate={{ width: ['70%', '50%', '70%'] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+            />
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+});
+MultimodalMockup.displayName = 'MultimodalMockup';
+
+// Animated Regression Plot Mockup for Life Expectancy - scatter dots around diagonal line
+const RegressionPlotMockup = memo(() => {
+  // Generate scatter points that cluster around a diagonal line (y = x)
+  const scatterPoints = useMemo(() => {
+    const points = [];
+    for (let i = 0; i < 20; i++) {
+      const baseX = 10 + (i * 4); // x from 10 to 86
+      const baseY = 10 + (i * 4); // Perfect line would be y = x
+      // Add some random noise to create scatter around the line
+      const noise = (Math.random() - 0.5) * 12;
+      points.push({
+        x: baseX + (Math.random() - 0.5) * 6,
+        y: Math.max(5, Math.min(95, baseY + noise)),
+        delay: i * 0.1
+      });
+    }
+    return points;
+  }, []);
+
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-28 h-24">
+        {/* Axis lines */}
+        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30" /> {/* X axis */}
+        <div className="absolute bottom-0 left-0 w-0.5 h-full bg-white/30" /> {/* Y axis */}
+
+        {/* Regression line (diagonal) */}
+        <motion.div
+          className="absolute bottom-0 left-0 w-[120%] h-0.5 bg-gradient-to-r from-emerald-400/60 to-teal-400/60 origin-bottom-left"
+          style={{ transform: 'rotate(-45deg)' }}
+          animate={{ opacity: [0.4, 0.8, 0.4] }}
+          transition={{ duration: 3, repeat: Infinity }}
+        />
+
+        {/* Scatter points */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {scatterPoints.map((point, i) => (
+            <motion.circle
+              key={i}
+              cx={point.x}
+              cy={100 - point.y} // Flip Y axis for proper orientation
+              r="2.5"
+              fill="rgba(16,185,129,0.8)"
+              stroke="rgba(255,255,255,0.4)"
+              strokeWidth="0.5"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.6, 1, 0.6]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: point.delay
+              }}
+            />
+          ))}
+        </svg>
+
+        {/* Axis labels */}
+        <div className="absolute -bottom-2 left-1/2 text-[6px] text-white/50 -translate-x-1/2">Actual</div>
+        <div className="absolute top-1/2 -left-3 text-[6px] text-white/50 -translate-y-1/2 -rotate-90">Predicted</div>
+      </div>
+    </div>
+  );
+});
+RegressionPlotMockup.displayName = 'RegressionPlotMockup';
+
+// Neural Network 2→3→1 Mockup for Persuasion Detection in Memes
+const NeuralNetwork231Mockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-28 h-24">
+        {/* SVG for connection lines */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 112 96">
+          {/* Input to Hidden connections */}
+          {/* Node 1 (input) to all hidden nodes */}
+          <motion.line x1="18" y1="32" x2="48" y2="20" stroke="rgba(139,92,246,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity }} />
+          <motion.line x1="18" y1="32" x2="48" y2="48" stroke="rgba(139,92,246,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 0.2 }} />
+          <motion.line x1="18" y1="32" x2="48" y2="76" stroke="rgba(139,92,246,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 0.4 }} />
+          {/* Node 2 (input) to all hidden nodes */}
+          <motion.line x1="18" y1="64" x2="48" y2="20" stroke="rgba(236,72,153,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 0.1 }} />
+          <motion.line x1="18" y1="64" x2="48" y2="48" stroke="rgba(236,72,153,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 0.3 }} />
+          <motion.line x1="18" y1="64" x2="48" y2="76" stroke="rgba(236,72,153,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
+          {/* Hidden to Output connections */}
+          <motion.line x1="60" y1="20" x2="94" y2="48" stroke="rgba(16,185,129,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 0.6 }} />
+          <motion.line x1="60" y1="48" x2="94" y2="48" stroke="rgba(16,185,129,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 0.8 }} />
+          <motion.line x1="60" y1="76" x2="94" y2="48" stroke="rgba(16,185,129,0.5)" strokeWidth="1"
+            animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 2, repeat: Infinity, delay: 1.0 }} />
+        </svg>
+
+        {/* Input Layer - 2 nodes */}
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+          <motion.div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400/80 to-blue-500/80 border border-white/50 flex items-center justify-center"
+            animate={{ scale: [1, 1.2, 1], boxShadow: ['0 0 0 0 rgba(59,130,246,0)', '0 0 8px 2px rgba(59,130,246,0.4)', '0 0 0 0 rgba(59,130,246,0)'] }}
+            transition={{ duration: 2, repeat: Infinity }}>
+            <span className="text-[6px] text-white font-bold">T</span>
+          </motion.div>
+          <motion.div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-400/80 to-pink-500/80 border border-white/50 flex items-center justify-center"
+            animate={{ scale: [1, 1.2, 1], boxShadow: ['0 0 0 0 rgba(236,72,153,0)', '0 0 8px 2px rgba(236,72,153,0.4)', '0 0 0 0 rgba(236,72,153,0)'] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}>
+            <span className="text-[6px] text-white font-bold">I</span>
+          </motion.div>
+        </div>
+
+        {/* Hidden Layer - 3 nodes */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+          {[0, 1, 2].map((i) => (
+            <motion.div key={i} className="w-4 h-4 rounded-full bg-gradient-to-br from-purple-400/70 to-violet-500/70 border border-white/40"
+              animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }} />
+          ))}
+        </div>
+
+        {/* Output Layer - 1 node */}
+        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+          <motion.div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400/80 to-green-500/80 border-2 border-white/50 flex items-center justify-center"
+            animate={{ scale: [1, 1.2, 1], boxShadow: ['0 0 0 0 rgba(16,185,129,0)', '0 0 10px 3px rgba(16,185,129,0.5)', '0 0 0 0 rgba(16,185,129,0)'] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
+            <span className="text-[6px] text-white font-bold">✓</span>
+          </motion.div>
+        </div>
+
+        {/* Labels */}
+        <div className="absolute -bottom-1 left-2 text-[5px] text-white/40">Input</div>
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[5px] text-white/40">Hidden</div>
+        <div className="absolute -bottom-1 right-2 text-[5px] text-white/40">Output</div>
+      </div>
+    </div>
+  );
+});
+NeuralNetwork231Mockup.displayName = 'NeuralNetwork231Mockup';
+
+// iOS App Mockup for Cliniwatch - Mental Health Companion
+const IOSAppMockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      {/* iPhone-style frame */}
+      <div className="relative w-16 h-28 bg-gradient-to-b from-gray-800/90 to-gray-900/90 rounded-2xl border-2 border-gray-600/50 overflow-hidden shadow-2xl">
+        {/* Dynamic Island / Notch */}
+        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-black rounded-full" />
+
+        {/* Screen content */}
+        <div className="absolute top-4 left-1 right-1 bottom-3 bg-gradient-to-br from-teal-500/20 to-cyan-500/20 rounded-lg overflow-hidden">
+          {/* Header */}
+          <div className="h-4 bg-gradient-to-r from-teal-400/30 to-cyan-400/30 flex items-center justify-center">
+            <span className="text-[5px] text-white/80 font-semibold">Daily Check-in</span>
+          </div>
+
+          {/* Mood emoji */}
+          <motion.div className="flex justify-center mt-2"
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}>
+            <div className="w-6 h-6 bg-gradient-to-br from-yellow-300/80 to-orange-400/80 rounded-full flex items-center justify-center">
+              <span className="text-[8px]">😊</span>
+            </div>
+          </motion.div>
+
+          {/* Mood calendar grid */}
+          <div className="mt-2 px-1">
+            <div className="grid grid-cols-7 gap-0.5">
+              {[...Array(14)].map((_, i) => (
+                <motion.div key={i}
+                  className={`w-1.5 h-1.5 rounded-sm ${i < 7 ? 'bg-green-400/60' : i < 10 ? 'bg-yellow-400/60' : 'bg-teal-400/40'
+                    }`}
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 }} />
+              ))}
+            </div>
+          </div>
+
+          {/* Heartbeat line */}
+          <motion.div className="mt-2 mx-1 h-3 overflow-hidden"
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.5, repeat: Infinity }}>
+            <svg className="w-full h-full" viewBox="0 0 50 12" preserveAspectRatio="none">
+              <motion.path
+                d="M0,6 L8,6 L10,2 L12,10 L14,6 L22,6 L24,2 L26,10 L28,6 L36,6 L38,2 L40,10 L42,6 L50,6"
+                fill="none" stroke="rgba(20,184,166,0.8)" strokeWidth="1"
+                initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+                transition={{ duration: 2, repeat: Infinity }} />
+            </svg>
+          </motion.div>
+        </div>
+
+        {/* Home indicator */}
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-white/30 rounded-full" />
+      </div>
+    </div>
+  );
+});
+IOSAppMockup.displayName = 'IOSAppMockup';
+
+// Interactive Web Mockup for Portfolio Website
+const InteractiveWebMockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      {/* Browser window frame */}
+      <div className="relative w-24 h-20 bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-lg border border-white/20 overflow-hidden shadow-2xl">
+        {/* Browser header */}
+        <div className="h-3 bg-gray-700/50 flex items-center px-1 gap-0.5">
+          <div className="w-1 h-1 bg-red-400/70 rounded-full" />
+          <div className="w-1 h-1 bg-yellow-400/70 rounded-full" />
+          <div className="w-1 h-1 bg-green-400/70 rounded-full" />
+          <div className="flex-1 mx-1 h-1.5 bg-white/10 rounded" />
+        </div>
+
+        {/* Website content - Liquid Glass style */}
+        <div className="absolute top-4 left-1 right-1 bottom-1 bg-gradient-to-br from-white/5 to-white/10 rounded overflow-hidden">
+          {/* Glassmorphism cards */}
+          <div className="p-1 space-y-1">
+            <motion.div className="h-4 bg-gradient-to-r from-white/15 to-white/5 rounded backdrop-blur-sm border border-white/10"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity }} />
+            <div className="flex gap-1">
+              <motion.div className="flex-1 h-6 bg-gradient-to-br from-orange-400/20 to-pink-400/20 rounded border border-white/10"
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity }} />
+              <motion.div className="flex-1 h-6 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded border border-white/10"
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
+            </div>
+          </div>
+
+          {/* Floating glass effect */}
+          <motion.div className="absolute top-2 right-1 w-3 h-3 bg-white/10 rounded-full backdrop-blur"
+            animate={{ y: [-2, 2, -2], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 4, repeat: Infinity }} />
+        </div>
+      </div>
+    </div>
+  );
+});
+InteractiveWebMockup.displayName = 'InteractiveWebMockup';
+
+// LLM Detection Mockup for Privacy Violation Detection
+const LLMDetectionMockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-28 h-20">
+        {/* Document input */}
+        <motion.div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-10 bg-gradient-to-br from-blue-400/50 to-blue-500/50 rounded border border-white/30"
+          animate={{ x: [0, 2, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}>
+          <div className="p-1 space-y-0.5">
+            <div className="h-0.5 bg-white/50 rounded w-full" />
+            <div className="h-0.5 bg-white/40 rounded w-3/4" />
+            <div className="h-0.5 bg-red-400/60 rounded w-1/2" />
+            <div className="h-0.5 bg-white/40 rounded w-full" />
+            <div className="h-0.5 bg-white/30 rounded w-2/3" />
+          </div>
+        </motion.div>
+
+        {/* Arrow to LLM */}
+        <motion.div className="absolute left-8 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-blue-400/60 to-purple-400/60"
+          animate={{ scaleX: [0.8, 1.1, 0.8], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity }} />
+
+        {/* LLM Brain */}
+        <motion.div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-gradient-to-br from-purple-400/50 to-violet-500/50 rounded-lg border border-white/40"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2.5, repeat: Infinity }}>
+          <div className="w-full h-full flex items-center justify-center">
+            <motion.div className="text-[10px] text-white/80"
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 1.5, repeat: Infinity }}>
+              🧠
+            </motion.div>
+          </div>
+          {/* Processing indicator */}
+          <motion.div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-purple-400/0 via-purple-400/60 to-purple-400/0 rounded"
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ duration: 1, repeat: Infinity }} />
+        </motion.div>
+
+        {/* Arrow to output */}
+        <motion.div className="absolute right-8 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-purple-400/60 to-red-400/60"
+          animate={{ scaleX: [0.8, 1.1, 0.8], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} />
+
+        {/* Alert output */}
+        <motion.div className="absolute right-0 top-1/2 -translate-y-1/2 w-7 h-8 bg-gradient-to-br from-red-400/50 to-orange-500/50 rounded border border-white/30 flex items-center justify-center"
+          animate={{ scale: [0.95, 1.05, 0.95] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}>
+          <motion.div className="text-[12px]"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 1, repeat: Infinity }}>
+            ⚠️
+          </motion.div>
+        </motion.div>
+
+        {/* Labels */}
+        <div className="absolute -bottom-2 left-1 text-[5px] text-white/40">Post</div>
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[5px] text-white/40">LLM</div>
+        <div className="absolute -bottom-2 right-1 text-[5px] text-white/40">Alert</div>
+      </div>
+    </div>
+  );
+});
+LLMDetectionMockup.displayName = 'LLMDetectionMockup';
+
+// Interactive Dashboard Mockup for data exploration projects (like CO2 & GDP Explorer)
+const DashboardMockup = memo(() => {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-28 h-20">
+        {/* Main dashboard container */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-lg border border-white/20 overflow-hidden">
+          {/* Header bar */}
+          <div className="absolute top-0 left-0 right-0 h-3 bg-white/10 border-b border-white/10 flex items-center px-1 gap-0.5">
+            <div className="w-1 h-1 bg-green-400/70 rounded-full"></div>
+            <div className="w-1 h-1 bg-yellow-400/70 rounded-full"></div>
+            <div className="w-1 h-1 bg-red-400/70 rounded-full"></div>
+          </div>
+
+          {/* Dashboard content */}
+          <div className="absolute top-4 left-1 right-1 bottom-1 flex gap-1">
+            {/* Left panel - Mini map */}
+            <div className="w-10 h-full bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded border border-white/15 relative overflow-hidden">
+              {/* Map representation */}
+              <motion.div
+                className="absolute top-1 left-1 w-2 h-1.5 bg-green-400/50 rounded-sm"
+                animate={{ opacity: [0.4, 0.8, 0.4] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <motion.div
+                className="absolute top-2 right-1 w-3 h-2 bg-orange-400/50 rounded-sm"
+                animate={{ opacity: [0.5, 0.9, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+              />
+              <motion.div
+                className="absolute bottom-2 left-2 w-2 h-1.5 bg-yellow-400/50 rounded-sm"
+                animate={{ opacity: [0.4, 0.7, 0.4] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+              />
+            </div>
+
+            {/* Right panel - Charts */}
+            <div className="flex-1 flex flex-col gap-1">
+              {/* Line chart */}
+              <div className="flex-1 bg-gradient-to-br from-white/5 to-transparent rounded border border-white/10 relative overflow-hidden p-0.5">
+                <svg className="w-full h-full" viewBox="0 0 40 20" preserveAspectRatio="none">
+                  <motion.path
+                    d="M0,15 Q10,10 20,12 T40,5"
+                    fill="none"
+                    stroke="rgba(34,197,94,0.7)"
+                    strokeWidth="1"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 2, repeat: Infinity, repeatType: "loop" }}
+                  />
+                  <motion.path
+                    d="M0,18 Q10,14 20,16 T40,10"
+                    fill="none"
+                    stroke="rgba(251,191,36,0.6)"
+                    strokeWidth="1"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 2, repeat: Infinity, repeatType: "loop", delay: 0.3 }}
+                  />
+                </svg>
+              </div>
+
+              {/* Bar chart */}
+              <div className="h-6 bg-gradient-to-br from-white/5 to-transparent rounded border border-white/10 flex items-end justify-center gap-0.5 p-0.5">
+                <motion.div
+                  className="w-1.5 bg-gradient-to-t from-orange-400/70 to-orange-300/50 rounded-t"
+                  animate={{ height: ['30%', '60%', '30%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <motion.div
+                  className="w-1.5 bg-gradient-to-t from-orange-400/70 to-orange-300/50 rounded-t"
+                  animate={{ height: ['50%', '80%', '50%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                />
+                <motion.div
+                  className="w-1.5 bg-gradient-to-t from-orange-400/70 to-orange-300/50 rounded-t"
+                  animate={{ height: ['70%', '40%', '70%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                />
+                <motion.div
+                  className="w-1.5 bg-gradient-to-t from-orange-400/70 to-orange-300/50 rounded-t"
+                  animate={{ height: ['40%', '90%', '40%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+DashboardMockup.displayName = 'DashboardMockup';
+
+// Device mockup component
 const DeviceMockup = memo(({ type, color }: { type: string; color: string }) => {
   if (type === 'ui-ux') {
     return (
@@ -215,12 +849,61 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
       >
         <LiquidGlass {...optimizedProps}>
           <div className="w-full h-full flex flex-col relative p-6 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
-            {/* Enhanced background effects for liquid glass project */}
+            {/* Enhanced background effects based on project type */}
             {isLiquidGlassProject ? (
               <div className="absolute inset-0 opacity-20">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/30 to-transparent rounded-full blur-xl"></div>
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/30 to-transparent rounded-full blur-xl"></div>
                 <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-gradient-to-r from-pink-400/20 to-transparent rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+              </div>
+            ) : project.category === 'Machine Learning' ? (
+              <div className="absolute inset-0 opacity-25">
+                <motion.div
+                  className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/40 to-transparent rounded-full blur-xl"
+                  animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-400/40 to-transparent rounded-full blur-xl"
+                  animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                />
+                <motion.div
+                  className="absolute top-1/3 left-1/4 w-16 h-16 bg-gradient-to-r from-violet-400/30 to-transparent rounded-full blur-xl"
+                  animate={{ x: [-10, 10, -10], y: [-5, 5, -5] }}
+                  transition={{ duration: 6, repeat: Infinity }}
+                />
+              </div>
+            ) : project.category === 'Data Science' ? (
+              <div className="absolute inset-0 opacity-25">
+                <motion.div
+                  className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-400/40 to-transparent rounded-full blur-xl"
+                  animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-teal-400/40 to-transparent rounded-full blur-xl"
+                  animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                />
+                <motion.div
+                  className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-l from-green-400/30 to-transparent rounded-full blur-xl"
+                  animate={{ x: [10, -10, 10], y: [5, -5, 5] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                />
+              </div>
+            ) : project.category === 'Research' ? (
+              <div className="absolute inset-0 opacity-20">
+                <motion.div
+                  className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-400/30 to-transparent rounded-full blur-xl"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-400/30 to-transparent rounded-full blur-xl"
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ duration: 5, repeat: Infinity, delay: 1.5 }}
+                />
               </div>
             ) : (
               <div className="absolute inset-0 opacity-10">
@@ -229,15 +912,15 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
               </div>
             )}
             <div className="relative z-10 mb-3">
-              <div className="flex items-start justify-between mb-2 h-12 gap-3">
-                <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight pr-2">{project.title}</h3>
-                <span className="px-2 py-1 text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0">{project.category}</span>
+              <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
+                <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">{project.title}</h3>
+                <span className="px-2.5 py-1 text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5">{project.category}</span>
               </div>
-              <div className="h-12 overflow-hidden mb-3">
-                <p className="text-xs text-white/70 leading-[1.3] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{project.description}</p>
+              <div className="max-h-[72px] overflow-hidden">
+                <p className="text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-4 break-words">{project.description}</p>
               </div>
             </div>
-            <div className="flex-1 flex items-center justify-center mb-3 relative min-h-[128px]">
+            <div className="flex-1 flex items-center justify-center mb-4 relative h-[140px]">
               {isLiquidGlassProject ? (
                 // Special liquid glass showcase
                 <div className="relative w-full h-32 grid grid-cols-3 gap-2">
@@ -269,6 +952,184 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                     </div>
                   </div>
                 </div>
+              ) : project.slug === 'job-ads-data-parsing' ? (
+                // Data Pipeline visualization for Job Ads project
+                <div className="relative w-full h-32 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl backdrop-blur-sm border border-cyan-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <DataPipelineMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-cyan-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-green-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                  <motion.div
+                    className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  />
+                </div>
+              ) : project.slug === 'co2-gdp-explorer' ? (
+                // Interactive Dashboard visualization for CO2 & GDP Explorer
+                <div className="relative w-full h-32 bg-gradient-to-br from-blue-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-blue-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <DashboardMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-green-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                  <motion.div
+                    className="absolute bottom-3 left-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  />
+                </div>
+              ) : project.slug === 'cliniwatch' ? (
+                // iOS App visualization for Cliniwatch
+                <div className="relative w-full h-32 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-2xl backdrop-blur-sm border border-teal-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-2 flex items-center justify-center">
+                    <IOSAppMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-cyan-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                </div>
+              ) : project.slug === 'interactive-portfolio' ? (
+                // Web visualization for Interactive Portfolio
+                <div className="relative w-full h-32 bg-gradient-to-br from-orange-500/10 to-pink-500/10 rounded-2xl backdrop-blur-sm border border-orange-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <InteractiveWebMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-orange-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-pink-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                </div>
+              ) : project.slug === 'software-engineering-project' ? (
+                // LLM Detection visualization
+                <div className="relative w-full h-32 bg-gradient-to-br from-purple-500/10 to-red-500/10 rounded-2xl backdrop-blur-sm border border-purple-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <LLMDetectionMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-purple-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-red-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                </div>
+              ) : project.slug === 'life-expectancy-prediction' ? (
+                // Regression Plot visualization for Life Expectancy
+                <div className="relative w-full h-32 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-emerald-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <RegressionPlotMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-emerald-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                </div>
+              ) : project.slug === 'persuasion-detection-memes' ? (
+                // Neural Network 2-3-1 visualization for Persuasion Detection
+                <div className="relative w-full h-32 bg-gradient-to-br from-purple-500/10 to-violet-500/10 rounded-2xl backdrop-blur-sm border border-purple-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <NeuralNetwork231Mockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-purple-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-pink-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                  <motion.div
+                    className="absolute bottom-3 left-3 w-2 h-2 bg-violet-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  />
+                </div>
+              ) : project.category === 'Machine Learning' ? (
+                // Neural Network visualization for other ML projects
+                <div className="relative w-full h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl backdrop-blur-sm border border-indigo-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <NeuralNetworkMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-indigo-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-purple-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                  <motion.div
+                    className="absolute bottom-3 left-3 w-2 h-2 bg-blue-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  />
+                </div>
+              ) : project.category === 'Data Science' ? (
+                // Data Pipeline visualization for other Data Science projects
+                <div className="relative w-full h-32 bg-gradient-to-br from-cyan-500/10 to-teal-500/10 rounded-2xl backdrop-blur-sm border border-cyan-400/20 overflow-hidden shadow-2xl">
+                  <div className="absolute inset-4 flex items-center justify-center">
+                    <DataPipelineMockup />
+                  </div>
+                  <motion.div
+                    className="absolute top-3 left-3 w-2 h-2 bg-cyan-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute top-3 right-3 w-2 h-2 bg-teal-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                  <motion.div
+                    className="absolute bottom-3 left-3 w-2 h-2 bg-green-400/60 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  />
+                </div>
               ) : (
                 // Standard mockup for other projects
                 <div className="relative w-full h-32 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden shadow-2xl">
@@ -281,11 +1142,11 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 </div>
               )}
             </div>
-            <div className="relative z-10 flex items-end justify-between">
-              <div className="flex-1">
-                <div className="flex flex-wrap gap-1.5 mb-2">
+            <div className="relative z-10 flex items-center justify-between mt-auto">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap gap-1.5">
                   {project.technologies.slice(0, 3).map((tech, i) => (
-                    <motion.span key={i} className="text-xs px-2 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative" whileHover={{ scale: 1.05 }}>
+                    <motion.span key={i} className="text-[11px] px-2.5 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative whitespace-nowrap" whileHover={{ scale: 1.05 }}>
                       {tech}
                     </motion.span>
                   ))}
@@ -447,11 +1308,10 @@ const ProjectsSection: React.FC = () => {
                     <motion.button
                       key={`dot-${pageIndex}`}
                       onClick={() => handleDotClick(pageIndex)}
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        isActive 
-                          ? 'bg-white w-6' 
-                          : 'bg-white/40 hover:bg-white/60 w-2'
-                      }`}
+                      className={`h-2 rounded-full transition-all duration-300 ${isActive
+                        ? 'bg-white w-6'
+                        : 'bg-white/40 hover:bg-white/60 w-2'
+                        }`}
                       whileHover={{ scale: isActive ? 1.05 : 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     />

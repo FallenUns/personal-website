@@ -221,7 +221,7 @@ export const FeedbackViewer: React.FC<FeedbackViewerProps> = ({ isOpen, onClose 
                             </div>
                           </div>
                         </div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3 break-words">
                           {item.message}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
