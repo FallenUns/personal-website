@@ -210,6 +210,12 @@ nav *, .nav *, .menu * {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
+/* Improve legibility in dense modal content areas */
+.detail-readable,
+.detail-readable * {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+}
+
 /* For the new dynamic border effect */
 @property --angle {
   syntax: '<angle>';

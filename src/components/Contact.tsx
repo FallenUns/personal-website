@@ -10,7 +10,7 @@ const Contact: React.FC = () => {
   return (
     <motion.section
       id="contact"
-      className="h-screen flex flex-col justify-between py-16 px-4 w-full pt-24"
+      className="min-h-screen h-auto flex flex-col justify-between py-12 sm:py-16 px-4 sm:px-6 w-full pt-24"
       initial={{ opacity: 0, y: 30 }}
       animate={{
         opacity: isLoading ? 0 : 1,
@@ -25,7 +25,7 @@ const Contact: React.FC = () => {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-white text-center">
           <motion.h2
-            className="text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]"
+            className="text-3xl sm:text-4xl font-bold mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{
               opacity: isLoading ? 0 : 1,
@@ -40,7 +40,7 @@ const Contact: React.FC = () => {
             Get In Touch
           </motion.h2>
           <motion.p
-            className="text-lg mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]"
+            className="text-base sm:text-lg mb-8 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{
               opacity: isLoading ? 0 : 1,
@@ -55,7 +55,7 @@ const Contact: React.FC = () => {
             Let's work together on your next project.
           </motion.p>
           <motion.div
-            className="flex justify-center space-x-4"
+            className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{
               opacity: isLoading ? 0 : 1,
@@ -116,7 +116,7 @@ const Contact: React.FC = () => {
 
       {/* Copyright Footer - Fixed at bottom */}
       <motion.div
-        className="text-center text-white/60 text-sm [text-shadow:0_1px_2px_rgba(0,0,0,0.5)] pb-4"
+        className="text-center text-white/60 text-xs sm:text-sm [text-shadow:0_1px_2px_rgba(0,0,0,0.5)] px-20 sm:px-0 pb-20 sm:pb-4"
         initial={{ opacity: 0 }}
         animate={{
           opacity: isLoading ? 0 : 1

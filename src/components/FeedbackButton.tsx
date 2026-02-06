@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FeedbackForm } from './FeedbackForm';
 import LiquidGlass from './LiquidGlass';
 
 export const FeedbackButton: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const buttonSize = isMobile ? 56 : 64;
+  const iconSizeClass = isMobile ? 'w-6 h-6' : 'w-7 h-7';
 
   return (
     <>
       {/* Floating Feedback Button */}
       <motion.div
-        className="fixed bottom-6 left-6 z-40"
+        className="feedback-fab fixed bottom-3 left-3 sm:bottom-6 sm:left-6 z-40"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 2, duration: 0.5, type: "spring" }}
@@ -23,8 +36,8 @@ export const FeedbackButton: React.FC = () => {
           }}
         >
           <LiquidGlass
-            width={64}
-            height={64}
+            width={buttonSize}
+            height={buttonSize}
             className="cursor-pointer"
             onClick={() => setIsFormOpen(true)}
             isElastic={true}
@@ -39,7 +52,7 @@ export const FeedbackButton: React.FC = () => {
               className="flex items-center justify-center w-full h-full text-white"
             >
               <svg 
-                className="w-7 h-7" 
+                className={iconSizeClass}
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"

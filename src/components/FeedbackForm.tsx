@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { feedbackService } from '../services/feedbackService';
 import type { FeedbackFormData } from '../types/feedback';
@@ -21,6 +21,32 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
+  const [modalDimensions, setModalDimensions] = useState({
+    width: 512,
+    height: 700,
+    isMobile: false
+  });
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const isMobile = viewportWidth <= 768;
+
+      const width = isMobile
+        ? Math.min(360, Math.max(280, viewportWidth - 24))
+        : 512;
+      const height = isMobile
+        ? Math.min(620, Math.max(520, viewportHeight - 24))
+        : 700;
+
+      setModalDimensions({ width, height, isMobile });
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
   // Reset form function
   const resetForm = () => {
@@ -81,14 +107,17 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
   const StarRating: React.FC<{ rating: number; onRatingChange: (rating: number) => void }> = ({
     rating,
     onRatingChange
-  }) => (
+  }) => {
+    const starButtonSize = modalDimensions.isMobile ? 30 : 36;
+
+    return (
     <div className="flex items-center space-x-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <LiquidGlass
           key={star}
-          width={36}
-          height={36}
-          cornerRadius={18}
+          width={starButtonSize}
+          height={starButtonSize}
+          cornerRadius={starButtonSize / 2}
           blurAmount={4}
           displacementScale={8}
           className="cursor-pointer"
@@ -101,7 +130,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
             aria-pressed={star <= rating}
           >
             <span
-              className={`text-xl transition-colors ${
+              className={`text-lg transition-colors ${
                 star <= rating 
                   ? 'text-yellow-400' 
                   : 'text-white/40'
@@ -117,7 +146,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
         ({rating}/5)
       </span>
     </div>
-  );
+    );
+  };
 
   return (
     <AnimatePresence>
@@ -133,22 +163,26 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="w-full max-w-lg max-h-[90vh]"
+            className="w-full"
+            style={{
+              maxWidth: `${modalDimensions.width}px`,
+              maxHeight: `${modalDimensions.height}px`
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <LiquidGlass
-              width={512}
-              height={700}
+              width={modalDimensions.width}
+              height={modalDimensions.height}
               cornerRadius={24}
               blurAmount={12}
               displacementScale={20}
               mode="shader"
               overLight={false}
             >
-              <div className="w-full h-full flex flex-col text-white overflow-y-auto" style={{ maxHeight: '700px' }}>
+              <div className="w-full h-full flex flex-col text-white overflow-y-auto" style={{ maxHeight: `${modalDimensions.height}px` }}>
                 {submitStatus === 'success' ? (
                   /* Success Thank You Screen */
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                  <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 text-center">
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
@@ -160,10 +194,10 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      <h2 className="text-3xl font-bold text-white mb-4">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
                         Thank You! 🙏
                       </h2>
-                      <p className="text-lg text-white/90 mb-2">
+                      <p className="text-base sm:text-lg text-white/90 mb-2">
                         Your feedback has been received
                       </p>
                       <p className="text-sm text-white/70 max-w-md">
@@ -199,9 +233,9 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                 ) : (
                   <>
                     {/* Header */}
-                    <div className="p-6 border-b border-white/20 flex-shrink-0">
+                    <div className="p-4 sm:p-6 border-b border-white/20 flex-shrink-0">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-white">
+                        <h2 className="text-xl sm:text-2xl font-bold text-white">
                           Share Your Feedback 💭
                         </h2>
                         <LiquidGlass
@@ -225,7 +259,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1">
+                    <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6 flex-1">
                   {/* Name and Email */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -311,7 +345,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                       rows={4}
                       value={formData.message}
                       onChange={(e) => handleInputChange('message', e.target.value)}
-                      className="w-full h-32 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/50 outline-none px-4 py-3 resize-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
+                      className="w-full h-28 sm:h-32 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/50 outline-none px-4 py-3 resize-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
                       placeholder="Share your thoughts, suggestions, or any feedback about the portfolio..."
                       aria-label="Your feedback message"
                     />
@@ -325,8 +359,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                       className="p-4 rounded-lg"
                     >
                       <LiquidGlass
-                        width={440}
-                        height={60}
+                        width={Math.max(240, modalDimensions.width - 72)}
+                        height={56}
                         cornerRadius={12}
                         blurAmount={8}
                         displacementScale={15}
@@ -352,8 +386,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
 
                   {/* Submit Button */}
                   <LiquidGlass
-                    width={460}
-                    height={56}
+                    width={Math.max(240, modalDimensions.width - 52)}
+                    height={modalDimensions.isMobile ? 50 : 56}
                     cornerRadius={14}
                     blurAmount={8}
                     displacementScale={18}

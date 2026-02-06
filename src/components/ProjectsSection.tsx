@@ -812,17 +812,17 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
       // Base all calcs on the container width
       const containerWidth = containerRef.current.clientWidth;
 
-      const buttonWidth = 56; // each side nav button
-      const viewportMargin = 32; // horizontal padding inside the container
-      const cardGap = 24; // gap between cards
+      const sideButtonSpace = containerWidth < 640 ? 0 : 56; // keep wider margins on desktop
+      const viewportMargin = containerWidth < 640 ? 16 : 32;
+      const cardGap = containerWidth < 640 ? 12 : 24;
 
       // Available width strictly for cards area
-      const viewportWidthRaw = containerWidth - (buttonWidth * 2) - viewportMargin;
+      const viewportWidthRaw = containerWidth - (sideButtonSpace * 2) - viewportMargin;
       const viewportWidth = Math.max(280, viewportWidthRaw);
 
       // How many cards can fit (up to 3) given a minimum card width
       const maxCards = Math.max(1, Math.min(3, totalCards || 1));
-      const minCard = containerWidth < 640 ? 300 : containerWidth < 1024 ? 340 : 360;
+      const minCard = containerWidth < 480 ? 250 : containerWidth < 640 ? 280 : containerWidth < 1024 ? 340 : 360;
 
       let computedVisible = 1;
       for (let n = maxCards; n >= 1; n--) {
@@ -908,7 +908,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
         whileTap={isComingSoon ? {} : { scale: 0.98, transition: { duration: 0.2 } }}
       >
         <LiquidGlass {...optimizedProps}>
-          <div className="w-full h-full flex flex-col relative p-6 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
+          <div className="w-full h-full flex flex-col relative p-4 sm:p-6 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
             {/* Coming Soon overlay */}
             {isComingSoon && (
               <div className="absolute inset-0 z-20 flex items-center justify-center">
@@ -1023,11 +1023,11 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 style={{ filter: 'url(#pixelate-filter)' }}
               >
                 <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
-                  <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
+                  <h3 className="text-base sm:text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
                     Mystery Project Title Here
                   </h3>
                   <motion.span
-                    className="px-2.5 py-1 text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5"
+                    className="px-2.5 py-1 text-[9px] sm:text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5"
                     style={{ filter: 'url(#pixelate-filter)' }}
                     animate={{
                       opacity: [0.5, 1, 0.5],
@@ -1039,7 +1039,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                   </motion.span>
                 </div>
                 <div className="max-h-[72px] overflow-hidden">
-                  <p className="text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-4 break-words">
+                  <p className="text-[10px] sm:text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-3 break-words">
                     This is a placeholder description for an exciting new project that is currently in development. Stay tuned for more details coming soon.
                   </p>
                 </div>
@@ -1047,15 +1047,15 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
             ) : (
               <div className="relative z-10 mb-3">
                 <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
-                  <h3 className="text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
+                  <h3 className="text-base sm:text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
                     {project.title}
                   </h3>
-                  <span className="px-2.5 py-1 text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5">
+                  <span className="px-2.5 py-1 text-[9px] sm:text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5">
                     {project.category}
                   </span>
                 </div>
                 <div className="max-h-[72px] overflow-hidden">
-                  <p className="text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-4 break-words">
+                  <p className="text-[10px] sm:text-[11px] text-white/70 leading-[1.5] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] line-clamp-3 break-words">
                     {project.description}
                   </p>
                 </div>
@@ -1063,7 +1063,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
             )}
             {isComingSoon ? (
               <div
-                className="flex-1 flex items-center justify-center mb-4 relative h-[140px]"
+                className="flex-1 flex items-center justify-center mb-4 relative h-[128px] sm:h-[140px]"
                 style={{ filter: 'url(#pixelate-filter)' }}
               >
                 {/* Coming Soon blurred mockup */}
@@ -1076,7 +1076,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex items-center justify-center mb-4 relative h-[140px]">
+              <div className="flex-1 flex items-center justify-center mb-4 relative h-[128px] sm:h-[140px]">
                 {isLiquidGlassProject ? (
                   // Special liquid glass showcase
                   <div className="relative w-full h-32 grid grid-cols-3 gap-2">
@@ -1319,7 +1319,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap gap-1.5">
                     {project.technologies.slice(0, 3).map((tech, i) => (
-                      <motion.span key={i} className="text-[11px] px-2.5 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative whitespace-nowrap" whileHover={{ scale: 1.05 }}>
+                      <motion.span key={i} className="text-[10px] sm:text-[11px] px-2.5 py-1 bg-white/10 text-white/80 rounded-full backdrop-blur-sm border border-white/5 shadow-2xl relative whitespace-nowrap" whileHover={{ scale: 1.05 }}>
                         {tech}
                       </motion.span>
                     ))}
@@ -1377,6 +1377,7 @@ ProjectCard.displayName = 'ProjectCard';
 const ProjectsSection: React.FC = () => {
   useComponentLoader('ProjectsSection');
   const [currentPage, setCurrentPage] = useState(0);
+  const touchStartXRef = useRef<number | null>(null);
 
   // Create a ref for the slider container
   const sliderContainerRef = useRef<HTMLDivElement>(null);
@@ -1387,9 +1388,32 @@ const ProjectsSection: React.FC = () => {
   const totalCards = projects.length;
   const totalPages = Math.ceil(totalCards / visibleCards);
 
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, Math.max(0, totalPages - 1)));
+  }, [totalPages]);
+
   const handlePrevious = () => setCurrentPage((prev) => Math.max(0, prev - 1));
   const handleNext = () => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
   const handleDotClick = (pageIndex: number) => setCurrentPage(pageIndex);
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartXRef.current = event.changedTouches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartXRef.current === null) return;
+    const endX = event.changedTouches[0]?.clientX ?? touchStartXRef.current;
+    const swipeDistance = touchStartXRef.current - endX;
+    const swipeThreshold = 45;
+
+    if (swipeDistance > swipeThreshold) {
+      handleNext();
+    } else if (swipeDistance < -swipeThreshold) {
+      handlePrevious();
+    }
+
+    touchStartXRef.current = null;
+  };
 
   const getVisibleProjects = () => {
     const startIndex = currentPage * visibleCards;
@@ -1399,16 +1423,17 @@ const ProjectsSection: React.FC = () => {
 
   const isPrevDisabled = currentPage === 0;
   const isNextDisabled = currentPage >= totalPages - 1;
+  const navControlWidth = Math.min(200, Math.max(168, viewportWidth - 40));
 
   return (
     <motion.section
       id="projects"
-      className="min-h-screen flex flex-col items-center justify-center py-8 px-4 sm:px-6 lg:px-8 w-full"
+      className="min-h-screen flex flex-col items-center justify-start md:justify-center pt-24 pb-14 px-4 sm:px-6 lg:px-8 w-full"
     >
       {/* SVG filter for pixelated effect */}
       <PixelateFilter />
 
-      <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-screen">
+      <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] md:min-h-screen">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1425,7 +1450,7 @@ const ProjectsSection: React.FC = () => {
         </motion.div>
 
         {/* Attach the ref to this container */}
-        <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8 px-4">
+        <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8 px-1 sm:px-4">
           {/* Cards Viewport */}
           <div className="flex justify-center items-center flex-1" style={{ maxWidth: `${viewportWidth}px` }}>
             <motion.div
@@ -1435,7 +1460,9 @@ const ProjectsSection: React.FC = () => {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="flex gap-4 md:gap-6 justify-center items-center"
-              style={{ minHeight: '460px' }}
+              style={{ minHeight: viewportWidth < 640 ? '430px' : '460px' }}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
             >
               {visibleProjects.map((project, index) => (
                 <ProjectCard
@@ -1452,7 +1479,7 @@ const ProjectsSection: React.FC = () => {
         {/* Navigation Bar with Arrows and Dots */}
         <div className="flex justify-center items-center mb-6">
           <LiquidGlass
-            width={200}
+            width={navControlWidth}
             height={48}
             positioning="relative"
             style={{ borderRadius: '24px' }}

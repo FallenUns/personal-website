@@ -61,8 +61,8 @@ const HeroSection: React.FC = () => {
         </div>
       )}
 
-      <section id="about" className="h-screen flex flex-col lg:flex-row items-center justify-center px-6 sm:px-12 md:px-20 lg:px-32 relative">
-        <div className="flex flex-col lg:flex-row items-center justify-between w-full -mt-16">
+      <section id="about" className="min-h-screen flex flex-col lg:flex-row items-start lg:items-center justify-center px-5 sm:px-10 md:px-16 lg:px-32 pt-24 pb-12 lg:pt-0 lg:pb-0 relative overflow-hidden">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full mt-0 lg:-mt-16 gap-8 lg:gap-0">
           {/* Left side - Text content */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -75,34 +75,34 @@ const HeroSection: React.FC = () => {
               ease: 'easeOut',
               delay: isLoading ? 0 : 0.5
             }}
-            className="text-left flex-1 max-w-2xl w-full lg:w-auto"
+            className="text-left flex-1 max-w-[560px] w-full lg:w-auto"
           >
             <div className="text-white">
               {/* Greeting */}
-              <div className="flex items-center mb-4">
+              <div className="flex items-center justify-start mb-3">
                 <span className="text-5xl mr-3 wave-animation">👋</span>
               </div>
 
               {/* Main Title */}
-              <h1 className="text-5xl md:text-6xl font-semibold mb-4 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
+              <h1 className="text-[2.4rem] sm:text-5xl md:text-6xl leading-tight tracking-tight font-semibold mb-4 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
                 Hello! I'm <span className="font-bold"> Patrick Adrianus </span>
               </h1>
 
               {/* Subtitle with decorative element */}
-              <div className="flex items-center mb-6">
-                <div className="w-18 h-0.5 bg-white/60 mr-4"></div>
-                <span className="text-lg font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+              <div className="flex items-center justify-start mb-5">
+                <div className="w-14 h-0.5 bg-white/60 mr-3"></div>
+                <span className="text-base sm:text-lg font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
                   Data Scientist ✦ Full-Stack Developer
                 </span>
               </div>
 
               {/* Description */}
-              <p className="text-base text-white/90 max-w-xl mb-6 [text-shadow:0_1px_4px_rgba(0,0,0,1)]">
+              <p className="text-sm sm:text-base text-white/90 max-w-xl mb-6 [text-shadow:0_1px_4px_rgba(0,0,0,1)]">
                 Hello! I’m Patrick, a <span className="font-semibold">Data Scientist</span> who loves building projects from apps and data solutions to creative tools and always experimenting with new technologies and development frameworks to turn fresh ideas into real-world impact.
               </p>
 
               {/* Key Points */}
-              <div className="mb-8 space-y-2">
+              <div className="mb-8 space-y-2 max-w-sm">
                 <div className="flex items-center text-white/90">
                   <span className="text-green-400 mr-3">✓</span>
                   <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">End‑to‑end model deployment</span>
@@ -116,7 +116,7 @@ const HeroSection: React.FC = () => {
                   <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">User‑centric collaboration</span>
                 </div>
               </div>
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
 
                 <LiquidGlass
                   width={180}
@@ -196,7 +196,7 @@ const HeroSection: React.FC = () => {
               ease: 'easeOut',
               delay: isLoading ? 0 : 0.7
             }}
-            className="w-full flex justify-center mt-8 lg:hidden"
+            className="w-full hidden sm:flex justify-center mt-6 lg:hidden"
           >
             <div className="relative flex items-center justify-center">
               <LiquidGlass

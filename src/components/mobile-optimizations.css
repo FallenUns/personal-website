@@ -8,25 +8,35 @@
 
   .chat-input-container .liquid-glass,
   .response-window .liquid-glass {
-    width: 240px !important; /* Reduced from 320px */
+    width: 220px !important;
   }
 
-  /* Move chat input closer to assistant icon on mobile */
+  /* Place chat windows above the assistant icon */
   .chat-input-container {
-    right: 120px !important; /* Reduced from 170px to bring it closer to the icon */
-    bottom: 45px !important; /* Adjusted for better alignment */
+    right: 82px !important;
+    bottom: 104px !important;
     height: 45px !important; /* Adjusted height for better fit */
   }
 
-  /* Also move the response window closer */
+  /* Keep response aligned with input */
   .response-window {
-    right: 120px !important; /* Keep response aligned with input */
-    bottom: 100px !important;
+    right: 82px !important;
+    bottom: 160px !important;
   }
 
-  /* Reduce the width of both windows on mobile for better fit */
+}
+
+@media (max-width: 420px) {
   .chat-input-container .liquid-glass,
   .response-window .liquid-glass {
-    width: 240px !important; /* Reduced from 320px */
+    width: 190px !important;
+  }
+
+  .chat-input-container {
+    right: 76px !important;
+  }
+
+  .response-window {
+    right: 76px !important;
   }
 }

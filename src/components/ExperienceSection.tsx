@@ -72,8 +72,9 @@ const ExperienceItem: React.FC<{
   exp: Experience;
   index: number;
   cardWidth: number;
+  isMobile: boolean;
   onViewDetails: () => void;
-}> = ({ exp, index, cardWidth, onViewDetails }) => {
+}> = ({ exp, index, cardWidth, isMobile, onViewDetails }) => {
   const period = formatPeriod(exp.start, exp.end);
   const durationMonths = diffMonths(exp.start, exp.end);
   const durationStr = durationMonths >= 12 ? `${(durationMonths / 12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`;
@@ -88,12 +89,14 @@ const ExperienceItem: React.FC<{
     { label: 'Highlights', value: exp.highlights.length },
     { label: 'Duration', value: durationMonths, suffix: 'mo' }
   ];
+  const cardHeight = 380;
+  const visibleSkills = isMobile ? exp.skills.slice(0, 1) : exp.skills.slice(0, 2);
 
   return (
     <div className="relative w-full" ref={cardRef}>
       {/* Enhanced Timeline dot with pulse effect */}
       <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+        className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
         initial={{ scale: 0, opacity: 0 }}
         animate={isInView ? { scale: 1, opacity: 1 } : {}}
         transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -145,7 +148,8 @@ const ExperienceItem: React.FC<{
             delay: index * 0.1,
             rotateY: { duration: 0.8 }
           }}
-          className="w-full group cursor-pointer perspective-1000"
+          style={{ width: `${cardWidth}px`, height: `${cardHeight}px`, maxWidth: '100%' }}
+          className="group cursor-pointer perspective-1000 mx-auto"
           onClick={onViewDetails}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
@@ -159,9 +163,9 @@ const ExperienceItem: React.FC<{
         >
           <LiquidGlass
             width={cardWidth}
-            height={380}
+            height={cardHeight}
             positioning="relative"
-            style={{ borderRadius: '18px', width: '100%', minHeight: '380px' }}
+            style={{ borderRadius: '18px' }}
             elasticity={0.15}
             saturation={isHovered ? 180 : 150}
             aberrationIntensity={isHovered ? 1.5 : 1.2}
@@ -169,7 +173,7 @@ const ExperienceItem: React.FC<{
             blurAmount={isHovered ? 8 : 6}
             mode='shader'
           >
-            <div className="p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
+            <div className="detail-readable p-4 sm:p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
               {/* Animated background pattern */}
               <motion.div
                 className="absolute inset-0 opacity-5"
@@ -184,24 +188,24 @@ const ExperienceItem: React.FC<{
               />
 
               {/* Header with company info */}
-              <div className="flex flex-wrap items-start justify-between gap-3 mb-4 relative z-10">
+              <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 relative z-10">
                 <div className="flex-1">
                   <motion.h3
-                    className="text-lg md:text-xl font-semibold [text-shadow:0_2px_5px_rgba(0,0,0,0.8)] mb-2"
+                    className="text-base sm:text-lg md:text-xl font-semibold leading-tight line-clamp-2 [text-shadow:0_2px_5px_rgba(0,0,0,0.8)] mb-2"
                     animate={isHovered ? { scale: 1.02 } : { scale: 1 }}
                     transition={{ duration: 0.2 }}
                   >
                     {exp.role}
                   </motion.h3>
                   <motion.div
-                    className="text-white/80 text-sm mb-2"
+                    className="text-white/80 text-xs sm:text-sm mb-2 line-clamp-2"
                     animate={isHovered ? { x: 5 } : { x: 0 }}
                     transition={{ duration: 0.2 }}
                   >
                     {exp.company}{exp.location ? ` • ${exp.location}` : ''}
                   </motion.div>
                   <motion.div
-                    className="text-white/70 text-xs"
+                    className="text-white/70 text-[11px] sm:text-xs"
                     animate={isHovered ? { x: 5 } : { x: 0 }}
                     transition={{ duration: 0.2, delay: 0.05 }}
                   >
@@ -214,7 +218,7 @@ const ExperienceItem: React.FC<{
 
                 {/* Category badge with animation */}
                 <motion.div
-                  className="px-3 py-1.5 text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10"
+                  className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10"
                   whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.25)" }}
                   transition={{ duration: 0.2 }}
                 >
@@ -224,7 +228,7 @@ const ExperienceItem: React.FC<{
 
               {/* Quick stats row */}
               <motion.div
-                className="flex gap-4 mb-4 relative z-10"
+                className="flex gap-3 sm:gap-4 mb-4 relative z-10"
                 initial={{ opacity: 0, y: 10 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: index * 0.1 + 0.3 }}
@@ -232,46 +236,46 @@ const ExperienceItem: React.FC<{
                 {stats.map((stat, statIndex) => (
                   <div key={stat.label} className="text-center">
                     <motion.div
-                      className="text-lg font-bold text-orange-300"
+                      className="text-base sm:text-lg font-bold text-orange-300"
                       animate={isInView ? { scale: [0.8, 1.1, 1] } : {}}
                       transition={{ delay: index * 0.1 + 0.4 + statIndex * 0.1, duration: 0.5 }}
                     >
                       <AnimatedCounter value={stat.value} duration={0.8} />
-                      {stat.suffix && <span className="text-sm">{stat.suffix}</span>}
+                      {stat.suffix && <span className="text-xs sm:text-sm">{stat.suffix}</span>}
                     </motion.div>
-                    <div className="text-xs text-white/60">{stat.label}</div>
+                    <div className="text-[11px] sm:text-xs text-white/60">{stat.label}</div>
                   </div>
                 ))}
               </motion.div>
 
               {/* Main content - simplified without show more/less functionality */}
-              <div className="flex-1 mb-4 relative z-10 min-h-[60px]">
-                <p className="text-white/90 text-sm leading-relaxed [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] break-words">
+              <div className="flex-1 mb-3 sm:mb-4 relative z-10 min-h-[72px]">
+                <p className="text-white/90 text-sm leading-relaxed line-clamp-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] break-words">
                   {exp.highlights[0]}
                 </p>
               </div>
 
               {/* Bottom section with enhanced tags and action button */}
-              <div className="flex items-center justify-between mt-4 relative z-10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2 sm:mt-4 gap-3 relative z-10">
                 {/* Animated skill tags */}
                 <div className="flex flex-wrap gap-2">
                   <Tag text={exp.category} index={0} />
-                  {exp.skills.slice(0, 2).map((skill, skillIndex) => (
+                  {visibleSkills.map((skill, skillIndex) => (
                     <Tag key={skill} text={skill} index={skillIndex + 1} />
                   ))}
-                  {exp.skills.length > 2 && (
+                  {exp.skills.length > visibleSkills.length && (
                     <motion.span
                       className="text-xs px-2.5 py-1 bg-white/5 text-white/60 rounded-full backdrop-blur-sm border border-white/10"
                       whileHover={{ backgroundColor: "rgba(255,255,255,0.1)", scale: 1.05 }}
                     >
-                      +{exp.skills.length - 2} more
+                      +{exp.skills.length - visibleSkills.length} more
                     </motion.span>
                   )}
                 </div>
 
                 {/* Enhanced action button - matching ProjectsSection arrow style */}
                 <motion.div
-                  className="p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
+                  className="self-end sm:self-auto p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
                   animate={{
                     scale: isHovered ? 1.1 : 1,
                     rotate: isHovered ? 45 : 0
@@ -301,9 +305,9 @@ const ExperienceItem: React.FC<{
                     transition={{
                       duration: isHovered ? 0.6 : 0.3,
                       ease: "easeInOut",
-                      repeat: isHovered ? Infinity : 0,
-                      repeatDelay: isHovered ? 2 : 0
-                    }}
+                    repeat: isHovered ? Infinity : 0,
+                    repeatDelay: isHovered ? 2 : 0
+                  }}
                   >
                     <path d="M7 17L17 7" />
                     <path d="M7 7L17 7L17 17" />
@@ -364,7 +368,7 @@ const ExperienceSection: React.FC = () => {
     if (isMdUp) {
       return Math.floor((containerWidth - gridGap) / 2);
     }
-    return Math.max(300, containerWidth - 24);
+    return Math.max(250, Math.min(520, containerWidth - 16));
   }, [containerWidth, isMdUp]);
 
   const handleViewDetails = (experienceId: string) => {
@@ -380,7 +384,7 @@ const ExperienceSection: React.FC = () => {
     <motion.section
       ref={sectionRef}
       id="experience"
-      className="min-h-screen w-full flex items-center justify-center px-6 sm:px-12 md:px-20 lg:px-32 pt-20 pb-16 relative overflow-hidden"
+      className="min-h-screen w-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 pt-24 pb-14 relative overflow-hidden"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 30 : 0 }}
       transition={{ duration: 0.8, ease: 'easeOut', delay: isLoading ? 0 : 0.8 }}
@@ -424,7 +428,7 @@ const ExperienceSection: React.FC = () => {
 
           {/* Experience metrics */}
           <motion.div
-            className="flex justify-center gap-8 md:gap-12 mb-8"
+            className="flex flex-wrap justify-center gap-6 md:gap-12 mb-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -465,7 +469,7 @@ const ExperienceSection: React.FC = () => {
         {/* Enhanced Timeline */}
         <div className="relative space-y-12">
           {/* Animated progress line */}
-          <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1">
+          <div className="hidden md:block pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1">
             <div className="w-full h-full bg-white/15 rounded-full" />
             <TimelineProgress progress={isInView ? 100 : 0} />
           </div>
@@ -480,13 +484,14 @@ const ExperienceSection: React.FC = () => {
                 exp={exp}
                 index={idx}
                 cardWidth={computedCardWidth}
+                isMobile={!isMdUp}
                 onViewDetails={() => handleViewDetails(exp.id)}
               />
 
               {/* Optional: Add connecting elements between timeline items */}
               {idx < sorted.length - 1 && (
                 <motion.div
-                  className="absolute left-1/2 -translate-x-1/2 bottom-0 transform translate-y-6 text-white/20"
+                  className="hidden md:block absolute left-1/2 -translate-x-1/2 bottom-0 transform translate-y-6 text-white/20"
                   initial={{ opacity: 0, scale: 0 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}

@@ -113,11 +113,16 @@ SkyControllerDropdown.displayName = 'SkyControllerDropdown';
 
 const Navbar: React.FC<NavbarProps> = (props) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNavbarPressed, setIsNavbarPressed] = useState(false);
   const [isLogoPressed, setIsLogoPressed] = useState(false);
   const rightContentRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const [mobileMenuDimensions, setMobileMenuDimensions] = useState({
+    width: 320,
+    height: 228
+  });
   const [rightContentDimensions, setRightContentDimensions] = useState({
     width: 0, // Start with 0 to measure actual content
     height: 54  // A fixed height
@@ -196,7 +201,36 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   }, [activeSection]); // Re-measure when active section changes
 
   const handleToggleDropdown = useCallback(() => {
+    setIsMobileMenuOpen(false);
     setIsDropdownVisible(prev => !prev);
+  }, []);
+
+  const handleToggleMobileMenu = useCallback(() => {
+    setIsDropdownVisible(false);
+    setIsMobileMenuOpen(prev => !prev);
+  }, []);
+
+  const handleMobileSectionClick = useCallback((sectionId: string) => {
+    handleScrollToSection(sectionId);
+    setIsMobileMenuOpen(false);
+  }, [handleScrollToSection]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+
+      const width = Math.max(260, Math.min(340, window.innerWidth - 24));
+      setMobileMenuDimensions({
+        width,
+        height: 228
+      });
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const navContentHeight = '54px';
@@ -425,6 +459,41 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                   </motion.div>
                 </motion.button>
                 <motion.button
+                  onClick={handleToggleMobileMenu}
+                  className="md:hidden p-1.5 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
+                  aria-label="Toggle navigation menu"
+                  aria-expanded={isMobileMenuOpen}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <motion.svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-white"
+                    animate={{ rotate: isMobileMenuOpen ? 90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {isMobileMenuOpen ? (
+                      <>
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </>
+                    ) : (
+                      <>
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                      </>
+                    )}
+                  </motion.svg>
+                </motion.button>
+                <motion.button
                   ref={settingsButtonRef}
                   onClick={handleToggleDropdown}
                   className="p-1.5 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
@@ -451,6 +520,61 @@ const Navbar: React.FC<NavbarProps> = (props) => {
             )}
         </AnimatePresence>
       </motion.nav>
+
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.button
+              type="button"
+              className="fixed inset-0 z-40 bg-black/30 md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              aria-label="Close mobile navigation menu"
+            />
+            <motion.div
+              className="fixed top-[88px] left-1/2 -translate-x-1/2 z-[55] md:hidden"
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.2 }}
+            >
+              <LiquidGlass
+                width={mobileMenuDimensions.width}
+                height={mobileMenuDimensions.height}
+                positioning="relative"
+                style={{ borderRadius: '32px' }}
+                elasticity={0.1}
+                saturation={150}
+                aberrationIntensity={1}
+                displacementScale={90}
+                blurAmount={3}
+                overLight={false}
+                mode="shader"
+              >
+                <div className="p-3 w-full text-white space-y-2">
+                  {navLinks.map((link) => (
+                    <button
+                      key={link.id}
+                      type="button"
+                      className={`w-full text-left rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                        activeSection === link.id
+                          ? 'bg-white/25 text-white'
+                          : 'bg-white/10 text-white/85 hover:bg-white/20'
+                      }`}
+                      onClick={() => handleMobileSectionClick(link.id)}
+                    >
+                      {link.label}
+                    </button>
+                  ))}
+                </div>
+              </LiquidGlass>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -156,14 +156,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     overview: (
       <div className="space-y-6">
         <div>
-          <h3 className="text-xl font-semibold text-white mb-3">About This Project</h3>
-          <p className="text-white/80 leading-relaxed">{project.fullDescription}</p>
+          <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">About This Project</h3>
+          <p className="text-sm sm:text-base text-white/80 leading-7 sm:leading-relaxed">{project.fullDescription}</p>
         </div>
 
         {/* Special liquid glass demo section */}
         {project.slug === 'liquid-glass-design' && (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white mb-3">Interactive Demo</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Interactive Demo</h3>
             <div className="grid grid-cols-1 gap-4">
               <motion.div
                 className="relative h-32"
@@ -241,12 +241,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
         )}
 
         <div>
-          <h3 className="text-xl font-semibold text-white mb-3">Technologies Used</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Technologies Used</h3>
           <div className="flex flex-wrap gap-2">
             {project.technologies.map((tech, index) => (
               <motion.span
                 key={index}
-                className="px-3 py-1.5 bg-white/20 text-white/90 rounded-full text-sm border border-white/10"
+                className="px-3 py-1.5 bg-white/20 text-white/90 rounded-full text-xs sm:text-sm border border-white/10"
                 whileHover={{ scale: 1.05 }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -261,7 +261,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     ),
     features: (
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-white mb-4">Key Features</h3>
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Key Features</h3>
         <div className="grid gap-3">
           {project.features.map((feature, index) => (
             <motion.div
@@ -272,7 +272,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
               transition={{ delay: index * 0.1 }}
             >
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="text-white/90">{feature}</span>
+              <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{feature}</span>
             </motion.div>
           ))}
         </div>
@@ -280,7 +280,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     ),
     challenges: (
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-white mb-4">Technical Challenges</h3>
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Technical Challenges</h3>
         <div className="grid gap-3">
           {project.challenges?.map((challenge, index) => (
             <motion.div
@@ -291,7 +291,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
               transition={{ delay: index * 0.1 }}
             >
               <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
-              <span className="text-white/90">{challenge}</span>
+              <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{challenge}</span>
             </motion.div>
           )) || <p className="text-white/70">No challenges documented for this project.</p>}
         </div>
@@ -299,7 +299,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
     ),
     outcomes: (
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-white mb-4">Project Outcomes</h3>
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Project Outcomes</h3>
         <div className="grid gap-3">
           {project.outcomes?.map((outcome, index) => (
             <motion.div
@@ -310,7 +310,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
               transition={{ delay: index * 0.1 }}
             >
               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span className="text-white/90">{outcome}</span>
+              <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{outcome}</span>
             </motion.div>
           )) || <p className="text-white/70">No outcomes documented for this project.</p>}
         </div>
@@ -333,7 +333,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
             <div className="w-full h-full flex items-center justify-center p-4">
               <motion.div
                 ref={containerRef}
-                className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl h-[min(85vh,800px)] relative"
+                className="w-full max-w-6xl h-[calc(100vh-0.5rem)] sm:h-[min(88vh,860px)] relative"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
@@ -348,9 +348,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                   {...liquidGlassProps}
                   overLight={false}
                 >
-                  <div ref={modalContentRef} className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
+                  <div ref={modalContentRef} className="detail-readable w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/10">
+                    <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10">
                       <div className="flex items-center space-x-3">
                         <span className="px-3 py-1.5 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
                           {project.category}
@@ -375,16 +375,16 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                     </div>
 
                     {/* Main content */}
-                    <div className="flex-1 flex overflow-hidden">
+                    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                       {/* Left side - Hero */}
                       <div
                         ref={leftPanelRef}
-                        className="w-1/2 p-4 flex flex-col overflow-y-auto relative"
+                        className="w-full lg:w-1/2 p-4 sm:p-5 flex flex-col overflow-y-auto relative"
                         onScroll={handleScroll}
                       >
                         {/* Simple arrow indicator - fixed position */}
                         {showScrollIndicator && ((project.liveUrl && project.liveUrl !== '#') || (project.githubUrl && project.githubUrl !== '#')) ? (
-                          <div className="fixed bottom-4 left-4 z-[10000] pointer-events-none">
+                          <div className="hidden lg:block fixed bottom-4 left-4 z-[10000] pointer-events-none">
                             <motion.div
                               className="bg-white/20 backdrop-blur-sm rounded-full p-2 border border-white/30"
                               animate={{ y: [0, 4, 0] }}
@@ -410,7 +410,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                         ) : null}
                         <div className="mb-6">
                           <motion.h1
-                            className="text-4xl font-bold text-white mb-4"
+                            className="text-2xl sm:text-4xl font-bold text-white mb-4"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
@@ -918,7 +918,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                           )}
                         </div>
                         {/* Action buttons */}
-                        <div className="flex gap-3 mt-6" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
+                        <div className="flex flex-col sm:flex-row gap-3 mt-6" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                           {project.liveUrl && project.liveUrl !== '#' && (
                             <motion.button
                               className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:bg-gradient-to-r hover:from-green-500/30 hover:to-green-600/30 transition-all"
@@ -951,14 +951,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                       </div>
 
                       {/* Right side - Detailed content */}
-                      <div className="w-1/2 border-l border-white/10 flex flex-col">
+                      <div className="w-full lg:w-1/2 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col">
                         {/* Tab navigation */}
-                        <div className="p-6 border-b border-white/10">
-                          <div className="flex space-x-1 bg-white/10 rounded-lg p-1" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
+                        <div className="p-3 sm:p-6 border-b border-white/10">
+                          <div className="flex flex-wrap gap-1 bg-white/10 rounded-lg p-1" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                             {(['overview', 'features', 'challenges', 'outcomes'] as const).map((tab) => (
                               <motion.button
                                 key={tab}
-                                className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all ${activeTab === tab
+                                className={`flex-1 min-w-[110px] sm:min-w-0 px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-all ${activeTab === tab
                                     ? 'bg-white/20 text-white shadow-sm'
                                     : 'text-white/70 hover:text-white hover:bg-white/10'
                                   }`}
@@ -977,7 +977,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                         </div>
 
                         {/* Tab content */}
-                        <div className="flex-1 p-6 overflow-y-auto">
+                        <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
                           <AnimatePresence mode="wait">
                             <motion.div
                               key={activeTab}
@@ -1011,7 +1011,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
             onClick={handleFullscreenToggle}
           >
             <motion.div
-              className="relative w-full h-full flex items-center justify-center p-8"
+              className="relative w-full h-full flex items-center justify-center p-3 sm:p-8"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}

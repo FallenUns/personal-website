@@ -138,15 +138,15 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
     overview: (
       <div className="space-y-6">
         <div>
-          <h3 className="text-xl font-semibold text-white mb-3">About This Role</h3>
-          <p className="text-white/80 leading-relaxed">
+          <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">About This Role</h3>
+          <p className="text-sm sm:text-base text-white/80 leading-7 sm:leading-relaxed">
             {experience.fullDescription ||
               `During my time as ${experience.role} at ${experience.company}, I gained valuable experience in ${experience.category.toLowerCase()} development and contributed to various projects that enhanced my technical and professional skills.`}
           </p>
         </div>
 
         <div>
-          <h3 className="text-xl font-semibold text-white mb-3">Key Highlights</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Key Highlights</h3>
           <div className="grid gap-3">
             {experience.highlights.map((highlight, index) => (
               <motion.div
@@ -157,19 +157,19 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                 transition={{ delay: index * 0.1 }}
               >
                 <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                <span className="text-white/90 text-sm leading-relaxed">{highlight}</span>
+                <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{highlight}</span>
               </motion.div>
             ))}
           </div>
         </div>
 
         <div>
-          <h3 className="text-xl font-semibold text-white mb-3">Skills & Technologies</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Skills & Technologies</h3>
           <div className="flex flex-wrap gap-2">
             {experience.skills.map((skill, index) => (
               <motion.span
                 key={index}
-                className="px-3 py-1.5 bg-white/20 text-white/90 rounded-full text-sm border border-white/10"
+                className="px-3 py-1.5 bg-white/20 text-white/90 rounded-full text-xs sm:text-sm border border-white/10"
                 whileHover={{ scale: 1.05 }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -184,7 +184,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
     ),
     responsibilities: (
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-white mb-4">Key Responsibilities</h3>
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Key Responsibilities</h3>
         <div className="grid gap-3">
           {(experience.responsibilities || experience.highlights).map((responsibility, index) => (
             <motion.div
@@ -195,14 +195,14 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
               transition={{ delay: index * 0.1 }}
             >
               <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-              <span className="text-white/90">{responsibility}</span>
+              <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{responsibility}</span>
             </motion.div>
           ))}
         </div>
 
         {experience.technologies && (
           <div className="mt-6">
-            <h4 className="text-lg font-semibold text-white mb-3">Technologies & Tools</h4>
+            <h4 className="text-base sm:text-lg font-semibold text-white mb-3">Technologies & Tools</h4>
             <div className="grid gap-3">
               {experience.technologies.map((tech, index) => (
                 <motion.div
@@ -213,7 +213,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                   transition={{ delay: index * 0.1 + 0.3 }}
                 >
                   <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-white/90">{tech}</span>
+                  <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{tech}</span>
                 </motion.div>
               ))}
             </div>
@@ -223,7 +223,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
     ),
     achievements: (
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-white mb-4">Key Achievements</h3>
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Key Achievements</h3>
         <div className="grid gap-3">
           {experience.achievements?.map((achievement, index) => (
             <motion.div
@@ -234,7 +234,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
               transition={{ delay: index * 0.1 }}
             >
               <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
-              <span className="text-white/90">{achievement}</span>
+              <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{achievement}</span>
             </motion.div>
           )) || <p className="text-white/70">No specific achievements documented for this role.</p>}
         </div>
@@ -242,7 +242,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
     ),
     impact: (
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-white mb-4">Impact & Outcomes</h3>
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Impact & Outcomes</h3>
         <div className="grid gap-3">
           {experience.impact?.map((impact, index) => (
             <motion.div
@@ -253,7 +253,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
               transition={{ delay: index * 0.1 }}
             >
               <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
-              <span className="text-white/90">{impact}</span>
+              <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{impact}</span>
             </motion.div>
           )) || (
               <div className="space-y-3">
@@ -267,7 +267,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                     transition={{ delay: index * 0.1 }}
                   >
                     <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-white/90">{achievement}</span>
+                    <span className="text-sm sm:text-base text-white/90 leading-7 sm:leading-relaxed">{achievement}</span>
                   </motion.div>
                 )) || <p className="text-white/70">Growth and skill development in {experience.category.toLowerCase()} technologies.</p>}
               </div>
@@ -291,7 +291,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
           <div className="w-full h-full flex items-center justify-center p-4">
             <motion.div
               ref={containerRef}
-              className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl h-[min(85vh,800px)] relative"
+              className="w-full max-w-6xl h-[calc(100vh-0.5rem)] sm:h-[min(88vh,860px)] relative"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
@@ -306,9 +306,9 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                 {...liquidGlassProps}
                 overLight={false}
               >
-                <div ref={modalContentRef} className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
+                <div ref={modalContentRef} className="detail-readable w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
                   {/* Header */}
-                  <div className="flex items-center justify-between p-6 border-b border-white/10">
+                  <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10">
                     <div className="flex items-center space-x-3">
                       <span className="px-3 py-1.5 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
                         {experience.category}
@@ -333,12 +333,12 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                   </div>
 
                   {/* Main content */}
-                  <div className="flex-1 flex overflow-hidden">
+                  <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                     {/* Left side - Hero */}
-                    <div className="w-1/2 p-6 flex flex-col overflow-y-auto overflow-x-hidden">
+                    <div className="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col overflow-y-auto overflow-x-hidden">
                       <div className="mb-6 flex-shrink-0">
                         <motion.h1
-                          className="text-4xl font-bold text-white mb-2"
+                          className="text-2xl sm:text-4xl font-bold text-white mb-2"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
@@ -346,7 +346,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                           {experience.role}
                         </motion.h1>
                         <motion.h2
-                          className="text-2xl text-white/90 mb-2"
+                          className="text-lg sm:text-2xl text-white/90 mb-2"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.25 }}
@@ -562,7 +562,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                       )}
 
                       {/* Action buttons */}
-                      <div className="flex gap-3 flex-shrink-0" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
+                      <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                         {experience.links?.map((link, index) => (
                           <motion.button
                             key={index}
@@ -582,14 +582,14 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                     </div>
 
                     {/* Right side - Detailed content */}
-                    <div className="w-1/2 border-l border-white/10 flex flex-col">
+                    <div className="w-full lg:w-1/2 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col">
                       {/* Tab navigation */}
-                      <div className="p-6 border-b border-white/10">
-                        <div className="flex space-x-1 bg-white/10 rounded-lg p-1" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
+                      <div className="p-3 sm:p-6 border-b border-white/10">
+                        <div className="flex flex-wrap gap-1 bg-white/10 rounded-lg p-1" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                           {(['overview', 'responsibilities', 'achievements', 'impact'] as const).map((tab) => (
                             <motion.button
                               key={tab}
-                              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all ${activeTab === tab
+                              className={`flex-1 min-w-[130px] sm:min-w-0 px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-all ${activeTab === tab
                                   ? 'bg-white/20 text-white shadow-sm'
                                   : 'text-white/70 hover:text-white hover:bg-white/10'
                                 }`}
@@ -608,7 +608,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                       </div>
 
                       {/* Tab content */}
-                      <div className="flex-1 p-6 overflow-y-auto">
+                      <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
                         <AnimatePresence mode="wait">
                           <motion.div
                             key={activeTab}
@@ -640,7 +640,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
           onClick={handleFullscreenToggle}
         >
           <motion.div
-            className="relative w-full h-full flex items-center justify-center p-8"
+            className="relative w-full h-full flex items-center justify-center p-3 sm:p-8"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}

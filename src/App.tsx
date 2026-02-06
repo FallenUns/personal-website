@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { TimeProvider } from './contexts/TimeContext';
 import { useCriticalResourceLoader, useImagePreloader } from './hooks/useAssetPreloader';
-import { useMobileDetection } from './utils/mobileDetection';
 import TechBackground from './components/TechBackground';
 import HeroSection from './components/HeroSection';
 import ProjectsSection from './components/ProjectsSection';
@@ -20,7 +19,6 @@ import FloatingAssistant from './components/FloatingAssistant';
 import { FeedbackButton } from './components/FeedbackButton';
 import { FeedbackManager } from './components/FeedbackManager';
 import { GlobalFeedbackShortcut } from './components/GlobalFeedbackShortcut';
-import MobileComingSoon from './components/MobileComingSoon';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
 import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug, isBirthdayPage } from './utils/router';
@@ -43,7 +41,6 @@ const getLoaderBackgroundColor = (hour: number) => {
 // App content component that uses the loading hooks
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();
-  const isMobile = useMobileDetection();
   const [currentRoute, setCurrentRoute] = useState(() => {
     return getCurrentPath();
   });
@@ -228,9 +225,6 @@ const AppContent: React.FC = () => {
         Skip to main content
       </a>
 
-      {/* Show mobile coming soon screen for mobile devices */}
-      {isMobile && <MobileComingSoon />}
-
       {/* Show loading screen immediately with background color */}
       <AnimatePresence>
         {isLoading && (
@@ -281,7 +275,7 @@ const AppContent: React.FC = () => {
         <AnimatePresence>
           {isProjectDetail && (
             <motion.div
-              className="fixed inset-0 z-[9998] p-8 flex items-center justify-center"
+              className="fixed inset-0 z-[9998] p-2 sm:p-4 md:p-8 flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -298,7 +292,7 @@ const AppContent: React.FC = () => {
         <AnimatePresence>
           {isExperienceDetail && (
             <motion.div
-              className="fixed inset-0 z-[9998] p-8 flex items-center justify-center"
+              className="fixed inset-0 z-[9998] p-2 sm:p-4 md:p-8 flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
