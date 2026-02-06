@@ -149,3 +149,62 @@
 .interactive-glass:hover {
   transform: translate3d(0, -2px, 0) scale(1.02);
 }
+
+/* ===== Mobile Detail Modal Fixes ===== */
+
+/* Prevent pull-to-refresh on detail modals */
+.detail-modal-overlay {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+  touch-action: none;
+}
+
+/* Scrollable panels inside detail modals */
+.detail-scroll-panel {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Tab bar horizontal scroll on mobile */
+.detail-tab-bar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.detail-tab-bar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fix carousel swipe area */
+.carousel-swipe-area {
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+}
+
+/* Mobile-specific detail modal layout */
+@media (max-width: 1023px) {
+  .detail-readable {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Full-screen modals on small screens */
+  .detail-modal-container {
+    padding: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+
+  .detail-modal-content {
+    border-radius: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+}

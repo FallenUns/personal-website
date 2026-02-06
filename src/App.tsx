@@ -70,12 +70,17 @@ const AppContent: React.FC = () => {
   useCriticalResourceLoader();
   useImagePreloader();
 
-  // Prevent scrolling during loading
+  // Prevent scrolling during loading and prevent pull-to-refresh on detail pages
   useEffect(() => {
     if (isLoading || isProjectDetail || isExperienceDetail || isBirthday) {
       document.body.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none';
+      // Prevent pull-to-refresh on mobile
+      document.documentElement.style.overscrollBehavior = 'none';
     } else {
       document.body.style.overflow = 'auto';
+      document.body.style.overscrollBehavior = 'auto';
+      document.documentElement.style.overscrollBehavior = 'auto';
     }
   }, [isLoading, isProjectDetail, isExperienceDetail, isBirthday]);
 

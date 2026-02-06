@@ -49,6 +49,7 @@ body {
 /* Smooth scrolling for the entire page */
 html {
   scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 /* Custom scrollbar styles for birthday letter */

@@ -18,6 +18,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
 
   // Find the experience by slug
   const experience = useMemo(() => {
@@ -26,6 +27,13 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
 
   useEffect(() => {
     setIsVisible(true);
+  }, []);
+
+  // Track mobile breakpoint
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -281,17 +289,17 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 z-[9999] bg-black/30"
+          className="fixed inset-0 z-[9999] bg-black/30 detail-modal-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           onClick={handleBackdropClick}
         >
-          <div className="w-full h-full flex items-center justify-center p-4">
+          <div className="w-full h-full flex items-center justify-center p-0 sm:p-4 detail-modal-container">
             <motion.div
               ref={containerRef}
-              className="w-full max-w-6xl h-[calc(100vh-0.5rem)] sm:h-[min(88vh,860px)] relative"
+              className="w-full max-w-6xl h-[100dvh] sm:h-[min(88vh,860px)] relative detail-modal-content"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
@@ -302,15 +310,29 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                 width={dimensions.width}
                 height={dimensions.height}
                 positioning="relative"
-                style={{ borderRadius: '24px', width: '100%', height: '100%' }}
+                style={{ borderRadius: isMobile ? '0px' : '24px', width: '100%', height: '100%' }}
                 {...liquidGlassProps}
                 overLight={false}
               >
                 <div ref={modalContentRef} className="detail-readable w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
                   {/* Header */}
-                  <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10">
-                    <div className="flex items-center space-x-3">
-                      <span className="px-3 py-1.5 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
+                  <div className="flex items-center justify-between p-3 sm:p-6 border-b border-white/10 flex-shrink-0">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClose();
+                        }}
+                        disabled={isClosing}
+                        className="p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50 lg:hidden"
+                        whileTap={{ scale: 0.9 }}
+                        aria-label="Go back"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/80">
+                          <polyline points="15,18 9,12 15,6"></polyline>
+                        </svg>
+                      </motion.button>
+                      <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10">
                         {experience.category}
                       </span>
                     </div>
@@ -332,13 +354,13 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                     </motion.button>
                   </div>
 
-                  {/* Main content */}
-                  <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+                  {/* Main content - scrollable on mobile */}
+                  <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
                     {/* Left side - Hero */}
-                    <div className="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col overflow-y-auto overflow-x-hidden">
-                      <div className="mb-6 flex-shrink-0">
+                    <div className="w-full lg:w-1/2 p-3 sm:p-6 flex flex-col overflow-y-auto overflow-x-hidden detail-scroll-panel lg:max-h-full max-h-[45vh] lg:max-h-none flex-shrink-0 lg:flex-shrink">
+                      <div className="mb-4 sm:mb-6 flex-shrink-0">
                         <motion.h1
-                          className="text-2xl sm:text-4xl font-bold text-white mb-2"
+                          className="text-xl sm:text-4xl font-bold text-white mb-1 sm:mb-2"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
@@ -346,7 +368,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                           {experience.role}
                         </motion.h1>
                         <motion.h2
-                          className="text-lg sm:text-2xl text-white/90 mb-2"
+                          className="text-base sm:text-2xl text-white/90 mb-1 sm:mb-2"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.25 }}
@@ -355,7 +377,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                         </motion.h2>
                         {experience.location && (
                           <motion.p
-                            className="text-white/70 mb-4"
+                            className="text-sm sm:text-base text-white/70 mb-2 sm:mb-4"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
@@ -364,13 +386,13 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                           </motion.p>
                         )}
                         <motion.div
-                          className="flex items-center space-x-4 text-white/80"
+                          className="flex items-center space-x-3 sm:space-x-4 text-white/80"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.35 }}
                         >
-                          <span className="text-lg font-medium">{period}</span>
-                          <span className="text-sm text-white/60">({durationStr})</span>
+                          <span className="text-sm sm:text-lg font-medium">{period}</span>
+                          <span className="text-xs sm:text-sm text-white/60">({durationStr})</span>
                         </motion.div>
                       </div>
 
@@ -399,6 +421,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                                 className="w-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden relative"
                                 style={{
                                   aspectRatio: '16 / 9',
+                                  maxHeight: isMobile ? '180px' : undefined,
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center'
@@ -582,14 +605,14 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                     </div>
 
                     {/* Right side - Detailed content */}
-                    <div className="w-full lg:w-1/2 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col">
+                    <div className="w-full lg:w-1/2 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col flex-1 min-h-0">
                       {/* Tab navigation */}
-                      <div className="p-3 sm:p-6 border-b border-white/10">
-                        <div className="flex flex-wrap gap-1 bg-white/10 rounded-lg p-1" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
+                      <div className="p-2 sm:p-6 border-b border-white/10 flex-shrink-0">
+                        <div className="flex gap-1 bg-white/10 rounded-lg p-1 detail-tab-bar" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                           {(['overview', 'responsibilities', 'achievements', 'impact'] as const).map((tab) => (
                             <motion.button
                               key={tab}
-                              className={`flex-1 min-w-[130px] sm:min-w-0 px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-all ${activeTab === tab
+                              className={`flex-shrink-0 px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === tab
                                   ? 'bg-white/20 text-white shadow-sm'
                                   : 'text-white/70 hover:text-white hover:bg-white/10'
                                 }`}
@@ -608,7 +631,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                       </div>
 
                       {/* Tab content */}
-                      <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+                      <div className="flex-1 p-3 sm:p-6 overflow-y-auto detail-scroll-panel min-h-0">
                         <AnimatePresence mode="wait">
                           <motion.div
                             key={activeTab}

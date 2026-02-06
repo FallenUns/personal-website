@@ -1378,6 +1378,7 @@ const ProjectsSection: React.FC = () => {
   useComponentLoader('ProjectsSection');
   const [currentPage, setCurrentPage] = useState(0);
   const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
 
   // Create a ref for the slider container
   const sliderContainerRef = useRef<HTMLDivElement>(null);
@@ -1398,21 +1399,28 @@ const ProjectsSection: React.FC = () => {
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     touchStartXRef.current = event.changedTouches[0]?.clientX ?? null;
+    touchStartYRef.current = event.changedTouches[0]?.clientY ?? null;
   };
 
   const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (touchStartXRef.current === null) return;
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
     const endX = event.changedTouches[0]?.clientX ?? touchStartXRef.current;
-    const swipeDistance = touchStartXRef.current - endX;
+    const endY = event.changedTouches[0]?.clientY ?? touchStartYRef.current;
+    const swipeDistanceX = touchStartXRef.current - endX;
+    const swipeDistanceY = Math.abs(touchStartYRef.current - endY);
     const swipeThreshold = 45;
 
-    if (swipeDistance > swipeThreshold) {
-      handleNext();
-    } else if (swipeDistance < -swipeThreshold) {
-      handlePrevious();
+    // Only register horizontal swipe if it's more horizontal than vertical
+    if (Math.abs(swipeDistanceX) > swipeDistanceY && Math.abs(swipeDistanceX) > swipeThreshold) {
+      if (swipeDistanceX > 0) {
+        handleNext();
+      } else {
+        handlePrevious();
+      }
     }
 
     touchStartXRef.current = null;
+    touchStartYRef.current = null;
   };
 
   const getVisibleProjects = () => {
@@ -1459,8 +1467,8 @@ const ProjectsSection: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="flex gap-4 md:gap-6 justify-center items-center"
-              style={{ minHeight: viewportWidth < 640 ? '430px' : '460px' }}
+              className="flex gap-4 md:gap-6 justify-center items-center carousel-swipe-area"
+              style={{ minHeight: viewportWidth < 640 ? '430px' : '460px', touchAction: 'pan-y pinch-zoom' }}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
