@@ -357,7 +357,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                   {/* Main content - scrollable on mobile */}
                   <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
                     {/* Left side - Hero */}
-                    <div className="w-full lg:w-1/2 p-3 sm:p-6 flex flex-col overflow-y-auto overflow-x-hidden detail-scroll-panel lg:max-h-full max-h-[45vh] lg:max-h-none flex-shrink-0 lg:flex-shrink">
+                    <div className="w-full lg:w-1/2 p-3 sm:p-6 flex flex-col overflow-y-auto overflow-x-hidden detail-scroll-panel lg:max-h-full max-h-[50vh] lg:max-h-none flex-shrink-0 lg:flex-shrink">
                       <div className="mb-4 sm:mb-6 flex-shrink-0">
                         <motion.h1
                           className="text-xl sm:text-4xl font-bold text-white mb-1 sm:mb-2"
@@ -398,7 +398,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
 
                       {/* Photos Section */}
                       {experience.photos && experience.photos.length > 0 ? (
-                        <div className="flex-shrink-0 mb-6">
+                        <div className="flex-shrink-0 mb-3 sm:mb-6">
                           <motion.div
                             className="w-full"
                             initial={{ opacity: 0, scale: 0.8 }}

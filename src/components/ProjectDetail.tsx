@@ -401,7 +401,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                       {/* Left side - Hero */}
                       <div
                         ref={leftPanelRef}
-                        className="w-full lg:w-1/2 p-3 sm:p-5 flex flex-col overflow-y-auto overflow-x-hidden detail-scroll-panel lg:max-h-full max-h-[45vh] lg:max-h-none flex-shrink-0 lg:flex-shrink"
+                        className="w-full lg:w-1/2 p-3 sm:p-5 flex flex-col overflow-y-auto overflow-x-hidden detail-scroll-panel lg:max-h-full max-h-[50vh] lg:max-h-none flex-shrink-0 lg:flex-shrink"
                         onScroll={handleScroll}
                       >
                         {/* Simple arrow indicator - fixed position */}
@@ -952,7 +952,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               }}
                               style={{ pointerEvents: 'auto' }}
                             >
-                              Live Demo
+                              {project.liveUrl?.includes('testflight.apple.com') ? 'Join TestFlight' : 'Live Demo'}
                             </motion.button>
                           )}
                           {project.githubUrl && project.githubUrl !== '#' && (

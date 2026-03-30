@@ -1152,6 +1152,35 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                       transition={{ duration: 2, repeat: Infinity, delay: 1 }}
                     />
                   </div>
+                ) : project.slug === 'blipt' ? (
+                  // Logo-first hero for Blipt
+                  <div className="relative w-full h-32 bg-gradient-to-br from-violet-500/12 via-purple-500/10 to-fuchsia-500/12 rounded-2xl backdrop-blur-sm border border-violet-300/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_55%)]" />
+                    <div className="absolute inset-3 flex items-center justify-center">
+                      <motion.img
+                        src="/blipt-icon.png"
+                        alt="Blipt logo"
+                        className="max-h-full max-w-full object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+                        animate={{ scale: [1, 1.03, 1] }}
+                        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-violet-300/70 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-pink-300/70 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                    <motion.div
+                      className="absolute bottom-3 left-3 w-2 h-2 bg-orange-300/70 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    />
+                  </div>
                 ) : project.slug === 'cliniwatch' ? (
                   // iOS App visualization for Cliniwatch
                   <div className="relative w-full h-32 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-2xl backdrop-blur-sm border border-teal-400/20 overflow-hidden shadow-2xl">
