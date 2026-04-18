@@ -216,6 +216,7 @@ Patrick is a recent graduate from RMIT with experience in:
 - Collaboration: Team projects, hackathon development, industry partnerships
 
 **Notable Projects:**
+- **Blipy**: iOS reminder app that understand context and natural language, built with SwiftUI, Core Data, and Firebase. Features include smart scheduling, location-based reminders, and intuitive UI
 - **Cliniwatch**: iOS mental health companion app built with team during RMIT First Health iOS Hackathon in collaboration with Apple, Northern Health, and Bilue. Addresses early warning system challenge for mental health crisis prevention
 - **Interactive CO₂ & GDP Explorer**: R Shiny dashboard (Jun 2023) for data visualization coursework. Interactive world map comparing countries' CO₂ emissions and GDP from 1960-2020. Features year slider, multi-country selection (up to 20), synchronized time-series and bar charts. Includes 7+ academic citations and built-in guidance. Demonstrates data science, spatial visualization, and R programming skills
 - **Liquid Glass Design System**: Advanced glassmorphism UI library with GLSL shaders and physics-based animations
