@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
 const fetch = require('node-fetch');
@@ -100,11 +101,20 @@ const feedbackLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Constant-time string comparison to defeat timing attacks on the admin API key.
+function safeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const aBuf = Buffer.from(a, 'utf8');
+  const bBuf = Buffer.from(b, 'utf8');
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
 // Admin API key authentication middleware
 const adminAuth = (req, res, next) => {
   const apiKey = req.headers['x-admin-api-key'];
   const validApiKey = process.env.ADMIN_API_KEY;
-  
+
   if (!validApiKey) {
     // If no admin key is configured, only allow in development
     if (process.env.NODE_ENV !== 'production') {
@@ -115,14 +125,14 @@ const adminAuth = (req, res, next) => {
       message: 'Admin API not configured'
     });
   }
-  
-  if (!apiKey || apiKey !== validApiKey) {
+
+  if (!safeCompare(apiKey, validApiKey)) {
     return res.status(401).json({
       success: false,
       message: 'Unauthorized: Invalid or missing API key'
     });
   }
-  
+
   next();
 };
 
@@ -175,25 +185,38 @@ async function writeFeedback(feedbackArray) {
   }
 }
 
+// Neutralize CSV formula injection. Spreadsheet apps (Excel/LibreOffice/Numbers/
+// Google Sheets) interpret a cell that starts with =, +, -, @, tab, or CR as a
+// formula, which can exfiltrate data or execute DDE. Prefix such cells with a
+// single quote so they are treated as literal text, then quote every cell.
+function csvEscape(value) {
+  if (value === null || value === undefined) return '""';
+  let str = String(value);
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
 // Generate CSV content
 function generateCSV(feedbackArray) {
   const headers = [
-    'ID', 'Name', 'Email', 'Rating', 'Category', 'Message', 
+    'ID', 'Name', 'Email', 'Rating', 'Category', 'Message',
     'Timestamp', 'User Agent', 'Referrer'
   ];
 
   const csvRows = [
     headers.join(','),
     ...feedbackArray.map(f => [
-      f.id,
-      `"${(f.name || '').replace(/"/g, '""')}"`,
-      f.email || '',
-      f.rating,
-      f.category,
-      `"${(f.message || '').replace(/"/g, '""')}"`,
-      f.timestamp,
-      `"${(f.userAgent || '').replace(/"/g, '""')}"`,
-      `"${(f.referrer || '').replace(/"/g, '""')}"`
+      csvEscape(f.id),
+      csvEscape(f.name || ''),
+      csvEscape(f.email || ''),
+      csvEscape(f.rating),
+      csvEscape(f.category),
+      csvEscape(f.message || ''),
+      csvEscape(f.timestamp),
+      csvEscape(f.userAgent || ''),
+      csvEscape(f.referrer || '')
     ].join(','))
   ];
 
