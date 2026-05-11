@@ -11,7 +11,7 @@ import { motion, useSpring } from "framer-motion";
 import { useTime } from '../contexts/TimeContext';
 import { displacementMap, polarDisplacementMap, prominentDisplacementMap } from "../utils/utils";
 import { ShaderDisplacementGenerator, fragmentShaders } from '../utils/shader-utils';
-import { isLowPerformanceDevice } from '../utils/performance';
+import { isLowPerformanceDevice, supportsLiquidGlassFilter } from '../utils/performance';
 
 // Helper to get the correct displacement map based on the mode
 const getMap = (
@@ -43,6 +43,10 @@ interface GlassFilterProps {
   shaderMapUrl?: string;
 }
 
+// Canonical SVG filter: filterUnits + primitiveUnits both `userSpaceOnUse`
+// with explicit pixel coordinates that exactly match the filtered element.
+// Mixing objectBoundingBox + percentage feImage produces clipped/black bands
+// on iOS Safari and at any size the props don't match the rendered CSS size.
 const GlassFilter: React.FC<GlassFilterProps> = ({
   id,
   displacementScale,
@@ -51,59 +55,65 @@ const GlassFilter: React.FC<GlassFilterProps> = ({
   height,
   mode,
   shaderMapUrl,
-}) => (
-  <svg
-    style={{
-      position: "absolute",
-      width: width,
-      height: height,
-      transform: 'translateZ(0)',
-      willChange: 'transform',
-      backfaceVisibility: 'hidden',
-      WebkitTransform: 'translateZ(0)',
-      WebkitBackfaceVisibility: 'hidden',
-    }}
-    aria-hidden="true"
-  >
-    <defs>
-      <filter
-        id={id}
-        x="-20%"
-        y="-20%"
-        width="140%"
-        height="140%"
-        colorInterpolationFilters="sRGB"
-      >
-        <feImage
+}) => {
+  const w = Math.max(1, Math.round(width));
+  const h = Math.max(1, Math.round(height));
+  return (
+    <svg
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: w,
+        height: h,
+        pointerEvents: 'none',
+        overflow: 'visible',
+      }}
+      aria-hidden="true"
+    >
+      <defs>
+        <filter
+          id={id}
+          filterUnits="userSpaceOnUse"
+          primitiveUnits="userSpaceOnUse"
           x="0"
           y="0"
-          width="100%"
-          height="100%"
-          result="DISPLACEMENT_MAP"
-          href={getMap(mode, shaderMapUrl)}
-          preserveAspectRatio="none"
-        />
+          width={w}
+          height={h}
+          colorInterpolationFilters="sRGB"
+        >
+          <feImage
+            x="0"
+            y="0"
+            width={w}
+            height={h}
+            result="DISPLACEMENT_MAP"
+            href={getMap(mode, shaderMapUrl)}
+            preserveAspectRatio="none"
+          />
 
-        {/* Simple displacement mapping */}
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="DISPLACEMENT_MAP"
-          scale={displacementScale * (mode === "shader" ? 1 : -1)}
-          xChannelSelector="R"
-          yChannelSelector="G"
-          result="DISPLACED"
-        />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="DISPLACEMENT_MAP"
+            scale={displacementScale * (mode === 'shader' ? 1 : -1)}
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="DISPLACED"
+          />
 
-        {/* Optional subtle blur for smoother effect */}
-        <feGaussianBlur
-          in="DISPLACED"
-          stdDeviation={Math.max(0.1, aberrationIntensity * 0.3)}
-          result="BLURRED"
-        />
-      </filter>
-    </defs>
-  </svg>
-);
+          <feGaussianBlur
+            in="DISPLACED"
+            stdDeviation={Math.max(0.1, aberrationIntensity * 0.3)}
+            result="BLURRED"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+};
 
 // --- MAIN LIQUID GLASS COMPONENT ---
 interface LiquidGlassProps {
@@ -162,7 +172,11 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const optimizedElasticity = isLowPerf ? 0 : elasticity;
   const optimizedIsElastic = isLowPerf ? false : isElastic;
   const optimizedBlurAmount = isLowPerf ? Math.min(blurAmount, 5) : blurAmount;
-  const optimizedDisplacementScale = isLowPerf ? displacementScale * 0.5 : displacementScale;
+
+  // Detect Safari/iOS once. There SVG `filter: url(#id)` combined with
+  // backdrop-filter is unreliable (top band goes black, edges clip).
+  // We still apply the gradient + backdrop blur so the element stays "glassy".
+  const filterEnabled = useMemo(() => supportsLiquidGlassFilter(), []);
 
   const [isHovering, setIsHovering] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -170,9 +184,52 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const [globalMousePos, setGlobalMousePos] = useState({ x: -1, y: -1 });
   const [shaderMapUrl, setShaderMapUrl] = useState<string>('');
 
-  // Use props directly for consistent sizing
-  const elementWidth = initialWidth;
-  const elementHeight = initialHeight;
+  // Track the ACTUAL rendered size (not just the prop). External CSS,
+  // `!important` rules (e.g. mobile-optimizations.css), or flex layout
+  // can resize the element away from `initialWidth`/`initialHeight`.
+  // The shader displacement map and SVG filter MUST use the rendered
+  // size, otherwise the map is stretched and the filter region clips.
+  const [measuredSize, setMeasuredSize] = useState({
+    width: initialWidth,
+    height: initialHeight,
+  });
+
+  useEffect(() => {
+    if (!containerRef.current || typeof ResizeObserver === 'undefined') return;
+    const node = containerRef.current;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = Math.max(1, Math.round(entry.contentRect.width));
+        const h = Math.max(1, Math.round(entry.contentRect.height));
+        setMeasuredSize((prev) => (prev.width === w && prev.height === h ? prev : { width: w, height: h }));
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  // When the prop dimensions change explicitly, seed the measured size so the
+  // shader regenerates immediately without waiting for ResizeObserver.
+  useEffect(() => {
+    setMeasuredSize((prev) =>
+      prev.width === initialWidth && prev.height === initialHeight
+        ? prev
+        : { width: initialWidth, height: initialHeight }
+    );
+  }, [initialWidth, initialHeight]);
+
+  const elementWidth = measuredSize.width;
+  const elementHeight = measuredSize.height;
+
+  // Clamp displacement so the maximum pixel shift (= scale * 0.5) can't sample
+  // outside the source bounds. Without this, small elements (e.g. a 50px-tall
+  // input bar with scale=150) get a 75px shift that pulls transparent black
+  // into the top of the element — the "top 1/4 blank" symptom.
+  const optimizedDisplacementScale = useMemo(() => {
+    const base = isLowPerf ? displacementScale * 0.5 : displacementScale;
+    const safeMax = Math.max(2, Math.min(elementWidth, elementHeight) * 0.6);
+    return Math.min(base, safeMax);
+  }, [isLowPerf, displacementScale, elementWidth, elementHeight]);
 
   // Memoize expensive calculations that depend on dimensions
   const optimizedConstants = useMemo(() => ({
@@ -223,8 +280,11 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     restSpeed: 0.001
   });
 
-  // 2. USE EFFECT TO GENERATE THE SHADER MAP
+  // Regenerate the shader displacement map any time the actual rendered size
+  // changes. Skipping this when the SVG filter is disabled (Safari/iOS) avoids
+  // a useless canvas allocation.
   useEffect(() => {
+    if (!filterEnabled) return;
     if (mode === 'shader' && elementWidth > 0 && elementHeight > 0) {
       const generator = new ShaderDisplacementGenerator({
         width: elementWidth,
@@ -235,7 +295,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       setShaderMapUrl(url);
       generator.destroy();
     }
-  }, [mode, elementWidth, elementHeight]);
+  }, [filterEnabled, mode, elementWidth, elementHeight]);
 
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
@@ -600,7 +660,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
           borderRadius: `${cornerRadius}px`,
           backdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
           WebkitBackdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
-          filter: `url(#${id})`,
+          filter: filterEnabled ? `url(#${id})` : undefined,
           background: actualOverLight
             ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.12) 100%)'
             : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.08) 100%)',
@@ -635,15 +695,17 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
           }}
         />
 
-        <GlassFilter
-          id={id}
-          width={elementWidth}
-          height={elementHeight}
-          displacementScale={actualOverLight ? optimizedDisplacementScale * 0.5 : optimizedDisplacementScale}
-          aberrationIntensity={aberrationIntensity}
-          mode={mode}
-          shaderMapUrl={shaderMapUrl}
-        />
+        {filterEnabled && (
+          <GlassFilter
+            id={id}
+            width={elementWidth}
+            height={elementHeight}
+            displacementScale={actualOverLight ? optimizedDisplacementScale * 0.5 : optimizedDisplacementScale}
+            aberrationIntensity={aberrationIntensity}
+            mode={mode}
+            shaderMapUrl={shaderMapUrl}
+          />
+        )}
       </div>
 
       {/* Layer 2: Decorative Overlay (borders, shines) */}

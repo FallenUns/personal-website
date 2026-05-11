@@ -117,6 +117,19 @@ export const performanceThrottle = <T extends (...args: any[]) => any>(
   };
 };
 
+// Detect Safari / iOS, where SVG `filter: url(#id)` combined with
+// `backdrop-filter` is not reliably supported. On these platforms we
+// fall back to a plain blurred backdrop without the displacement map.
+export const supportsLiquidGlassFilter = (): boolean => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return true;
+  const ua = navigator.userAgent || '';
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (ua.includes('Mac') && typeof document !== 'undefined' && 'ontouchend' in document);
+  const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS|Edg\//i.test(ua);
+  return !(isIOS || isSafari);
+};
+
 // Detect if device has limited performance
 export const isLowPerformanceDevice = (): boolean => {
   // Check for various performance indicators
