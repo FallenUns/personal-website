@@ -26,20 +26,24 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Disable the loop entirely under reduced-motion. The static draw call
+    // still runs once so the canvas isn't blank.
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
     let width = 0;
     let height = 0;
     let columns = 0;
-    let yPositions: number[] = []; // current y of head per column (px)
-    let speeds: number[] = [];     // px per frame per column
+    let yPositions: number[] = [];
+    let speeds: number[] = [];
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     const resize = () => {
-      const parent = canvas.parentElement;
-      if (!parent) return;
       width = parent.clientWidth;
       height = parent.clientHeight;
       canvas.width = Math.floor(width * dpr);
@@ -53,56 +57,109 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
     };
 
     const ro = new ResizeObserver(resize);
-    if (canvas.parentElement) ro.observe(canvas.parentElement);
+    ro.observe(parent);
     resize();
+
+    // Cursor tracking — local to the parent rect so we can compare against
+    // each column's centre x.
+    let cursorX = -9999;
+    let cursorY = -9999;
+    const onMove = (e: PointerEvent) => {
+      const r = parent.getBoundingClientRect();
+      cursorX = e.clientX - r.left;
+      cursorY = e.clientY - r.top;
+    };
+    const onLeave = () => {
+      cursorX = -9999;
+      cursorY = -9999;
+    };
+    parent.addEventListener('pointermove', onMove, { passive: true });
+    parent.addEventListener('pointerleave', onLeave);
+
+    // Pause when the parent leaves the viewport.
+    let inView = true;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) inView = e.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    io.observe(parent);
+
+    const FRAME_MS_LOCAL = FRAME_MS;
+    const PROX_RADIUS = 200;
+    const PROX_R2 = PROX_RADIUS * PROX_RADIUS;
 
     let last = 0;
     let raf = 0;
 
-    const draw = (t: number) => {
-      raf = requestAnimationFrame(draw);
-      if (t - last < FRAME_MS) return;
-      last = t;
-
-      // Trailing fade — fills the canvas with a near-opaque dark each frame
-      // so older glyphs leave a fading tail rather than persisting forever.
+    const drawFrame = () => {
       ctx.fillStyle = 'rgba(7, 6, 14, 0.10)';
       ctx.fillRect(0, 0, width, height);
-
       ctx.font = `${FONT_SIZE}px 'JetBrains Mono', monospace`;
       ctx.textBaseline = 'top';
 
       for (let i = 0; i < columns; i++) {
-        const x = i * COL_WIDTH;
+        const x = i * COL_WIDTH + COL_WIDTH / 2;
         const y = yPositions[i];
 
-        // Head — bright white, then tail in violet.
-        ctx.fillStyle = `rgba(255, 255, 255, 0.95)`;
-        ctx.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], x, y);
+        // Cursor proximity (Gaussian falloff). Boost alpha + slow fall when
+        // the cursor is near this column.
+        let boost = 1;
+        let slow = 1;
+        const dx = x - cursorX;
+        const dy = y - cursorY;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < PROX_R2) {
+          const f = Math.exp(-d2 / (PROX_R2 / 2));
+          boost = 1 + 0.6 * f;
+          slow = 1 - 0.3 * f;
+        }
 
-        // Tail glyph two rows above head — violet aurora colour.
-        ctx.fillStyle = `rgba(167, 139, 250, 0.55)`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 0.95 * boost)})`;
+        ctx.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], i * COL_WIDTH, y);
+
         if (y - FONT_SIZE * 2 >= 0) {
+          ctx.fillStyle = `rgba(167, 139, 250, ${Math.min(1, 0.55 * boost)})`;
           ctx.fillText(
             GLYPHS[Math.floor(Math.random() * GLYPHS.length)],
-            x,
+            i * COL_WIDTH,
             y - FONT_SIZE * 2
           );
         }
 
-        yPositions[i] = y + speeds[i];
-        // Reset column when it falls off the bottom — random restart height
-        // so columns desync over time and the rain looks organic.
+        yPositions[i] = y + speeds[i] * slow;
         if (y > height && Math.random() > 0.975) {
           yPositions[i] = -FONT_SIZE * 3;
         }
       }
     };
 
-    raf = requestAnimationFrame(draw);
+    if (prefersReduced) {
+      drawFrame();
+      return () => {
+        parent.removeEventListener('pointermove', onMove);
+        parent.removeEventListener('pointerleave', onLeave);
+        io.disconnect();
+        ro.disconnect();
+      };
+    }
+
+    const loop = (t: number) => {
+      raf = requestAnimationFrame(loop);
+      if (!inView) return;
+      if (t - last < FRAME_MS_LOCAL) return;
+      last = t;
+      drawFrame();
+    };
+
+    raf = requestAnimationFrame(loop);
 
     return () => {
       cancelAnimationFrame(raf);
+      parent.removeEventListener('pointermove', onMove);
+      parent.removeEventListener('pointerleave', onLeave);
+      io.disconnect();
       ro.disconnect();
     };
   }, []);
