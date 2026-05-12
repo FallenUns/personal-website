@@ -22,6 +22,18 @@ const formatUptime = (ms: number): string => {
 
 const TerminalHud: React.FC = () => {
   const [uptime, setUptime] = useState(0);
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('hudCollapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('hudCollapsed', collapsed ? 'true' : 'false');
+    } catch { /* ignore quota / private-mode errors */ }
+  }, [collapsed]);
   const messages = useHudBus();
   const bodyRef = React.useRef<HTMLDivElement>(null);
   const userScrolledRef = React.useRef(false);
@@ -112,7 +124,8 @@ const TerminalHud: React.FC = () => {
           left: 16,
           bottom: 16,
           width: 320,
-          height: 220,
+          height: collapsed ? 24 : 220,
+          transition: 'height 220ms cubic-bezier(0.22, 1, 0.36, 1)',
           zIndex: 40,
           background: 'rgba(7, 6, 14, 0.62)',
           border: '1px solid rgba(124, 227, 139, 0.18)',
@@ -127,18 +140,26 @@ const TerminalHud: React.FC = () => {
           boxShadow: '0 12px 40px rgba(0, 0, 0, 0.45)',
         }}
       >
-        <header
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          aria-controls="hud-body"
           style={{
             height: 24,
+            width: '100%',
             padding: '0 10px',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
             background: 'rgba(0, 0, 0, 0.35)',
+            border: 'none',
             borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
             color: 'rgba(255, 255, 255, 0.7)',
             fontSize: 10.5,
             letterSpacing: '0.04em',
+            cursor: 'pointer',
+            font: 'inherit',
           }}
         >
           <span className="hud-dot hud-dot--r" />
@@ -147,61 +168,70 @@ const TerminalHud: React.FC = () => {
           <span style={{ flex: 1, textAlign: 'center' }}>
             terminal.sh — patrick@portfolio
           </span>
-        </header>
+          <span aria-hidden="true" style={{ opacity: 0.7 }}>
+            {collapsed ? '▴' : '▾'}
+          </span>
+        </button>
 
-        <div
-          ref={bodyRef}
-          className="hud-body"
-          style={{
-            height: 180,
-            padding: '8px 10px 4px',
-            overflowY: 'auto',
-            position: 'relative',
-          }}
-        >
-          {messages.map((m) => (
+        {!collapsed && (
+          <>
             <div
-              key={m.id}
+              ref={bodyRef}
+              id="hud-body"
+              className="hud-body"
               style={{
-                color:
-                  m.level === 'ok'
-                    ? '#7CE38B'
-                    : m.level === 'warn'
-                      ? '#FFC857'
-                      : '#9EA4B5',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
+                height: 180,
+                padding: '8px 10px 4px',
+                overflowY: 'auto',
+                position: 'relative',
               }}
             >
-              {m.text || ' '}
+              {messages.map((m) => (
+                <div
+                  key={m.id}
+                  style={{
+                    color:
+                      m.level === 'ok'
+                        ? '#7CE38B'
+                        : m.level === 'warn'
+                          ? '#FFC857'
+                          : '#9EA4B5',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {m.text || ' '}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <footer
-          style={{
-            height: 16,
-            padding: '0 10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            color: 'rgba(255, 255, 255, 0.55)',
-            fontSize: 10,
-            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <span>uptime: {formatUptime(uptime)}</span>
-          <span>
-            <span className="hud-caret" />
-          </span>
-        </footer>
+            <footer
+              style={{
+                height: 16,
+                padding: '0 10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                color: 'rgba(255, 255, 255, 0.55)',
+                fontSize: 10,
+                borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+              }}
+            >
+              <span>uptime: {formatUptime(uptime)}</span>
+              <span>
+                <span className="hud-caret" />
+              </span>
+            </footer>
+          </>
+        )}
       </div>
 
-      {/* Mobile compact dot — expand handled in Task 7 */}
+      {/* Mobile compact dot */}
       <button
         type="button"
         className="hud-mobile"
-        aria-label="Open activity console"
+        onClick={() => setCollapsed((c) => !c)}
+        aria-label={collapsed ? 'Open activity console' : 'Close activity console'}
         style={{
           position: 'fixed',
           left: 16,
@@ -213,6 +243,7 @@ const TerminalHud: React.FC = () => {
           background: 'rgba(7, 6, 14, 0.7)',
           backdropFilter: 'blur(10px)',
           color: '#7CE38B',
+          fontFamily: "'JetBrains Mono', monospace",
           zIndex: 40,
         }}
       >
