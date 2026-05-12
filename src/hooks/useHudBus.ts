@@ -36,6 +36,22 @@ export const hudClear = (): void => {
 };
 
 /**
+ * Replace the text of the most recent message in place. Used by the boot
+ * typewriter so a growing partial line doesn't flood the buffer with 100
+ * intermediate states.
+ */
+export const hudReplaceLast = (text: string, level: HudLevel = 'info'): void => {
+  if (buffer.length === 0) {
+    hudLog(text, level);
+    return;
+  }
+  const last = buffer[buffer.length - 1];
+  last.text = text;
+  last.level = level;
+  broadcast();
+};
+
+/**
  * React hook — returns the current message buffer and re-renders on each
  * new log entry. Initial value is the existing buffer so a HUD mounted late
  * in the page lifecycle still shows the boot messages.

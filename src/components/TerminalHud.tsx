@@ -1,6 +1,8 @@
 // src/components/TerminalHud.tsx
 import React, { useEffect, useState } from 'react';
 import './TerminalHud.css';
+import { hudLog, hudReplaceLast } from '../hooks/useHudBus';
+import { useLoading } from '../contexts/LoadingContext';
 
 /**
  * Fixed-position terminal HUD. Bottom-left, 320×220. Shows a header with
@@ -26,6 +28,53 @@ const TerminalHud: React.FC = () => {
     const id = window.setInterval(() => setUptime(performance.now() - start), 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  // Boot sequence — types out 5 lines once, after the loader has yielded.
+  // The `hasBootedRef` survives React StrictMode's double-mount in dev so
+  // boot only runs once per page lifecycle.
+  const { isLoading } = useLoading();
+  const hasBootedRef = React.useRef(false);
+  useEffect(() => {
+    if (isLoading || hasBootedRef.current) return;
+    hasBootedRef.current = true;
+
+    const lines: { text: string; level: 'ok' | 'info' }[] = [
+      { text: '> aurora.init() ............... ok', level: 'ok' },
+      { text: '> liquid_glass.shader → mounted',    level: 'info' },
+      { text: '> camera_wheel.spy(4 sections)',     level: 'info' },
+      { text: '> tech_stack.load(36 items)',        level: 'info' },
+      { text: '> ready. listening for events…',    level: 'ok' },
+    ];
+
+    // Reduced-motion: skip the typewriter and dump all lines instantly.
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      lines.forEach((line) => hudLog(line.text, line.level));
+      return;
+    }
+
+    let cancelled = false;
+    const CHAR_MS = 16;
+    const GAP_MS = 200;
+
+    (async () => {
+      // Use a placeholder message we keep overwriting for the typewriter
+      // effect. After each line is fully typed we drop a final entry at the
+      // correct level and start a fresh placeholder for the next line.
+      for (let li = 0; li < lines.length; li++) {
+        const { text, level } = lines[li];
+        hudLog('', 'info');
+        for (let i = 1; i <= text.length; i++) {
+          if (cancelled) return;
+          hudReplaceLast(text.slice(0, i), 'info');
+          await new Promise((r) => setTimeout(r, CHAR_MS));
+        }
+        hudReplaceLast(text, level);
+        await new Promise((r) => setTimeout(r, GAP_MS));
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isLoading]);
 
   return (
     <>
