@@ -9,6 +9,8 @@ import { useMagnetic } from '../hooks/useMagnetic';
 import DecryptedText from './animations/DecryptedText';
 import RotatingText from './animations/RotatingText';
 import CursorSpotlight from './animations/CursorSpotlight';
+import MatrixRain from './visuals/MatrixRain';
+import { isLowPerformanceDevice } from '../utils/performance';
 
 const HeroSection: React.FC = () => {
   useComponentLoader('HeroSection');
@@ -129,6 +131,7 @@ const HeroSection: React.FC = () => {
       )}
 
       <section ref={heroRef} id="about" className="min-h-[100svh] lg:h-[100svh] box-border flex flex-col lg:flex-row items-start lg:items-center justify-center px-5 sm:px-10 md:px-16 lg:px-32 pt-24 pb-8 sm:pb-10 lg:pt-20 lg:pb-20 relative overflow-hidden">
+        {!isLowPerformanceDevice() && <MatrixRain opacity={0.12} />}
         {/* Pure-visual cursor-tracked spotlight — pointer-events:none so it
             never blocks clicks; lives behind the content (z-index 0). */}
         <CursorSpotlight />
