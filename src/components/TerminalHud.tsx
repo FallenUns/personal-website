@@ -132,4 +132,4 @@ const TerminalHud: React.FC = () => {
   );
 };
 
-export default React.memo(TerminalHud);
+export default TerminalHud;
