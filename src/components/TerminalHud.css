@@ -1,0 +1,60 @@
+/* src/components/TerminalHud.css
+ * Scanline overlay + caret blink + scrollbar.
+ * Visual rules are documented in:
+ *   docs/superpowers/specs/2026-05-12-terminal-hud-matrix-rain-design.md
+ */
+
+@keyframes hud-caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.hud-caret {
+  display: inline-block;
+  width: 7px;
+  margin-left: 2px;
+  background: #7CE38B;
+  height: 1em;
+  vertical-align: text-bottom;
+  animation: hud-caret-blink 1.05s steps(1, end) infinite;
+}
+
+.hud-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.hud-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 227, 139, 0.35) transparent;
+}
+.hud-body::-webkit-scrollbar { width: 6px; }
+.hud-body::-webkit-scrollbar-track { background: transparent; }
+.hud-body::-webkit-scrollbar-thumb {
+  background: rgba(124, 227, 139, 0.35);
+  border-radius: 999px;
+}
+
+.hud-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+.hud-dot--r { background: #ff5f56; }
+.hud-dot--y { background: #ffbd2e; }
+.hud-dot--g { background: #27c93f; }
+
+@media (max-width: 640px) {
+  .hud-panel { display: none; }
+  .hud-mobile { display: flex; }
+}
+@media (min-width: 641px) {
+  .hud-mobile { display: none; }
+}
