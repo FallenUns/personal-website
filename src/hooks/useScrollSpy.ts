@@ -19,6 +19,7 @@ export const useScrollSpy = (
   
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sectionsRef = useRef<Map<string, IntersectionObserverEntry>>(new Map());
+  const lastLoggedRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Clean up previous observer
@@ -74,10 +75,11 @@ export const useScrollSpy = (
         }
 
         const commit = (next: string | null) => {
-          setActiveSection((prev) => {
-            if (prev !== next && next) hudLog(`> section: ${next}`, 'ok');
-            return next;
-          });
+          if (next && lastLoggedRef.current !== next) {
+            hudLog(`> section: ${next}`, 'ok');
+            lastLoggedRef.current = next;
+          }
+          setActiveSection(next);
         };
         console.log('Active section (Intersection Observer):', bestSection);
         commit(bestSection);
