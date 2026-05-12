@@ -1,4 +1,5 @@
 import React from 'react';
+import { hudLog } from '../hooks/useHudBus';
 import { motion, useInView } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
@@ -151,7 +152,7 @@ const ExperienceItem: React.FC<{
           style={{ width: `${cardWidth}px`, height: `${cardHeight}px`, maxWidth: '100%' }}
           className="group cursor-pointer perspective-1000 mx-auto"
           onClick={onViewDetails}
-          onMouseEnter={() => setIsHovered(true)}
+          onMouseEnter={() => { setIsHovered(true); hudLog(`> hover: ${exp.company} · ${exp.role}`); }}
           onMouseLeave={() => {
             setIsHovered(false);
           }}
@@ -170,7 +171,7 @@ const ExperienceItem: React.FC<{
             saturation={isHovered ? 180 : 150}
             aberrationIntensity={isHovered ? 1.5 : 1.2}
             displacementScale={isHovered ? 80 : 60}
-            blurAmount={isHovered ? 8 : 6}
+            blurAmount={isHovered ? 4 : 3}
             mode='shader'
           >
             <div className="detail-readable p-4 sm:p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
@@ -404,20 +405,34 @@ const ExperienceSection: React.FC = () => {
       />
 
       <div className="w-full max-w-6xl relative z-10" ref={containerRef}>
-        {/* Enhanced Header with metrics */}
+        {/* Enhanced Header with kinetic display typography */}
         <div className="text-center text-white mb-12">
+          <motion.div
+            className="flex justify-center mb-4"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="hero-eyebrow inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
+              Where I've worked
+            </span>
+          </motion.div>
           <motion.h2
-            className="text-4xl md:text-5xl font-bold mb-4 [text-shadow:0_2px_4px_rgba(0,0,0,0.6)]"
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="font-display font-extrabold text-[clamp(2.5rem,6vw,5rem)] leading-[0.95] tracking-[-0.04em] mb-5 [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            Experiences
+            <span className="relative inline-block">
+              Experiences
+            </span>
           </motion.h2>
 
           <motion.p
-            className="text-white/85 max-w-2xl mx-auto mb-8 text-lg"
+            className="text-white/85 max-w-2xl mx-auto mb-8 text-lg font-body-grotesk"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

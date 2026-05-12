@@ -1,12 +1,18 @@
 // src/App.tsx
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Lenis from 'lenis';
+import { setLenis } from './utils/lenis';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { TimeProvider } from './contexts/TimeContext';
 import { useCriticalResourceLoader, useImagePreloader } from './hooks/useAssetPreloader';
 import TechBackground from './components/TechBackground';
+import AuroraShader from './components/AuroraShader';
 import HeroSection from './components/HeroSection';
+import SkillsMarquee from './components/SkillsMarquee';
+import FilmGrain from './components/FilmGrain';
+import CameraWheel from './components/CameraWheel';
 import ProjectsSection from './components/ProjectsSection';
 import ExperienceSection from './components/ExperienceSection';
 import ExperienceDetail from './components/ExperienceDetail';
@@ -19,6 +25,7 @@ import FloatingAssistant from './components/FloatingAssistant';
 import { FeedbackButton } from './components/FeedbackButton';
 import { FeedbackManager } from './components/FeedbackManager';
 import { GlobalFeedbackShortcut } from './components/GlobalFeedbackShortcut';
+import TerminalHud from './components/TerminalHud';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
 import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug, isBirthdayPage } from './utils/router';
@@ -83,6 +90,42 @@ const AppContent: React.FC = () => {
       document.documentElement.style.overscrollBehavior = 'auto';
     }
   }, [isLoading, isProjectDetail, isExperienceDetail, isBirthday]);
+
+  // Smooth scroll with Lenis. Native wheel events get eased; the styled
+  // scrollbar in index.css stays visible because Lenis doesn't replace the
+  // scroll mechanism — it intercepts wheel/touch and drives window.scroll.
+  const lenisRef = useRef<Lenis | null>(null);
+  useEffect(() => {
+    if (isLoading) return;
+    const lenis = new Lenis({
+      lerp: 0.1,
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.0,
+    });
+    lenisRef.current = lenis;
+    setLenis(lenis);
+    let rafId = 0;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+    rafId = requestAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      lenisRef.current = null;
+      setLenis(null);
+    };
+  }, [isLoading]);
+
+  // Pause Lenis while detail overlays / birthday page own the scroll context.
+  useEffect(() => {
+    const lenis = lenisRef.current;
+    if (!lenis) return;
+    if (isProjectDetail || isExperienceDetail || isBirthday) lenis.stop();
+    else lenis.start();
+  }, [isProjectDetail, isExperienceDetail, isBirthday]);
 
   const [isAuto, setIsAuto] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => {
@@ -252,6 +295,7 @@ const AppContent: React.FC = () => {
           visibility: isLoading ? 'hidden' : 'visible',
           transition: isLoading ? 'none' : 'opacity 0.8s ease-out'
         }}>
+          <AuroraShader />
           <TechBackground hour={currentTime} />
 
           <Navbar
@@ -263,8 +307,9 @@ const AppContent: React.FC = () => {
             onToggleAuto={handleToggleAuto}
           />
 
-          <main id="main-content" className="relative z-10 pt-8">
+          <main id="main-content" className="relative z-10">
             <HeroSection />
+            <SkillsMarquee />
             <ExperienceSection />
             <ProjectsSection />
             <Contact />
@@ -274,6 +319,9 @@ const AppContent: React.FC = () => {
           <FeedbackButton />
           <FeedbackManager />
           <GlobalFeedbackShortcut />
+          <FilmGrain />
+          <CameraWheel />
+          <TerminalHud />
         </div>
 
         {/* Project Detail Overlay - Only shows when on project route */}

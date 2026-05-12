@@ -6,6 +6,7 @@ import Logo from './Logo';
 import { useScrollSpy } from '../hooks/useScrollSpy';
 import { debounce } from '../utils/throttle';
 import { scrollToSection } from '../utils/navigation';
+import { hudLog } from '../hooks/useHudBus';
 
 // Interfaces for component props
 interface NavbarProps {
@@ -67,10 +68,10 @@ const SkyControllerDropdown: React.FC<SkyControllerDropdownProps> = memo((props)
                 height={180}
                 positioning="relative"
                 style={{ borderRadius: '32px' }}
-                elasticity={0.1}
+                elasticity={0.15}
                 saturation={150}
-                aberrationIntensity={1}
-                displacementScale={90}
+                aberrationIntensity={1.2}
+                displacementScale={60}
                 blurAmount={3}
                 overLight={false}
                 mode='shader'
@@ -137,6 +138,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
 
   // Use scrollToSection from navigation utils
   const handleScrollToSection = useCallback((sectionId: string) => {
+    hudLog(`> nav → ${sectionId}`, 'info');
     scrollToSection(sectionId);
   }, []);
 
@@ -236,7 +238,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   const navContentHeight = '54px';
   const navLinks = [
     { id: 'about', label: 'About' },
-    { id: 'experience', label: 'Experience' },
+    { id: 'experience', label: 'Experiences' },
     { id: 'projects', label: 'Projects' },
     { id: 'contact', label: 'Contact' }
   ];
@@ -332,11 +334,11 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                 style={{
                   borderRadius: '9999px',
                 }}
-                elasticity={isNavbarPressed ? 0.3 : 0.1}
-                saturation={150}
-                aberrationIntensity={isNavbarPressed ? 2 : 1}
-                displacementScale={isNavbarPressed ? 60 : 25}
-                blurAmount={isNavbarPressed ? 8 : 5}
+                elasticity={isNavbarPressed ? 0.18 : 0.15}
+                saturation={isNavbarPressed ? 180 : 150}
+                aberrationIntensity={isNavbarPressed ? 1.5 : 1.2}
+                displacementScale={isNavbarPressed ? 80 : 60}
+                blurAmount={isNavbarPressed ? 4 : 3}
                 overLight={false}
                 mode='shader'
               />
@@ -546,10 +548,10 @@ const Navbar: React.FC<NavbarProps> = (props) => {
                 height={mobileMenuDimensions.height}
                 positioning="relative"
                 style={{ borderRadius: '32px' }}
-                elasticity={0.1}
+                elasticity={0.15}
                 saturation={150}
-                aberrationIntensity={1}
-                displacementScale={90}
+                aberrationIntensity={1.2}
+                displacementScale={60}
                 blurAmount={3}
                 overLight={false}
                 mode="shader"

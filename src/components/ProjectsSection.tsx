@@ -5,6 +5,7 @@ import { useComponentLoader } from '../contexts/LoadingContext';
 import { navigateTo } from '../utils/router';
 import './performance.css';
 import { projects } from '../data/projects';
+import { hudLog } from '../hooks/useHudBus';
 
 // SVG filter for pixelated blur effect
 const PixelateFilter = memo(() => (
@@ -871,18 +872,6 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
   const isLiquidGlassProject = project.slug === 'liquid-glass-design';
   const isComingSoon = project.comingSoon === true;
 
-  const optimizedProps = useMemo(() => ({
-    width: cardWidth,
-    height: cardHeight,
-    positioning: "relative" as const,
-    style: { borderRadius: '24px' },
-    elasticity: isLiquidGlassProject ? 0.2 : 0.1,
-    saturation: isLiquidGlassProject ? 180 : 150,
-    displacementScale: isLiquidGlassProject ? 140 : 110,
-    blurAmount: isLiquidGlassProject ? 12 : 8,
-    mode: isLiquidGlassProject ? 'shader' as const : 'shader' as const,
-  }), [cardWidth, cardHeight, isLiquidGlassProject]);
-
   // Handle project card click - navigate to project detail page
   const handleProjectClick = () => {
     // Don't navigate for coming soon projects
@@ -897,18 +886,30 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -10% 0px" }}
       transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
-      style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
-      className={`group flex-shrink-0 ${isComingSoon ? 'cursor-default' : 'cursor-pointer'}`}
+      style={{ width: `${cardWidth}px`, height: `${cardHeight}px`, maxWidth: '100%' }}
+      className={`group perspective-1000 mx-auto flex-shrink-0 ${isComingSoon ? 'cursor-default' : 'cursor-pointer'}`}
       onClick={handleProjectClick}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => { setIsHovered(true); hudLog(`> hover: ${project.title}`); }}
       onMouseLeave={() => setIsHovered(false)}
+      whileHover={isComingSoon ? {} : {
+        scale: 1.02,
+        rotateY: index % 2 === 0 ? 2 : -2,
+        transition: { duration: 0.3 }
+      }}
     >
-      <motion.div
-        whileHover={isComingSoon ? {} : { scale: 1.02, y: -5, transition: { duration: 0.3, ease: "easeOut" } }}
-        whileTap={isComingSoon ? {} : { scale: 0.98, transition: { duration: 0.2 } }}
+      <LiquidGlass
+        width={cardWidth}
+        height={cardHeight}
+        positioning="relative"
+        style={{ borderRadius: '18px' }}
+        elasticity={0.15}
+        saturation={isHovered ? 180 : 150}
+        aberrationIntensity={isHovered ? 1.5 : 1.2}
+        displacementScale={isHovered ? 80 : 60}
+        blurAmount={isHovered ? 4 : 3}
+        mode='shader'
       >
-        <LiquidGlass {...optimizedProps}>
-          <div className="w-full h-full flex flex-col relative p-4 sm:p-6 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
+          <div className="detail-readable w-full h-full flex flex-col relative p-4 sm:p-6 overflow-hidden">
             {/* Coming Soon overlay */}
             {isComingSoon && (
               <div className="absolute inset-0 z-20 flex items-center justify-center">
@@ -924,7 +925,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
             )}
             {/* Enhanced background effects based on project type */}
             {isComingSoon ? (
-              <div className="absolute inset-0 opacity-30">
+              <div className="absolute inset-0 opacity-[0.12]">
                 <motion.div
                   className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gray-400/30 to-transparent rounded-full blur-xl"
                   animate={{
@@ -957,13 +958,13 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 />
               </div>
             ) : isLiquidGlassProject ? (
-              <div className="absolute inset-0 opacity-20">
+              <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/30 to-transparent rounded-full blur-xl"></div>
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/30 to-transparent rounded-full blur-xl"></div>
                 <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-gradient-to-r from-pink-400/20 to-transparent rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
               </div>
             ) : project.category === 'Machine Learning' ? (
-              <div className="absolute inset-0 opacity-25">
+              <div className="absolute inset-0 opacity-[0.12]">
                 <motion.div
                   className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/40 to-transparent rounded-full blur-xl"
                   animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
@@ -981,7 +982,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 />
               </div>
             ) : project.category === 'Data Science' ? (
-              <div className="absolute inset-0 opacity-25">
+              <div className="absolute inset-0 opacity-[0.12]">
                 <motion.div
                   className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-400/40 to-transparent rounded-full blur-xl"
                   animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
@@ -999,7 +1000,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 />
               </div>
             ) : project.category === 'Research' ? (
-              <div className="absolute inset-0 opacity-20">
+              <div className="absolute inset-0 opacity-10">
                 <motion.div
                   className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-400/30 to-transparent rounded-full blur-xl"
                   animate={{ scale: [1, 1.1, 1] }}
@@ -1012,7 +1013,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 />
               </div>
             ) : (
-              <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 opacity-[0.08]">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-400/20 to-transparent rounded-full blur-xl"></div>
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400/20 to-transparent rounded-full blur-xl"></div>
               </div>
@@ -1396,8 +1397,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
               </div>
             )}
           </div>
-        </LiquidGlass>
-      </motion.div>
+      </LiquidGlass>
     </motion.div>
   );
 });
@@ -1465,12 +1465,12 @@ const ProjectsSection: React.FC = () => {
   return (
     <motion.section
       id="projects"
-      className="min-h-screen flex flex-col items-center justify-start md:justify-center pt-24 pb-14 px-4 sm:px-6 lg:px-8 w-full"
+      className="min-h-[100svh] box-border flex flex-col items-center justify-center py-20 px-4 sm:px-6 lg:px-8 w-full"
     >
       {/* SVG filter for pixelated effect */}
       <PixelateFilter />
 
-      <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] md:min-h-screen">
+      <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-0">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1478,10 +1478,22 @@ const ProjectsSection: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
-            Featured Work
+          <motion.div
+            className="flex justify-center mb-4"
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="hero-eyebrow inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-300" />
+              Selected projects
+            </span>
+          </motion.div>
+          <h2 className="relative inline-block font-display font-extrabold text-[clamp(2.5rem,6vw,5.25rem)] leading-[0.95] tracking-[-0.04em] text-white mb-4 [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]">
+            Featured&nbsp;Work
           </h2>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+          <p className="text-lg text-white/75 max-w-2xl mx-auto font-body-grotesk [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
             Explore my latest projects and creative solutions
           </p>
         </motion.div>
@@ -1489,7 +1501,7 @@ const ProjectsSection: React.FC = () => {
         {/* Attach the ref to this container */}
         <div ref={sliderContainerRef} className="w-full flex items-center justify-center mb-8 px-1 sm:px-4">
           {/* Cards Viewport */}
-          <div className="flex justify-center items-center flex-1" style={{ maxWidth: `${viewportWidth}px` }}>
+          <div className="flex justify-center items-center mx-auto w-full" style={{ maxWidth: `${viewportWidth}px` }}>
             <motion.div
               key={currentPage}
               initial={{ opacity: 0, x: 20 }}
@@ -1514,17 +1526,19 @@ const ProjectsSection: React.FC = () => {
         </div>
 
         {/* Navigation Bar with Arrows and Dots */}
-        <div className="flex justify-center items-center mb-6">
+        <div className="flex justify-center items-center mb-6 mx-auto w-full" style={{ maxWidth: `${viewportWidth}px` }}>
           <LiquidGlass
             width={navControlWidth}
             height={48}
             positioning="relative"
             style={{ borderRadius: '24px' }}
-            elasticity={0.12}
-            saturation={140}
-            displacementScale={80}
-            blurAmount={6}
+            elasticity={0.15}
+            saturation={150}
+            aberrationIntensity={1.2}
+            displacementScale={60}
+            blurAmount={3}
             mode="shader"
+            overLight={false}
           >
             <div className="flex items-center justify-center gap-4 px-4">
               {/* Left Arrow */}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { hudLog } from './useHudBus';
 
 /**
  * A custom hook to track which section is currently visible in the viewport using Intersection Observer.
@@ -72,8 +73,14 @@ export const useScrollSpy = (
           bestSection = closestSection;
         }
 
+        const commit = (next: string | null) => {
+          setActiveSection((prev) => {
+            if (prev !== next && next) hudLog(`> section: ${next}`, 'ok');
+            return next;
+          });
+        };
         console.log('Active section (Intersection Observer):', bestSection);
-        setActiveSection(bestSection);
+        commit(bestSection);
       },
       {
         rootMargin: `-${offset}px 0px -${offset}px 0px`,
