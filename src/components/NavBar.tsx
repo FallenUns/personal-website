@@ -112,6 +112,8 @@ const SkyControllerDropdown: React.FC<SkyControllerDropdownProps> = memo((props)
 });
 SkyControllerDropdown.displayName = 'SkyControllerDropdown';
 
+const NAV_SECTION_IDS = ['about', 'experience', 'projects', 'contact'] as const;
+
 const Navbar: React.FC<NavbarProps> = (props) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -133,8 +135,7 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   useComponentLoader('Navbar');
 
   // -- NEW: Scroll spy setup with better offset --
-  const sectionIds = ['about', 'experience', 'projects', 'contact'];
-  const activeSection = useScrollSpy(sectionIds, { offset: 100 }); // Reduced offset for better accuracy
+  const activeSection = useScrollSpy([...NAV_SECTION_IDS], { offset: 100 }); // Reduced offset for better accuracy
 
   // Use scrollToSection from navigation utils
   const handleScrollToSection = useCallback((sectionId: string) => {

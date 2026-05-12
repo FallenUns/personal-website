@@ -81,7 +81,6 @@ export const useScrollSpy = (
           }
           setActiveSection(next);
         };
-        console.log('Active section (Intersection Observer):', bestSection);
         commit(bestSection);
       },
       {
