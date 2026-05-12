@@ -70,6 +70,7 @@ const TerminalHud: React.FC = () => {
         }
         hudReplaceLast(text, level);
         await new Promise((r) => setTimeout(r, GAP_MS));
+        if (cancelled) return;
       }
     })();
 
