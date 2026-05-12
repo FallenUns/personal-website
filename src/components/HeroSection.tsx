@@ -1,10 +1,14 @@
 // src/components/HeroSection.tsx
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
+import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 import { PreloadedImage } from '../utils/preloadedImageHooks';
 import { scrollToSection } from '../utils/navigation';
+import { useMagnetic } from '../hooks/useMagnetic';
+import DecryptedText from './animations/DecryptedText';
+import RotatingText from './animations/RotatingText';
+import CursorSpotlight from './animations/CursorSpotlight';
 
 const HeroSection: React.FC = () => {
   useComponentLoader('HeroSection');
@@ -13,6 +17,66 @@ const HeroSection: React.FC = () => {
   // State for tooltip
   const [hoveredTech, setHoveredTech] = React.useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = React.useState({ x: 0, y: 0 });
+
+  // Local boolean that drives DecryptedText's trigger mode. We OR it with
+  // `!isLoading` so the reveal happens once after the loader fades, and
+  // each click on the headline replays the decrypt by briefly flipping
+  // this back to false then true.
+  const [replayTick, setReplayTick] = React.useState(0);
+  const handleReplayName = React.useCallback(() => {
+    setReplayTick((t) => t + 1);
+  }, []);
+
+  // Trigger composition: stays false while loading, then true after load.
+  // `replayTick` increments on click; we use its parity to flip the boolean.
+  const nameTrigger = !isLoading && replayTick % 2 === 0;
+  // After a click, push false → true again. An effect increments tick one
+  // more time on the next animation frame so the rising edge fires.
+  React.useEffect(() => {
+    if (replayTick === 0) return;
+    const raf = requestAnimationFrame(() => setReplayTick((t) => t + 1));
+    return () => cancelAnimationFrame(raf);
+  }, [replayTick]);
+
+  // Mouse-driven hero parallax — the text drifts left/down and the portrait
+  // counter-tilts right/up, creating a soft 3D parallax that tracks the cursor.
+  // Springs keep the motion fluid even when the cursor moves abruptly.
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, { stiffness: 90, damping: 18, mass: 0.6 });
+  const sy = useSpring(my, { stiffness: 90, damping: 18, mass: 0.6 });
+  const textTx = useTransform(sx, (v) => v * -14);
+  const textTy = useTransform(sy, (v) => v * -8);
+  const portraitTx = useTransform(sx, (v) => v * 18);
+  const portraitTy = useTransform(sy, (v) => v * 10);
+  const portraitRotY = useTransform(sx, (v) => v * 6);
+  const portraitRotX = useTransform(sy, (v) => v * -5);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const onMove = (e: PointerEvent) => {
+      mx.set((e.clientX / window.innerWidth) * 2 - 1);
+      my.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
+    window.addEventListener('pointermove', onMove, { passive: true });
+    return () => window.removeEventListener('pointermove', onMove);
+  }, [mx, my]);
+
+  // Magnetic refs for the two CTAs.
+  const projectsBtnRef = useMagnetic<HTMLDivElement>({ strength: 0.4, radius: 160 });
+  const resumeBtnRef = useMagnetic<HTMLDivElement>({ strength: 0.4, radius: 160 });
+
+  // Scroll-scrubbed fade for the hero content. As the section scrolls out
+  // upward the inner stage scales down slightly, drifts up, and fades — the
+  // page beneath then takes the foreground.
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const heroOpacity = useTransform(heroProgress, [0, 0.65, 1], [1, 1, 0]);
+  const heroScale = useTransform(heroProgress, [0, 1], [1, 0.92]);
+  const heroLift = useTransform(heroProgress, [0, 1], [0, -60]);
 
   const handleTechHover = (techName: string, event: React.MouseEvent) => {
     setHoveredTech(techName);
@@ -48,7 +112,7 @@ const HeroSection: React.FC = () => {
             }}
             aberrationIntensity={0.2}
             elasticity={0.3}
-            blurAmount={6}
+            blurAmount={3}
             saturation={120}
             displacementScale={15}
             mode='shader'
@@ -61,8 +125,14 @@ const HeroSection: React.FC = () => {
         </div>
       )}
 
-      <section id="about" className="min-h-screen flex flex-col lg:flex-row items-start lg:items-center justify-center px-5 sm:px-10 md:px-16 lg:px-32 pt-24 pb-12 lg:pt-0 lg:pb-0 relative overflow-hidden">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full mt-0 lg:-mt-16 gap-8 lg:gap-0">
+      <section ref={heroRef} id="about" className="min-h-[100svh] lg:h-[100svh] box-border flex flex-col lg:flex-row items-start lg:items-center justify-center px-5 sm:px-10 md:px-16 lg:px-32 pt-24 pb-8 sm:pb-10 lg:pt-20 lg:pb-20 relative overflow-hidden">
+        {/* Pure-visual cursor-tracked spotlight — pointer-events:none so it
+            never blocks clicks; lives behind the content (z-index 0). */}
+        <CursorSpotlight />
+        <motion.div
+          style={{ opacity: heroOpacity, scale: heroScale, y: heroLift }}
+          className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full max-w-[1720px] mx-auto mt-0 gap-8 lg:gap-10"
+        >
           {/* Left side - Text content */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -75,25 +145,74 @@ const HeroSection: React.FC = () => {
               ease: 'easeOut',
               delay: isLoading ? 0 : 0.5
             }}
+            style={{ x: textTx, y: textTy }}
             className="text-left flex-1 max-w-[560px] w-full lg:w-auto"
           >
             <div className="text-white">
-              {/* Greeting */}
-              <div className="flex items-center justify-start mb-3">
-                <span className="text-5xl mr-3 wave-animation">👋</span>
-              </div>
+              {/* Eyebrow tag */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 12 : 0 }}
+                transition={{ duration: 0.6, delay: isLoading ? 0 : 0.55 }}
+                className="flex items-center gap-3 mb-5"
+              >
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+                  <span className="text-xl wave-animation leading-none">👋</span>
+                </span>
+                <span className="hero-eyebrow shiny-text [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+                  Hello, the name is
+                </span>
+              </motion.div>
 
-              {/* Main Title */}
-              <h1 className="text-[2.4rem] sm:text-5xl md:text-6xl leading-tight tracking-tight font-semibold mb-4 [text-shadow:0_2px_5px_rgba(0,0,0,1)]">
-                Hello! I'm <span className="font-bold"> Patrick Adrianus </span>
-              </h1>
+              {/* Display headline — the name decrypts character-by-character from
+                  the centre outward when the hero comes into view. Real text is
+                  preserved for screen readers via DecryptedText's sr-only span. */}
+              <motion.h1
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 16 : 0 }}
+                transition={{ duration: 0.7, delay: isLoading ? 0 : 0.65, ease: [0.22, 1, 0.36, 1] }}
+                className="hero-display mb-5"
+              >
+                <DecryptedText
+                  text="PATRICK ADRIANUS"
+                  animateOn="trigger"
+                  trigger={nameTrigger}
+                  sequential
+                  revealDirection="center"
+                  speed={55}
+                  characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#%&@"
+                  parentClassName="block name cursor-pointer select-none"
+                  className="name-char"
+                  encryptedClassName="name-char-dim"
+                  onClick={handleReplayName}
+                />
+              </motion.h1>
 
-              {/* Subtitle with decorative element */}
+              {/* Subtitle — the role cycles through a list, animating each
+                  character on enter/exit with a spring stagger. Reads as
+                  alive without being noisy. */}
               <div className="flex items-center justify-start mb-5">
                 <div className="w-14 h-0.5 bg-white/60 mr-3"></div>
-                <span className="text-base sm:text-lg font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-                  Data Scientist ✦ Full-Stack Developer
-                </span>
+                <RotatingText
+                  texts={[
+                    'Data Scientist',
+                    'Full-Stack Developer',
+                    'AI Engineer',
+                  ]}
+                  rotationInterval={2400}
+                  staggerDuration={0.022}
+                  staggerFrom="last"
+                  splitBy="characters"
+                  auto
+                  loop
+                  mainClassName="text-base sm:text-lg font-medium font-body-grotesk inline-flex"
+                  splitLevelClassName="overflow-hidden"
+                  elementLevelClassName="gradient-text"
+                  transition={{ type: 'spring', damping: 28, stiffness: 360 }}
+                  initial={{ y: '110%', opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: '-110%', opacity: 0 }}
+                />
               </div>
 
               {/* Description */}
@@ -118,68 +237,72 @@ const HeroSection: React.FC = () => {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
 
-                <LiquidGlass
-                  width={180}
-                  height={45}
-                  positioning="relative"
-                  style={{
-                    borderRadius: '99px',
-                    cursor: 'pointer',
-                  }}
-                  className="hover:bg-white/10"
-                  aberrationIntensity={0.5}
-                  elasticity={0.2}
-                  blurAmount={12}
-                  saturation={150}
-                  displacementScale={35}
-                  mode='shader'
-                  overLight={false}
-                  onClick={() => scrollToSection('projects')}
-                >
-                  <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
-                    My Projects
-                  </span>
-                </LiquidGlass>
+                <div ref={projectsBtnRef} style={{ willChange: 'transform' }}>
+                  <LiquidGlass
+                    width={180}
+                    height={45}
+                    positioning="relative"
+                    style={{
+                      borderRadius: '99px',
+                      cursor: 'pointer',
+                    }}
+                    className="hover:bg-white/10"
+                    aberrationIntensity={0.5}
+                    elasticity={0.2}
+                    blurAmount={6}
+                    saturation={150}
+                    displacementScale={35}
+                    mode='shader'
+                    overLight={false}
+                    onClick={() => scrollToSection('projects')}
+                  >
+                    <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+                      My Projects
+                    </span>
+                  </LiquidGlass>
+                </div>
 
                 {/* Download Resume Button - Transparent with border */}
-                <LiquidGlass
-                  width={180}
-                  height={45}
-                  positioning="relative"
-                  style={{
-                    borderRadius: '99px',
-                    cursor: 'pointer',
-                  }}
-                  className="hover:bg-white/10"
-                  aberrationIntensity={0.5}
-                  elasticity={0.2}
-                  blurAmount={12}
-                  saturation={150}
-                  displacementScale={35}
-                  mode='shader'
-                  overLight={false}
-                  onClick={() => {
-                    try {
-                      window.open('/resume.pdf', '_blank');
-                    } catch (error) {
-                      console.error('Failed to open Resume:', error);
-                      // Fallback to download
-                      const link = document.createElement('a');
-                      link.href = '/resume.pdf';
-                      link.download = 'Patrick_Adrianus_Resume.pdf';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }
-                  }}
-                >
-                  <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center">
-                    My Resume
-                    <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </LiquidGlass>
+                <div ref={resumeBtnRef} style={{ willChange: 'transform' }}>
+                  <LiquidGlass
+                    width={180}
+                    height={45}
+                    positioning="relative"
+                    style={{
+                      borderRadius: '99px',
+                      cursor: 'pointer',
+                    }}
+                    className="hover:bg-white/10"
+                    aberrationIntensity={0.5}
+                    elasticity={0.2}
+                    blurAmount={6}
+                    saturation={150}
+                    displacementScale={35}
+                    mode='shader'
+                    overLight={false}
+                    onClick={() => {
+                      try {
+                        window.open('/resume.pdf', '_blank');
+                      } catch (error) {
+                        console.error('Failed to open Resume:', error);
+                        // Fallback to download
+                        const link = document.createElement('a');
+                        link.href = '/resume.pdf';
+                        link.download = 'Patrick_Adrianus_Resume.pdf';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
+                    }}
+                  >
+                    <span className="font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] flex items-center">
+                      My Resume
+                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </span>
+                  </LiquidGlass>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -211,7 +334,7 @@ const HeroSection: React.FC = () => {
                 }}
                 aberrationIntensity={0.3}
                 elasticity={0.2}
-                blurAmount={8}
+                blurAmount={4}
                 saturation={150}
                 displacementScale={80}
                 overLight={false}
@@ -254,7 +377,7 @@ const HeroSection: React.FC = () => {
                   style={{ borderRadius: '20px' }}
                   aberrationIntensity={0.2}
                   elasticity={0.3}
-                  blurAmount={6}
+                  blurAmount={3}
                   saturation={140}
                   displacementScale={20}
                   overLight={false}
@@ -289,7 +412,7 @@ const HeroSection: React.FC = () => {
                   style={{ borderRadius: '20px' }}
                   aberrationIntensity={0.2}
                   elasticity={0.3}
-                  blurAmount={6}
+                  blurAmount={3}
                   saturation={140}
                   displacementScale={20}
                   overLight={false}
@@ -324,7 +447,7 @@ const HeroSection: React.FC = () => {
                   style={{ borderRadius: '20px' }}
                   aberrationIntensity={0.2}
                   elasticity={0.3}
-                  blurAmount={6}
+                  blurAmount={3}
                   saturation={140}
                   displacementScale={20}
                   overLight={false}
@@ -359,7 +482,7 @@ const HeroSection: React.FC = () => {
                   style={{ borderRadius: '20px' }}
                   aberrationIntensity={0.2}
                   elasticity={0.3}
-                  blurAmount={6}
+                  blurAmount={3}
                   saturation={140}
                   displacementScale={20}
                   overLight={false}
@@ -394,7 +517,7 @@ const HeroSection: React.FC = () => {
                   style={{ borderRadius: '20px' }}
                   aberrationIntensity={0.2}
                   elasticity={0.3}
-                  blurAmount={6}
+                  blurAmount={3}
                   saturation={140}
                   displacementScale={18}
                   overLight={false}
@@ -428,7 +551,7 @@ const HeroSection: React.FC = () => {
                   style={{ borderRadius: '20px' }}
                   aberrationIntensity={0.2}
                   elasticity={0.3}
-                  blurAmount={6}
+                  blurAmount={3}
                   saturation={140}
                   displacementScale={18}
                   overLight={false}
@@ -452,7 +575,14 @@ const HeroSection: React.FC = () => {
               ease: 'easeOut',
               delay: isLoading ? 0 : 0.5
             }}
-            className="flex-1 h-screen min-h-[700px] max-w-4xl hidden lg:block"
+            style={{
+              x: portraitTx,
+              y: portraitTy,
+              rotateY: portraitRotY,
+              rotateX: portraitRotX,
+              transformPerspective: 1200,
+            }}
+            className="flex-1 h-[68vh] min-h-[560px] max-h-[640px] max-w-4xl hidden lg:block"
           >
             <div className="relative w-full h-full flex items-center justify-center">
               <div className="relative flex items-center justify-center">
@@ -470,7 +600,7 @@ const HeroSection: React.FC = () => {
                   className="hover:bg-white/10"
                   aberrationIntensity={0.3}
                   elasticity={0.2}
-                  blurAmount={8}
+                  blurAmount={4}
                   saturation={150}
                   displacementScale={120}
                   overLight={false}
@@ -513,7 +643,7 @@ const HeroSection: React.FC = () => {
                     style={{ borderRadius: '24px' }}
                     aberrationIntensity={0.2}
                     elasticity={0.3}
-                    blurAmount={6}
+                    blurAmount={3}
                     saturation={140}
                     displacementScale={20}
                     overLight={false}
@@ -548,7 +678,7 @@ const HeroSection: React.FC = () => {
                     style={{ borderRadius: '24px' }}
                     aberrationIntensity={0.2}
                     elasticity={0.3}
-                    blurAmount={6}
+                    blurAmount={3}
                     saturation={140}
                     displacementScale={25}
                     overLight={false}
@@ -583,7 +713,7 @@ const HeroSection: React.FC = () => {
                     style={{ borderRadius: '24px' }}
                     aberrationIntensity={0.2}
                     elasticity={0.3}
-                    blurAmount={6}
+                    blurAmount={3}
                     saturation={140}
                     displacementScale={25}
                     overLight={false}
@@ -618,7 +748,7 @@ const HeroSection: React.FC = () => {
                     style={{ borderRadius: '24px' }}
                     aberrationIntensity={0.2}
                     elasticity={0.3}
-                    blurAmount={6}
+                    blurAmount={3}
                     saturation={140}
                     displacementScale={25}
                     overLight={false}
@@ -654,7 +784,7 @@ const HeroSection: React.FC = () => {
                     style={{ borderRadius: '24px' }}
                     aberrationIntensity={0.2}
                     elasticity={0.3}
-                    blurAmount={6}
+                    blurAmount={3}
                     saturation={140}
                     displacementScale={25}
                     overLight={false}
@@ -688,7 +818,7 @@ const HeroSection: React.FC = () => {
                     style={{ borderRadius: '24px' }}
                     aberrationIntensity={0.2}
                     elasticity={0.3}
-                    blurAmount={6}
+                    blurAmount={3}
                     saturation={140}
                     displacementScale={25}
                     overLight={false}
@@ -700,7 +830,7 @@ const HeroSection: React.FC = () => {
               </div>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Bottom Technology Categories */}
         <motion.div
