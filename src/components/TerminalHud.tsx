@@ -1,7 +1,7 @@
 // src/components/TerminalHud.tsx
 import React, { useEffect, useState } from 'react';
 import './TerminalHud.css';
-import { hudLog, hudReplaceLast } from '../hooks/useHudBus';
+import { hudLog, hudReplaceLast, useHudBus } from '../hooks/useHudBus';
 import { useLoading } from '../contexts/LoadingContext';
 
 /**
@@ -22,6 +22,29 @@ const formatUptime = (ms: number): string => {
 
 const TerminalHud: React.FC = () => {
   const [uptime, setUptime] = useState(0);
+  const messages = useHudBus();
+  const bodyRef = React.useRef<HTMLDivElement>(null);
+  const userScrolledRef = React.useRef(false);
+
+  // Auto-scroll to bottom whenever messages change, UNLESS the user has
+  // manually scrolled away from the bottom. Detect that via a scroll
+  // listener with a 12px tolerance.
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 12;
+      userScrolledRef.current = !atBottom;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el || userScrolledRef.current) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages]);
 
   useEffect(() => {
     const start = performance.now();
@@ -127,6 +150,7 @@ const TerminalHud: React.FC = () => {
         </header>
 
         <div
+          ref={bodyRef}
           className="hud-body"
           style={{
             height: 180,
@@ -135,7 +159,23 @@ const TerminalHud: React.FC = () => {
             position: 'relative',
           }}
         >
-          {/* Messages will render here in Task 6 */}
+          {messages.map((m) => (
+            <div
+              key={m.id}
+              style={{
+                color:
+                  m.level === 'ok'
+                    ? '#7CE38B'
+                    : m.level === 'warn'
+                      ? '#FFC857'
+                      : '#9EA4B5',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
+            >
+              {m.text || ' '}
+            </div>
+          ))}
         </div>
 
         <footer
