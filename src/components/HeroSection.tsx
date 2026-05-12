@@ -30,10 +30,13 @@ const HeroSection: React.FC = () => {
   // Trigger composition: stays false while loading, then true after load.
   // `replayTick` increments on click; we use its parity to flip the boolean.
   const nameTrigger = !isLoading && replayTick % 2 === 0;
-  // After a click, push false → true again. An effect increments tick one
-  // more time on the next animation frame so the rising edge fires.
+  // Only odd ticks need the follow-up increment. A click bumps tick → odd
+  // (falling edge of nameTrigger). One RAF later we bump again → even
+  // (rising edge of nameTrigger), which re-runs the decrypt. Even ticks
+  // are the stable state and don't schedule another increment, so the
+  // chain terminates after two transitions per click instead of looping.
   React.useEffect(() => {
-    if (replayTick === 0) return;
+    if (replayTick === 0 || replayTick % 2 === 0) return;
     const raf = requestAnimationFrame(() => setReplayTick((t) => t + 1));
     return () => cancelAnimationFrame(raf);
   }, [replayTick]);
@@ -160,7 +163,7 @@ const HeroSection: React.FC = () => {
                   <span className="text-xl wave-animation leading-none">👋</span>
                 </span>
                 <span className="hero-eyebrow shiny-text [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-                  Hello, the name is
+                  Hello, my name is
                 </span>
               </motion.div>
 
