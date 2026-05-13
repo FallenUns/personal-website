@@ -13,49 +13,74 @@ interface UseAssetPreloaderOptions {
 // Cache for loaded assets to prevent reloading
 const assetCache = new Set<string>();
 
+type MediaPreloadResult = Awaited<ReturnType<typeof preloadAllMedia>>;
+type MediaProgressListener = (loaded: number, total: number, currentAsset: string) => void;
+
+let mediaPreloadPromise: Promise<MediaPreloadResult> | null = null;
+let mediaPreloadSnapshot: { loaded: number; total: number; currentAsset: string } | null = null;
+const mediaProgressListeners = new Set<MediaProgressListener>();
+
+const notifyMediaProgress = (loaded: number, total: number, currentAsset: string) => {
+  mediaPreloadSnapshot = { loaded, total, currentAsset };
+  mediaProgressListeners.forEach((listener) => listener(loaded, total, currentAsset));
+};
+
+const ensureMediaPreload = () => {
+  if (!mediaPreloadPromise) {
+    mediaPreloadPromise = preloadAllMedia(notifyMediaProgress);
+  }
+  return mediaPreloadPromise;
+};
+
 // Hook for comprehensive image preloading using the new image preloader
 export const useImagePreloader = () => {
   const { registerLoader, markLoaded, setCustomProgress } = useLoading();
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const hasStartedRef = useRef(false); // Prevent duplicate preloading
+  const didMarkLoadedRef = useRef(false);
   
   useEffect(() => {
-    // Prevent duplicate preloading
-    if (hasStartedRef.current) return;
-    hasStartedRef.current = true;
-
-    // Create abort controller for cleanup
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-
+    let cancelled = false;
     registerLoader('image-preloader');
-    console.log('🚀 Starting comprehensive media preloading (images + videos)...');
-    
-    // Use the enhanced media preloader
-    preloadAllMedia((loaded, total, currentAsset) => {
-      if (signal.aborted) return;
+    const handleProgress: MediaProgressListener = (loaded, total, currentAsset) => {
+      if (cancelled) return;
       
       // Let LoadingContext handle progress smoothing - just report actual progress
       const rawProgress = (loaded / total) * 100;
       
       console.log(`📸 Media loading progress: ${loaded}/${total} (${rawProgress.toFixed(1)}%) - ${currentAsset}`);
       setCustomProgress(rawProgress);
-      
-      if (loaded === total) {
-        console.log('🎉 All media (images + videos) preloaded successfully!');
-        // Mark as loaded immediately - let LoadingContext handle timing
-        markLoaded('image-preloader');
-      }
+    };
+
+    mediaProgressListeners.add(handleProgress);
+    if (mediaPreloadSnapshot) {
+      handleProgress(
+        mediaPreloadSnapshot.loaded,
+        mediaPreloadSnapshot.total,
+        mediaPreloadSnapshot.currentAsset
+      );
+    } else {
+      console.log('🚀 Starting comprehensive media preloading (images + videos)...');
+    }
+
+    ensureMediaPreload().then(() => {
+      if (cancelled || didMarkLoadedRef.current) return;
+      didMarkLoadedRef.current = true;
+      console.log('🎉 All media (images + videos) preloaded successfully!');
+      markLoaded('image-preloader');
     }).catch((error) => {
+      if (cancelled || didMarkLoadedRef.current) return;
       console.error('❌ Error during media preloading:', error);
       // Still mark as loaded to prevent infinite loading
-      setTimeout(() => markLoaded('image-preloader'), 500);
+      window.setTimeout(() => {
+        if (cancelled || didMarkLoadedRef.current) return;
+        didMarkLoadedRef.current = true;
+        markLoaded('image-preloader');
+      }, 500);
     });
 
     // Cleanup function
     return () => {
-      abortControllerRef.current?.abort();
-      hasStartedRef.current = false; // Reset for potential future use
+      cancelled = true;
+      mediaProgressListeners.delete(handleProgress);
     };
   }, [registerLoader, markLoaded, setCustomProgress]);
 };

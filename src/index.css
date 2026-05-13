@@ -21,6 +21,13 @@ html, body, #root {
   overflow-x: clip;
 }
 
+/* Motion measures element targets against `document.scrollingElement` for
+   viewport-linked `useScroll({ target })` animations. Keep that root
+   scroller non-static so its offset math stays well-defined in development. */
+html {
+  position: relative;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

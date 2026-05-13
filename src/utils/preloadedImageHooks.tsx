@@ -10,7 +10,6 @@ export const usePreloadedImage = (src: string) => {
     // Try blob URL first for best performance
     const blobUrl = getCachedImageBlob(src);
     if (blobUrl) {
-      console.log(`✅ Using cached image blob for: ${src}`);
       setImageSrc(blobUrl);
       setIsLoaded(true);
       return;
@@ -19,14 +18,13 @@ export const usePreloadedImage = (src: string) => {
     // Then try cached image
     const cachedImage = getCachedImage(src);
     if (cachedImage) {
-      console.log(`✅ Using cached image for: ${src}`);
       setImageSrc(cachedImage.src);
       setIsLoaded(true);
       return;
     }
 
-    // Otherwise use original src
-    console.log(`⚠️ Image not cached, using original: ${src}`);
+    // Otherwise use the original source. This is a normal first-render path:
+    // the component can mount before the async media warmup finishes.
     setImageSrc(src);
     setIsLoaded(true);
   }, [src]);

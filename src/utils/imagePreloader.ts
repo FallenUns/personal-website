@@ -64,22 +64,6 @@ const imageBlobCache = new Map<string, string>();
 const videoCache = new Map<string, HTMLVideoElement>();
 const videoBlobCache = new Map<string, string>();
 
-// Force image into browser cache using link preload
-const addImageToDocumentCache = (src: string) => {
-  // Check if we already have a preload link for this image
-  const existingLink = document.querySelector(`link[rel="preload"][href="${src}"]`);
-  if (existingLink) return;
-
-  // Create preload link to force browser caching
-  const link = document.createElement('link');
-  link.rel = 'preload';
-  link.as = 'image';
-  link.href = src;
-  // Don't set crossorigin for same-origin resources to avoid mismatch warnings
-  // crossorigin is only needed for cross-origin resources
-  document.head.appendChild(link);
-};
-
 // Preload a single image and return a promise
 export const preloadImage = (src: string): Promise<HTMLImageElement> => {
   // Return cached image if already loaded
@@ -88,9 +72,6 @@ export const preloadImage = (src: string): Promise<HTMLImageElement> => {
   }
 
   return new Promise((resolve, reject) => {
-    // First, add to browser's preload cache
-    addImageToDocumentCache(src);
-    
     // Fetch as blob for better caching - use same-origin mode for local resources
     fetch(src, { 
       mode: 'same-origin',
@@ -257,9 +238,6 @@ export const preloadAllImages = (
   const startTime = performance.now();
   
   console.log(`🚀 Starting to preload ${allImages.length} images:`, allImages);
-  
-  // Force browser to preload each image by adding preload links immediately
-  allImages.forEach(src => addImageToDocumentCache(src));
   
   const promises = allImages.map((src) => {
     return preloadImage(src)

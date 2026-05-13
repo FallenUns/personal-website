@@ -31,6 +31,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
   const [autoHidePrevented, setAutoHidePrevented] = useState(false);
   const [hasLoadersRegistered, setHasLoadersRegistered] = useState(false);
   const hideTimeoutRef = useRef<number | null>(null);
+  const lastLoggedProgressRef = useRef<number | null>(null);
 
   const registerLoader = useCallback((id: string) => {
     setLoaders(prev => new Set(prev).add(id));
@@ -84,7 +85,8 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     const rawProgress = Math.floor((loadedCount / totalLoaders) * 100);
     
     // Log progress periodically
-    if (rawProgress % 10 === 0 && rawProgress !== progress) {
+    if (rawProgress % 10 === 0 && lastLoggedProgressRef.current !== rawProgress) {
+      lastLoggedProgressRef.current = rawProgress;
       console.log(`📊 Loading: ${loadedCount}/${totalLoaders} loaders (${rawProgress}%)`);
       console.log(`   Registered: [${Array.from(loaders).join(', ')}]`);
       console.log(`   Loaded: [${Array.from(loadedItems).join(', ')}]`);

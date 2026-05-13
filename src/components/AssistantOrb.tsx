@@ -179,7 +179,15 @@ const AssistantOrb: React.FC<AssistantOrbProps> = ({
           this.handlePressStart(touch.clientX, touch.clientY);
         });
         
+        // Document-level touchmove — ONLY consume the event (preventDefault)
+        // while the orb is actively being dragged. Previously this listener
+        // preventDefault()'d every touchmove site-wide, which killed native
+        // page scrolling everywhere — most visibly in the Projects carousel
+        // (no vertical scroll, no horizontal swipe). The `isDragging` gate
+        // restores normal page scroll/swipe behaviour and only intercepts
+        // touches once the user has actually grabbed the orb.
         document.addEventListener('touchmove', (e) => {
+          if (!this.isDragging) return;
           if (e.touches.length > 0) {
             e.preventDefault();
             const touch = e.touches[0];
