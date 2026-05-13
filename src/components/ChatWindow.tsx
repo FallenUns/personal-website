@@ -79,28 +79,36 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [latestResponse, showOutput, messages.length, lastTypedMessageId]);
 
-  // Handle clicking outside the chat windows to close
+  // Handle tapping/clicking outside the chat windows to close.
+  // Previously this only listened to `mousedown` — but on touch devices,
+  // tap → mousedown synthesis is unreliable (it can be delayed or skipped
+  // entirely if the touch target has gesture handlers), so mobile users
+  // had no way to dismiss the chat. Adding `touchstart` makes tap-to-
+  // close work on phone/tablet alongside the existing mouse path.
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Don't close while AI is typing
+    const handleOutside = (event: MouseEvent | TouchEvent) => {
       if (isAITyping) return;
-      
-      const target = event.target as HTMLElement;
+
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
       const isOutsideResponse = responseRef.current && !responseRef.current.contains(target);
       const isOutsideInput = inputContainerRef.current && !inputContainerRef.current.contains(target);
-      
-      // Check if clicked on the assistant icon (don't close - let the orb handle its own click)
       const isAssistantIcon = target.closest('.assistant-icon-container') || target.closest('.assistant-icon-wrapper');
+      // Don't close when tapping the new explicit close button — it has its
+      // own handler that calls onClose.
+      const isCloseButton = target.closest('[data-chat-close]');
 
-      if (isChatOpen && isOutsideResponse && isOutsideInput && !isAssistantIcon) {
+      if (isChatOpen && isOutsideResponse && isOutsideInput && !isAssistantIcon && !isCloseButton) {
         onClose();
       }
     };
     if (isChatOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleOutside);
+      document.addEventListener('touchstart', handleOutside, { passive: true });
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('touchstart', handleOutside);
     };
   }, [isChatOpen, isAITyping, onClose]);
 
@@ -228,10 +236,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 disabled={isAITyping} // Input is disabled when AI is typing
-                className={`w-full h-full bg-transparent text-white placeholder-white/70 px-4 outline-none border-none ${isAITyping ? 'cursor-not-allowed' : ''}`}
+                className={`w-full h-full bg-transparent text-white placeholder-white/70 pl-4 pr-12 outline-none border-none ${isAITyping ? 'cursor-not-allowed' : ''}`}
                 placeholder={isAITyping ? 'Waiting for response...' : 'Ask me anything...'}
               />
             </LiquidGlass>
+            {/* Explicit close button overlaid at the right edge of the input.
+                Mobile users had no way to dismiss the chat — `mousedown`-only
+                outside detection didn't reliably fire on touch, and there was
+                no visible close affordance. This button calls onClose on
+                both tap and click. The `data-chat-close` attribute prevents
+                the outside-tap listener from also firing onClose (double-
+                close, harmless but noisy in state). */}
+            <button
+              type="button"
+              data-chat-close
+              onClick={onClose}
+              aria-label="Close chat"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-[110] w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:bg-white/25 backdrop-blur-md border border-white/15 text-white/85 transition-colors"
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+              </svg>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -117,8 +117,11 @@ const DustToOrbLoader: React.FC = () => {
         }}
       />
 
-      {/* Top-left brand stamp */}
-      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 text-white/55 text-[10px] sm:text-xs uppercase tracking-[0.45em] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] flex items-center gap-3">
+      {/* Top-left brand stamp — hidden on mobile (<640 px) because the full
+          "PATRICK ADRIANUS — PORTFOLIO" string at 0.45em tracking collides
+          with the "SYSTEM ONLINE" status on the right side of the screen.
+          Tablet+ has room for both. */}
+      <div className="hidden sm:flex absolute top-6 left-6 sm:top-8 sm:left-8 text-white/55 text-[10px] sm:text-xs uppercase tracking-[0.45em] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] items-center gap-3">
         <span aria-hidden="true" className="inline-block w-6 h-px bg-white/35" />
         <span>Patrick Adrianus — Portfolio</span>
       </div>
