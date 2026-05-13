@@ -1,9 +1,17 @@
 import React from 'react';
 import { hudLog } from '../hooks/useHudBus';
-import { motion, useInView } from 'framer-motion';
+import {
+  motion,
+  useInView,
+  useScroll,
+  useTransform,
+  useMotionValueEvent,
+} from 'framer-motion';
+import RotatingText, { type RotatingTextRef } from './animations/RotatingText';
 import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 import { navigateTo } from '../utils/router';
+import { StickySectionBackground } from './visuals/SectionBackground';
 import {
   experiences,
   formatPeriod,
@@ -13,7 +21,54 @@ import type {
   Experience
 } from '../data/experiences';
 
+// Module-scope: sort experiences chronologically (earliest first) and dedupe
+// the year labels for the YearBillboard. Stable across renders.
+const sortedExps = [...experiences].sort((a, b) => {
+  const da = a.start.year * 12 + a.start.month;
+  const db = b.start.year * 12 + b.start.month;
+  return da - db;
+});
+const yearLabels: string[] = Array.from(
+  new Set(sortedExps.map((e) => String(e.start.year)))
+);
 
+// Bridge placeholders — consumed in Task 2 / Task 3; remove when used.
+void useScroll; void useTransform; void useMotionValueEvent; void RotatingText;
+type _RotatingTextRefAlias = RotatingTextRef;
+
+/**
+ * Gate for the horizontal scrolljack layout.
+ *
+ * Returns true when both:
+ *   - viewport ≥ 768px (scrolljacks are bad UX on touch)
+ *   - `prefers-reduced-motion: no-preference` (the slide is contemplative
+ *     but the locked-scroll feel is disorienting for users with vestibular
+ *     sensitivity, so we honour the OS hint)
+ *
+ * Listens to both media queries live so resizing or toggling Reduce Motion
+ * in System Settings flips the layout without a refresh.
+ */
+const useIsHorizontalEnabled = (): boolean => {
+  const [enabled, setEnabled] = React.useState(() => {
+    if (typeof window === 'undefined') return true;
+    const wide = window.matchMedia('(min-width: 768px)').matches;
+    const noReduce = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    return wide && noReduce;
+  });
+  React.useEffect(() => {
+    const mqWide = window.matchMedia('(min-width: 768px)');
+    const mqReduce = window.matchMedia('(prefers-reduced-motion: no-preference)');
+    const sync = () => setEnabled(mqWide.matches && mqReduce.matches);
+    sync();
+    mqWide.addEventListener?.('change', sync);
+    mqReduce.addEventListener?.('change', sync);
+    return () => {
+      mqWide.removeEventListener?.('change', sync);
+      mqReduce.removeEventListener?.('change', sync);
+    };
+  }, []);
+  return enabled;
+};
 
 const Tag: React.FC<{ text: string; index?: number }> = ({ text, index = 0 }) => (
   <motion.span
@@ -385,11 +440,12 @@ const ExperienceSection: React.FC = () => {
     <motion.section
       ref={sectionRef}
       id="experience"
-      className="min-h-screen w-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 pt-24 pb-14 relative overflow-hidden"
+      className="relative min-h-screen w-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 pt-24 pb-14"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 30 : 0 }}
       transition={{ duration: 0.8, ease: 'easeOut', delay: isLoading ? 0 : 0.8 }}
     >
+      <StickySectionBackground variant="experience" />
       {/* Animated background elements */}
       <motion.div
         className="absolute inset-0 opacity-5"
