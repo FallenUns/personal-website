@@ -5,7 +5,7 @@ import { navigateTo } from '../utils/router';
 const Logo: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [clickCount, setClickCount] = useState(0);
-  const clickTimeoutRef = useRef<number | null>(null);
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleClick = () => {
     // Clear existing timeout
