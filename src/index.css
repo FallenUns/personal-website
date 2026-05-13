@@ -4,8 +4,12 @@
 /*  Global resets & scroll */
 /* ------------------------------ */
 
+/* Lenis measures the body's natural height to compute its scroll limit.
+   Forcing `height: 100%` clamps the body to viewport height which makes Lenis
+   report limit=0 and the scroll rail/section indicator stop tracking. Use
+   `min-height` so the body still fills short pages but grows with content. */
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
@@ -46,9 +50,10 @@ body {
   backface-visibility: hidden;
 }
 
-/* Smooth scrolling for the entire page */
+/* Lenis (in App.tsx) handles smoothing — leave native scroll-behavior off so
+   anchor jumps don't snap before Lenis can ease them. */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   overscroll-behavior: contain;
 }
 
@@ -215,6 +220,181 @@ nav *, .nav *, .menu * {
 .detail-readable,
 .detail-readable * {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* =================================================================== */
+/*  Display typography + kinetic hero                                  */
+/* =================================================================== */
+
+.font-display {
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-feature-settings: 'ss01' on, 'ss02' on;
+  letter-spacing: -0.035em;
+}
+
+.font-body-grotesk {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  letter-spacing: -0.005em;
+}
+
+/* Hero h1: oversized fluid type. Capped a touch lower than 8.6vw so the
+   three-line headline fits inside the centred hero viewport without clipping
+   the eyebrow above. */
+.hero-display {
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.75rem, 7.4vw, 6.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.hero-display .word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.hero-display .word > span {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.hero-display .name {
+  font-weight: 900;
+  /* The decrypted-text effect wraps each character in its own <span>. The
+     gradient/clip styling MUST live on each child span (.name-char) — if we
+     set it on the wrapper alone, child spans inherit
+     `-webkit-text-fill-color: transparent` with no background of their own
+     and render invisibly. The wrapper only carries shared filters. */
+  filter: drop-shadow(0 6px 26px rgba(0, 0, 0, 0.6))
+          drop-shadow(0 0 32px rgba(125, 145, 255, 0.18));
+  padding-bottom: 0.04em;
+}
+
+/* Per-character gradient — paints inside each <span> the decrypter emits. */
+.hero-display .name-char {
+  font-weight: 900;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f3ff 35%, #c9d3ff 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* Dimmed/encrypted state — solid translucent white so the scrambled chars
+   still read clearly while the reveal is in progress. */
+.hero-display .name-char-dim {
+  font-weight: 900;
+  background: none;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.45);
+          color: rgba(255, 255, 255, 0.45);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+}
+
+/* Mobile: drop the gradient (can look dim against dark sections) and use
+   solid white with a strong shadow for guaranteed contrast. */
+@media (max-width: 640px) {
+  .hero-display .name-char {
+    background: none;
+    -webkit-text-fill-color: #ffffff;
+            color: #ffffff;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75),
+                 0 0 22px rgba(125, 145, 255, 0.25);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Reusable kinetic text effects.
+
+   - `.shiny-text`   metallic shine sweeps across the glyphs (eyebrows, tags)
+   - `.gradient-text` slow animated rainbow gradient (highlight words)
+   - `.aurora-text`   warmer aurora-style gradient for headline accents
+   All are pure CSS so they cost nothing at runtime once painted.
+   ────────────────────────────────────────────────────────────────────── */
+
+@keyframes shiny-sweep {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.shiny-text {
+  background-image: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.55) 38%,
+    #ffffff 50%,
+    rgba(255, 255, 255, 0.55) 62%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+  animation: shiny-sweep 4.5s linear infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+.gradient-text {
+  background-image: linear-gradient(
+    90deg,
+    #a78bfa 0%,
+    #f472b6 25%,
+    #38bdf8 50%,
+    #a78bfa 75%,
+    #f472b6 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+  animation: gradient-shift 8s ease-in-out infinite;
+  text-shadow: 0 1px 12px rgba(167, 139, 250, 0.18);
+}
+
+.aurora-text {
+  background-image: linear-gradient(
+    90deg,
+    #ffd6a5 0%,
+    #ffadad 25%,
+    #bdb2ff 50%,
+    #a0c4ff 75%,
+    #ffd6a5 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+  animation: gradient-shift 10s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shiny-text,
+  .gradient-text,
+  .aurora-text {
+    animation: none;
+  }
+}
+
+/* (refraction-stripe sweep removed — felt artificial against real refraction
+   coming from the new 3D glass object in the hero) */
+
+/* Subtle accent eyebrow on top of the hero */
+.hero-eyebrow {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 /* For the new dynamic border effect */
