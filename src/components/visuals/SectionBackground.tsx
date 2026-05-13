@@ -1,6 +1,8 @@
 // src/components/visuals/SectionBackground.tsx
 import React from 'react';
-import Beams from './Beams/Beams';
+// Beams removed — read as harsh diagonal "intersections" by the user. Base is
+// now a static CSS radial gradient (no shader). Per-section overlays still
+// run their own canvases for character.
 import DotGrid from './DotGrid/DotGrid';
 import LightRays from './LightRays/LightRays';
 import Particles from './Particles/Particles';
@@ -10,10 +12,21 @@ type StickySectionBackgroundProps = {
   variant: 'experience' | 'projects' | 'contact';
 };
 
+// Experience overlay tunings: smaller dots (6px, was 16 default) on a tighter
+// grid (gap 22) read as a finer "texture" rather than a chunky polka-dot.
+// Mask wrapping (applied per-variant below) fades the grid in the top/bottom
+// 18% of the viewport so it doesn't slam into the section edges.
 const effectByVariant = {
-  experience: <DotGrid />,
+  experience: <DotGrid dotSize={6} gap={22} proximity={120} />,
   projects: <LightRays />,
   contact: <Particles />,
+};
+
+const maskByVariant: Record<'experience' | 'projects' | 'contact', string | undefined> = {
+  experience:
+    'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
+  projects: undefined,
+  contact: undefined,
 };
 
 const phaseFromHour = (hour: number) => {
@@ -58,6 +71,13 @@ const auraByPhase = {
   },
 };
 
+/**
+ * Static base — pure CSS radial gradient tinted with the time-of-day primary
+ * colour. No shader, no diagonals, no per-frame paint. The most "seamless"
+ * possible base because there's nothing animating that could read as a
+ * section seam. Per-section overlays (DotGrid / LightRays / Particles)
+ * provide the kinetic character.
+ */
 const BaseAurora: React.FC = () => {
   const { hour } = useTime();
   const aura = auraByPhase[phaseFromHour(hour)];
@@ -67,27 +87,12 @@ const BaseAurora: React.FC = () => {
       style={{
         position: 'absolute',
         inset: 0,
-        opacity: aura.opacity,
+        background: `radial-gradient(120% 80% at 50% 30%, ${aura.color1}22 0%, ${aura.color2}11 35%, #07060d 70%, #030206 100%)`,
+        opacity: aura.opacity + 0.25,
         filter: `saturate(${aura.saturate})`,
+        transition: 'background 1.2s ease-out',
       }}
-    >
-      {/* Beams replaces the previous SoftAurora base — same time-of-day palette
-          hooks (color1 → lightColor), tuned for visible-but-ambient presence:
-          14 thin beams at a 30° diagonal flow with soft noise variation. Speed
-          is scaled up from auraByPhase.speed (which targeted SoftAurora's
-          slow cosine drift) since Beams' speed controls a faster ribbon
-          translation. */}
-      <Beams
-        lightColor={aura.color1}
-        speed={aura.speed * 3.6}
-        beamNumber={14}
-        beamWidth={2.2}
-        beamHeight={15}
-        noiseIntensity={1.75}
-        scale={0.2}
-        rotation={30}
-      />
-    </div>
+    />
   );
 };
 
@@ -107,6 +112,8 @@ export const StickySectionBackground: React.FC<StickySectionBackgroundProps> = (
           position: 'absolute',
           inset: 0,
           opacity: 0.35,
+          maskImage: maskByVariant[variant],
+          WebkitMaskImage: maskByVariant[variant],
         }}
       >
         {effectByVariant[variant]}
