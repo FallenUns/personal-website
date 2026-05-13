@@ -6,6 +6,7 @@ import {
   useScroll,
   useTransform,
   useMotionValueEvent,
+  type MotionValue,
 } from 'framer-motion';
 import RotatingText, { type RotatingTextRef } from './animations/RotatingText';
 import LiquidGlass from './LiquidGlass';
@@ -32,9 +33,8 @@ const yearLabels: string[] = Array.from(
   new Set(sortedExps.map((e) => String(e.start.year)))
 );
 
-// Bridge placeholders — consumed in Task 2 / Task 3; remove when used.
-void useScroll; void useTransform; void useMotionValueEvent; void RotatingText;
-type _RotatingTextRefAlias = RotatingTextRef;
+// Bridge placeholders — consumed in Task 3; remove when used.
+void useScroll; void useTransform;
 
 /**
  * Gate for the horizontal scrolljack layout.
@@ -378,6 +378,78 @@ const ExperienceItem: React.FC<{
           <div className="hidden md:block" />
         ) : null}
       </div>
+    </div>
+  );
+};
+
+interface YearBillboardProps {
+  /** All year labels in chronological order, deduped. */
+  yearLabels: string[];
+  /** Scroll progress through the parent section (0..1). */
+  scrollYProgress: MotionValue<number>;
+  /** For each card index, the scroll-progress value at which it sits centred. */
+  cardCenters: number[];
+}
+
+/**
+ * Giant year display that snaps to whichever card is centred. Uses
+ * RotatingText's imperative ref (jumpTo) so the existing character-stagger
+ * animation fires on each year change — no auto-rotate, no interval.
+ */
+const YearBillboard: React.FC<YearBillboardProps> = ({
+  yearLabels,
+  scrollYProgress,
+  cardCenters,
+}) => {
+  const rotatingRef = React.useRef<RotatingTextRef>(null);
+  const lastIdxRef = React.useRef(0);
+
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    if (cardCenters.length === 0) return;
+    // Pick the card whose centre is nearest to current progress.
+    let nearest = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < cardCenters.length; i++) {
+      const d = Math.abs(cardCenters[i] - v);
+      if (d < bestDist) {
+        bestDist = d;
+        nearest = i;
+      }
+    }
+    const year = String(sortedExps[nearest].start.year);
+    const yearIdx = yearLabels.indexOf(year);
+    if (yearIdx !== -1 && yearIdx !== lastIdxRef.current) {
+      lastIdxRef.current = yearIdx;
+      rotatingRef.current?.jumpTo(yearIdx);
+    }
+  });
+
+  return (
+    <div
+      className="pointer-events-none absolute top-0 left-0 right-0 z-10 px-[6vw] pt-10 flex items-baseline gap-6"
+      aria-hidden="true"
+    >
+      <span className="text-white/55 text-xs uppercase tracking-[0.32em] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+        Where I've worked
+      </span>
+      <RotatingText
+        ref={rotatingRef}
+        texts={yearLabels}
+        auto={false}
+        loop={false}
+        rotationInterval={999999}
+        staggerDuration={0.04}
+        staggerFrom="last"
+        splitBy="characters"
+        mainClassName="font-black tracking-tight text-white leading-none"
+        elementLevelClassName="text-[14vw] sm:text-[12vw] md:text-[10vw] lg:text-[9vw]"
+        splitLevelClassName="overflow-hidden"
+        transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+        initial={{ y: '110%', opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: '-110%', opacity: 0 }}
+        style={{ textShadow: '0 4px 28px rgba(0,0,0,0.7)' }}
+      />
     </div>
   );
 };
