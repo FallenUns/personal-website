@@ -8,6 +8,7 @@ import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { TimeProvider } from './contexts/TimeContext';
 import { useCriticalResourceLoader, useImagePreloader } from './hooks/useAssetPreloader';
 import SectionBackground from './components/visuals/SectionBackground';
+import CursorSpotlight from './components/animations/CursorSpotlight';
 import HeroSection from './components/HeroSection';
 import SkillsMarquee from './components/SkillsMarquee';
 import FilmGrain from './components/FilmGrain';
@@ -295,6 +296,9 @@ const AppContent: React.FC = () => {
           transition: isLoading ? 'none' : 'opacity 0.8s ease-out'
         }}>
           <SectionBackground />
+          {/* Site-wide cursor spotlight — fixed-position, tracks the cursor
+              across every section instead of only the hero. */}
+          <CursorSpotlight fixed />
 
           <Navbar
             time={currentTime}

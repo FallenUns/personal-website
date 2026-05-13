@@ -7,7 +7,8 @@ import { PreloadedImage } from '../utils/preloadedImageHooks';
 import { scrollToSection } from '../utils/navigation';
 import DecryptedText from './animations/DecryptedText';
 import RotatingText from './animations/RotatingText';
-import CursorSpotlight from './animations/CursorSpotlight';
+// CursorSpotlight moved to App.tsx root with fixed=true so it tracks the
+// cursor across every section. Removed from HeroSection.
 import MatrixRain from './visuals/MatrixRain';
 import { isLowPerformanceDevice } from '../utils/performance';
 
@@ -126,13 +127,31 @@ const HeroSection: React.FC = () => {
       )}
 
       <section ref={heroRef} id="about" className="min-h-[100svh] lg:h-[100svh] box-border flex flex-col lg:flex-row items-start lg:items-center justify-center px-5 sm:px-10 md:px-16 lg:px-32 pt-24 pb-8 sm:pb-10 lg:pt-20 lg:pb-20 relative overflow-hidden">
-        {!isLowPerformanceDevice() && <MatrixRain opacity={0.12} />}
-        {/* Pure-visual cursor-tracked spotlight — pointer-events:none so it
-            never blocks clicks; lives behind the content (z-index 0). */}
-        <CursorSpotlight />
+        {!isLowPerformanceDevice() && (
+          // Bottom-fade mask so the matrix rain doesn't slam into the section
+          // edge as a visible horizontal line — fades over the last 35% of
+          // the hero's height into transparent, blending with whatever's
+          // below.
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              pointerEvents: 'none',
+              maskImage:
+                'linear-gradient(180deg, black 0%, black 55%, rgba(0,0,0,0.55) 80%, transparent 100%)',
+              WebkitMaskImage:
+                'linear-gradient(180deg, black 0%, black 55%, rgba(0,0,0,0.55) 80%, transparent 100%)',
+            }}
+          >
+            <MatrixRain opacity={0.14} impactLine impactOffset={28} />
+          </div>
+        )}
+        {/* CursorSpotlight is now mounted globally at App.tsx root (fixed
+            position) so it follows the cursor across every section. */}
         <motion.div
           style={{ opacity: heroOpacity, scale: heroScale, y: heroLift }}
-          className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full max-w-[1720px] mx-auto mt-0 gap-8 lg:gap-10"
+          className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between w-full max-w-[1720px] mx-auto mt-0 gap-8 lg:gap-10"
         >
           {/* Left side - Text content */}
           <motion.div
@@ -282,13 +301,13 @@ const HeroSection: React.FC = () => {
                     overLight={false}
                     onClick={() => {
                       try {
-                        window.open('/resume.pdf', '_blank');
+                        window.open('/Patrick%20Adrianus%20-%20Resume.pdf', '_blank');
                       } catch (error) {
                         console.error('Failed to open Resume:', error);
                         // Fallback to download
                         const link = document.createElement('a');
-                        link.href = '/resume.pdf';
-                        link.download = 'Patrick_Adrianus_Resume.pdf';
+                        link.href = '/Patrick%20Adrianus%20-%20Resume.pdf';
+                        link.download = 'Patrick Adrianus - Resume.pdf';
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);

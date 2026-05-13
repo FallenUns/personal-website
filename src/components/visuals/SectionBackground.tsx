@@ -82,13 +82,22 @@ const BaseAurora: React.FC = () => {
   const { hour } = useTime();
   const aura = auraByPhase[phaseFromHour(hour)];
 
+  // Two-blob mesh gradient (Stripe-style). Two large overlapping radials hold
+  // colour across the whole viewport — the bg never collapses to flat dark.
+  // Both blobs sit at ~50% alpha so they're clearly visible but never fight
+  // text contrast. Base layer beneath is deep slate (not pure black) so the
+  // edges of the blobs feather into something with hue rather than into void.
   return (
     <div
       style={{
         position: 'absolute',
         inset: 0,
-        background: `radial-gradient(120% 80% at 50% 30%, ${aura.color1}22 0%, ${aura.color2}11 35%, #07060d 70%, #030206 100%)`,
-        opacity: aura.opacity + 0.25,
+        background: `
+          radial-gradient(1100px circle at 18% 24%, ${aura.color1}80 0%, ${aura.color1}00 55%),
+          radial-gradient(1200px circle at 82% 78%, ${aura.color2}66 0%, ${aura.color2}00 55%),
+          #0a0816
+        `,
+        opacity: aura.opacity + 0.4,
         filter: `saturate(${aura.saturate})`,
         transition: 'background 1.2s ease-out',
       }}
