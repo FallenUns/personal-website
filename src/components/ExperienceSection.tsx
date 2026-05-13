@@ -457,7 +457,7 @@ interface HorizontalExperienceTimelineProps {
 }
 
 const CARD_WIDTH = 720;
-const CARD_HEIGHT = 480;
+const CARD_HEIGHT = 380;
 const CARD_GAP = 32;
 
 /**
@@ -623,7 +623,7 @@ const ExperienceSection: React.FC = () => {
     <motion.section
       ref={sectionRef}
       id="experience"
-      className="relative min-h-screen w-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 pt-24 pb-14"
+      className={`relative min-h-screen w-full flex items-center justify-center ${isHorizontal ? '' : 'px-4 sm:px-8 md:px-16 lg:px-24'} pt-24 pb-14`}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 30 : 0 }}
       transition={{ duration: 0.8, ease: 'easeOut', delay: isLoading ? 0 : 0.8 }}
