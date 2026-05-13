@@ -56,6 +56,16 @@ const describeInteractiveTarget = (element: Element): string => {
   return label ? `${tag} "${label}"` : tag;
 };
 
+const loadingDebugLine = (bucket: number): string => {
+  if (bucket >= 100) return '> runtime.ready() ............... 100%';
+  if (bucket >= 90) return '> compositor.fx ................. finalizing';
+  if (bucket >= 70) return '> scene.graph.mount() ............ syncing';
+  if (bucket >= 50) return '> shaders.pipeline ............... linking';
+  if (bucket >= 30) return '> media.cache.warm() ............. buffering';
+  if (bucket >= 10) return '> assets.manifest.scan() ......... indexing';
+  return '> bootloader.attach() ............ active';
+};
+
 const TerminalHud: React.FC = () => {
   const [uptime, setUptime] = useState(0);
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -123,7 +133,7 @@ const TerminalHud: React.FC = () => {
   // lets the terminal feel alive even while the loader overlay is still up.
   // The `hasBootedRef` survives React StrictMode's double-mount in dev so
   // boot only runs once per page lifecycle.
-  const { isLoading } = useLoading();
+  const { isLoading, progress } = useLoading();
   const hasBootedRef = React.useRef(false);
   useEffect(() => {
     if (hasBootedRef.current) return;
@@ -134,7 +144,7 @@ const TerminalHud: React.FC = () => {
       { text: '> liquid_glass.shader → mounted',    level: 'info' },
       { text: '> camera_wheel.spy(4 sections)',     level: 'info' },
       { text: '> tech_stack.load(36 items)',        level: 'info' },
-      { text: '> ready. listening for events…',    level: 'ok' },
+      { text: '> terminal.stream → live',           level: 'ok' },
     ];
 
     // Reduced-motion: skip the typewriter and dump all lines instantly.
@@ -167,6 +177,28 @@ const TerminalHud: React.FC = () => {
 
     return () => { cancelled = true; };
   }, []);
+
+  const lastProgressBucketRef = React.useRef<number | null>(null);
+  const loaderCompletionLoggedRef = React.useRef(false);
+  useEffect(() => {
+    const safeProgress = Math.max(0, Math.min(100, Math.floor(progress || 0)));
+    const bucket = safeProgress >= 100 ? 100 : Math.floor(safeProgress / 10) * 10;
+
+    if (isLoading) {
+      loaderCompletionLoggedRef.current = false;
+      if (lastProgressBucketRef.current !== bucket) {
+        lastProgressBucketRef.current = bucket;
+        hudLog(loadingDebugLine(bucket), bucket >= 100 ? 'ok' : 'info');
+      }
+      return;
+    }
+
+    if (!loaderCompletionLoggedRef.current) {
+      loaderCompletionLoggedRef.current = true;
+      lastProgressBucketRef.current = 100;
+      hudLog('> handoff.main_content() ........ ok', 'ok');
+    }
+  }, [isLoading, progress]);
 
   return (
     <>

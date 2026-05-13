@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { hudLog } from './useHudBus';
+import { useLoading } from '../contexts/LoadingContext';
 
 // Multiple UI surfaces consume the scroll spy at once (navbar, camera wheel,
 // side progress rail). The terminal should still report a section transition
@@ -20,6 +21,7 @@ export const useScrollSpy = (
   }
 ): string | null => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const { isLoading } = useLoading();
   const { offset = 100, threshold = 0.1 } = options || {};
   
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -79,7 +81,9 @@ export const useScrollSpy = (
 
         const commit = (next: string | null) => {
           if (next && globallyLoggedSection !== next) {
-            hudLog(`> section: ${next}`, 'ok');
+            if (!isLoading) {
+              hudLog(`> section: ${next}`, 'ok');
+            }
             globallyLoggedSection = next;
           }
           setActiveSection(next);
@@ -106,7 +110,7 @@ export const useScrollSpy = (
       }
       sectionsRef.current.clear();
     };
-  }, [sectionIds, offset, threshold]);
+  }, [sectionIds, offset, threshold, isLoading]);
 
   return activeSection;
 };
