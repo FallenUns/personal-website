@@ -23,14 +23,19 @@ export const FeedbackButton: React.FC = () => {
     <>
       {/* Floating Feedback Button */}
       <motion.div
-        className="feedback-fab fixed left-3 top-1/2 sm:left-6 z-40"
+        // Mobile: pin to bottom-left so it doesn't float at mid-screen
+        // crowding hero content. Desktop (sm+): keep the original
+        // vertically-centred left rail. The inner translate-y-1/2 is also
+        // gated to sm+ — at mobile we want the button anchored at its
+        // bottom-left, no centring offset.
+        className="feedback-fab fixed left-4 bottom-6 sm:left-6 sm:top-1/2 sm:bottom-auto z-40"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 2, duration: 0.5, type: "spring" }}
       >
         <div
-          className="-translate-y-1/2"
-          style={{ 
+          className="sm:-translate-y-1/2"
+          style={{
             cursor: 'pointer',
             position: 'relative',
             zIndex: 20,

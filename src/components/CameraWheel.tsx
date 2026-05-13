@@ -39,6 +39,25 @@ const polar = (angle: number, r: number) => {
 };
 
 const CameraWheel: React.FC = () => {
+  // Mobile gate — at 285×560 fixed top-right, the wheel covered ~73 % of a
+  // 390 px viewport's right half. Its `pointer-events: auto` then ate every
+  // tap on the project/experience cards stacked beneath it, which is why
+  // taps on those sections felt dead on phone. The wheel is a desktop
+  // navigation aid; on mobile users just scroll, so we don't mount it at
+  // all below 768 px (no DOM cost, no event interception).
+  const [isMobile, setIsMobile] = React.useState(() =>
+    typeof window === 'undefined'
+      ? false
+      : window.matchMedia('(max-width: 768px)').matches,
+  );
+  React.useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener?.('change', sync);
+    return () => mq.removeEventListener?.('change', sync);
+  }, []);
+
   // Rotation snaps to the active section index. The spring below provides the
   // smooth between-section interpolation, while integer snapping guarantees
   // the active label sits at exactly visible angle 0 (no sub-pixel drift
@@ -117,6 +136,8 @@ const CameraWheel: React.FC = () => {
     if (Math.abs(a % STEP) < 0.01) continue;
     minorTicks.push(a);
   }
+
+  if (isMobile) return null;
 
   return (
     <div

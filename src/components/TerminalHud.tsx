@@ -67,6 +67,21 @@ const loadingDebugLine = (bucket: number): string => {
 };
 
 const TerminalHud: React.FC = () => {
+  // Mobile gate — the terminal is a desktop-only HUD. At ≤768 px the
+  // bottom-left panel collides with the AI orb and feedback FAB, and the
+  // user explicitly asked for it to be scrapped on phone. Return null at
+  // mobile breakpoint so it never mounts (no listeners, no DOM cost).
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window === 'undefined' ? false : window.matchMedia('(max-width: 768px)').matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener?.('change', sync);
+    return () => mq.removeEventListener?.('change', sync);
+  }, []);
+
   const [uptime, setUptime] = useState(0);
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try {
@@ -199,6 +214,8 @@ const TerminalHud: React.FC = () => {
       hudLog('> handoff.main_content() ........ ok', 'ok');
     }
   }, [isLoading, progress]);
+
+  if (isMobile) return null;
 
   return (
     <>

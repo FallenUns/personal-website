@@ -173,11 +173,17 @@ const AssistantOrb: React.FC<AssistantOrbProps> = ({
           this.handlePressEnd();
         });
         
+        // The container is fixed at the bottom-right corner — when the user
+        // tries to scroll the page by touching anywhere inside the orb's
+        // 130×130 hit area, the unconditional preventDefault() killed the
+        // scroll gesture before the browser could interpret it. Use
+        // `{ passive: true }` so the browser keeps native scroll behaviour
+        // and the orb still picks up the touch as a press for its own drag
+        // handling.
         this.container.addEventListener('touchstart', (e) => {
-          e.preventDefault();
           const touch = e.touches[0];
           this.handlePressStart(touch.clientX, touch.clientY);
-        });
+        }, { passive: true });
         
         // Document-level touchmove — ONLY consume the event (preventDefault)
         // while the orb is actively being dragged. Previously this listener

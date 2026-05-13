@@ -149,7 +149,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="response-window fixed bottom-[120px] right-[170px] z-[50] max-w-sm"
+            // Mobile (< sm): bottom-anchored above the input + orb, centred
+            // horizontally. The previous `right-[170px]` overflowed off
+            // the 390 px viewport. Desktop keeps the original placement.
+            className="response-window fixed bottom-[180px] left-1/2 -translate-x-1/2 sm:bottom-[120px] sm:right-[170px] sm:left-auto sm:translate-x-0 z-[50] max-w-sm w-[calc(100vw-2rem)] sm:w-auto"
           >
             <LiquidGlass
               className="liquid-glass"
@@ -199,7 +202,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="chat-input-container fixed bottom-[65px] right-[170px] z-[100] max-w-sm"
+            // Mobile: anchor input near the bottom edge, centred, above the
+            // feedback FAB (which now lives at left-3 bottom-28). Desktop
+            // keeps original right-edge placement.
+            className="chat-input-container fixed bottom-[110px] left-1/2 -translate-x-1/2 sm:bottom-[65px] sm:right-[170px] sm:left-auto sm:translate-x-0 z-[100] max-w-sm w-[calc(100vw-2rem)] sm:w-auto"
           >
             <LiquidGlass
               className="liquid-glass"
