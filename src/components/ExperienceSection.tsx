@@ -567,6 +567,7 @@ const HorizontalExperienceTimeline: React.FC<HorizontalExperienceTimelineProps> 
 const ExperienceSection: React.FC = () => {
   useComponentLoader('ExperienceSection');
   const { isLoading } = useLoading();
+  const isHorizontal = useIsHorizontalEnabled();
 
   // Measurement for responsive card width
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -627,167 +628,173 @@ const ExperienceSection: React.FC = () => {
       animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 30 : 0 }}
       transition={{ duration: 0.8, ease: 'easeOut', delay: isLoading ? 0 : 0.8 }}
     >
-      <StickySectionBackground variant="experience" />
-      {/* Animated background elements */}
-      <motion.div
-        className="absolute inset-0 opacity-5"
-        animate={isInView ? {
-          background: [
-            "radial-gradient(circle at 20% 20%, rgba(251, 146, 60, 0.1) 0%, transparent 70%)",
-            "radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 70%)",
-            "radial-gradient(circle at 60% 80%, rgba(251, 146, 60, 0.1) 0%, transparent 70%)",
-            "radial-gradient(circle at 20% 20%, rgba(251, 146, 60, 0.1) 0%, transparent 70%)"
-          ]
-        } : {}}
-        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-      />
-
-      <div className="w-full max-w-6xl relative z-10" ref={containerRef}>
-        {/* Enhanced Header with kinetic display typography */}
-        <div className="text-center text-white mb-12">
+      {isHorizontal ? (
+        <HorizontalExperienceTimeline onViewDetails={handleViewDetails} />
+      ) : (
+        <>
+          <StickySectionBackground variant="experience" />
+          {/* Animated background elements */}
           <motion.div
-            className="flex justify-center mb-4"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="hero-eyebrow inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
-              Where I've worked
-            </span>
-          </motion.div>
-          <motion.h2
-            className="font-display font-extrabold text-[clamp(2.5rem,6vw,5rem)] leading-[0.95] tracking-[-0.04em] mb-5 [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
-            initial={{ opacity: 0, y: 20, scale: 0.96 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="relative inline-block">
-              Experiences
-            </span>
-          </motion.h2>
+            className="absolute inset-0 opacity-5"
+            animate={isInView ? {
+              background: [
+                "radial-gradient(circle at 20% 20%, rgba(251, 146, 60, 0.1) 0%, transparent 70%)",
+                "radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 70%)",
+                "radial-gradient(circle at 60% 80%, rgba(251, 146, 60, 0.1) 0%, transparent 70%)",
+                "radial-gradient(circle at 20% 20%, rgba(251, 146, 60, 0.1) 0%, transparent 70%)"
+              ]
+            } : {}}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
 
-          <motion.p
-            className="text-white/85 max-w-2xl mx-auto mb-8 text-lg font-body-grotesk"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            A journey through data science and full‑stack development, building impactful solutions.
-          </motion.p>
-
-          {/* Experience metrics */}
-          <motion.div
-            className="flex flex-wrap justify-center gap-6 md:gap-12 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {[
-              { label: 'Experience', value: totalMonths, suffix: ' months' },
-              { label: 'Skills', value: totalSkills, suffix: '' },
-              { label: 'Projects', value: totalProjects, suffix: '' }
-            ].map((metric, index) => (
+          <div className="w-full max-w-6xl relative z-10" ref={containerRef}>
+            {/* Enhanced Header with kinetic display typography */}
+            <div className="text-center text-white mb-12">
               <motion.div
-                key={metric.label}
-                className="text-center"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
+                className="flex justify-center mb-4"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
               >
-                <motion.div
-                  className="text-2xl md:text-3xl font-bold text-orange-400 mb-1"
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    delay: 0.3 + index * 0.1,
-                    duration: 0.5,
-                    type: "spring",
-                    stiffness: 150
-                  }}
-                >
-                  <AnimatedCounter value={metric.value} duration={1.2} />
-                  <span className="text-lg">{metric.suffix}</span>
-                </motion.div>
-                <div className="text-white/70 text-sm font-medium">{metric.label}</div>
+                <span className="hero-eyebrow inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
+                  Where I've worked
+                </span>
               </motion.div>
-            ))}
-          </motion.div>
-        </div>
+              <motion.h2
+                className="font-display font-extrabold text-[clamp(2.5rem,6vw,5rem)] leading-[0.95] tracking-[-0.04em] mb-5 [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
+                initial={{ opacity: 0, y: 20, scale: 0.96 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <span className="relative inline-block">
+                  Experiences
+                </span>
+              </motion.h2>
 
-        {/* Enhanced Timeline */}
-        <div className="relative space-y-12">
-          {/* Animated progress line */}
-          <div className="hidden md:block pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1">
-            <div className="w-full h-full bg-white/15 rounded-full" />
-            <TimelineProgress progress={isInView ? 100 : 0} />
-          </div>
+              <motion.p
+                className="text-white/85 max-w-2xl mx-auto mb-8 text-lg font-body-grotesk"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                A journey through data science and full‑stack development, building impactful solutions.
+              </motion.p>
 
-          {/* Timeline items */}
-          {sorted.map((exp, idx) => (
-            <motion.div
-              key={exp.id}
-              className="relative"
-            >
-              <ExperienceItem
-                exp={exp}
-                index={idx}
-                cardWidth={computedCardWidth}
-                isMobile={!isMdUp}
-                onViewDetails={() => handleViewDetails(exp.id)}
-              />
+              {/* Experience metrics */}
+              <motion.div
+                className="flex flex-wrap justify-center gap-6 md:gap-12 mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                {[
+                  { label: 'Experience', value: totalMonths, suffix: ' months' },
+                  { label: 'Skills', value: totalSkills, suffix: '' },
+                  { label: 'Projects', value: totalProjects, suffix: '' }
+                ].map((metric, index) => (
+                  <motion.div
+                    key={metric.label}
+                    className="text-center"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <motion.div
+                      className="text-2xl md:text-3xl font-bold text-orange-400 mb-1"
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{
+                        delay: 0.3 + index * 0.1,
+                        duration: 0.5,
+                        type: "spring",
+                        stiffness: 150
+                      }}
+                    >
+                      <AnimatedCounter value={metric.value} duration={1.2} />
+                      <span className="text-lg">{metric.suffix}</span>
+                    </motion.div>
+                    <div className="text-white/70 text-sm font-medium">{metric.label}</div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
 
-              {/* Optional: Add connecting elements between timeline items */}
-              {idx < sorted.length - 1 && (
+            {/* Enhanced Timeline */}
+            <div className="relative space-y-12">
+              {/* Animated progress line */}
+              <div className="hidden md:block pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1">
+                <div className="w-full h-full bg-white/15 rounded-full" />
+                <TimelineProgress progress={isInView ? 100 : 0} />
+              </div>
+
+              {/* Timeline items */}
+              {sorted.map((exp, idx) => (
                 <motion.div
-                  className="hidden md:block absolute left-1/2 -translate-x-1/2 bottom-0 transform translate-y-6 text-white/20"
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 + 0.5 }}
+                  key={exp.id}
+                  className="relative"
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 16l-4-4h8l-4 4z" />
-                  </svg>
-                </motion.div>
-              )}
-            </motion.div>
-          ))}
-        </div>
+                  <ExperienceItem
+                    exp={exp}
+                    index={idx}
+                    cardWidth={computedCardWidth}
+                    isMobile={!isMdUp}
+                    onViewDetails={() => handleViewDetails(exp.id)}
+                  />
 
-        {/* Call to action */}
-        <motion.div
-          className="text-center mt-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <motion.p
-            className="text-white/70 mb-4"
-            whileHover={{ scale: 1.02 }}
-          >
-            Want to see the full details of any experience?
-          </motion.p>
-          <motion.div
-            className="text-orange-300 text-sm font-medium"
-            animate={{
-              opacity: [0.7, 1, 0.7]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            Click on any card to explore more →
-          </motion.div>
-        </motion.div>
-      </div>
+                  {/* Optional: Add connecting elements between timeline items */}
+                  {idx < sorted.length - 1 && (
+                    <motion.div
+                      className="hidden md:block absolute left-1/2 -translate-x-1/2 bottom-0 transform translate-y-6 text-white/20"
+                      initial={{ opacity: 0, scale: 0 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 + 0.5 }}
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 16l-4-4h8l-4 4z" />
+                      </svg>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Call to action */}
+            <motion.div
+              className="text-center mt-16"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <motion.p
+                className="text-white/70 mb-4"
+                whileHover={{ scale: 1.02 }}
+              >
+                Want to see the full details of any experience?
+              </motion.p>
+              <motion.div
+                className="text-orange-300 text-sm font-medium"
+                animate={{
+                  opacity: [0.7, 1, 0.7]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                Click on any card to explore more →
+              </motion.div>
+            </motion.div>
+          </div>
+        </>
+      )}
     </motion.section>
   );
 };
