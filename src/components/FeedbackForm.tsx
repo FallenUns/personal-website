@@ -118,7 +118,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
           width={starButtonSize}
           height={starButtonSize}
           cornerRadius={starButtonSize / 2}
-          blurAmount={4}
+          blurAmount={2}
           displacementScale={8}
           className="cursor-pointer"
         >
@@ -174,7 +174,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
               width={modalDimensions.width}
               height={modalDimensions.height}
               cornerRadius={24}
-              blurAmount={12}
+              blurAmount={6}
               displacementScale={20}
               mode="shader"
               overLight={false}
@@ -218,7 +218,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                         width={200}
                         height={48}
                         cornerRadius={12}
-                        blurAmount={6}
+                        blurAmount={3}
                         displacementScale={12}
                         mode="shader"
                         className="cursor-pointer mx-auto"
@@ -242,7 +242,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                           width={40}
                           height={40}
                           cornerRadius={20}
-                          blurAmount={6}
+                          blurAmount={3}
                           displacementScale={12}
                           mode="shader"
                           className="cursor-pointer"
@@ -362,7 +362,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                         width={Math.max(240, modalDimensions.width - 72)}
                         height={56}
                         cornerRadius={12}
-                        blurAmount={8}
+                        blurAmount={4}
                         displacementScale={15}
                         mode="shader"
                         overLight={false}
@@ -389,7 +389,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ isOpen, onClose }) =
                     width={Math.max(240, modalDimensions.width - 52)}
                     height={modalDimensions.isMobile ? 50 : 56}
                     cornerRadius={14}
-                    blurAmount={8}
+                    blurAmount={4}
                     displacementScale={18}
                     mode="shader"
                     overLight={false}

@@ -1,13 +1,11 @@
-// Navigation utilities for SPA routing
+// Navigation utilities for SPA routing.
+// Detail pages render as a `fixed inset-0` overlay so we deliberately do NOT
+// touch scroll on push — that lets the underlying page keep its scroll
+// position behind the overlay, so closing the overlay returns the user to
+// exactly where they were instead of jumping back to top and re-scrolling.
 export const navigateTo = (path: string) => {
-  // Use History API to navigate without page reload
   window.history.pushState({}, '', path);
-  
-  // Trigger a popstate event to notify the app of the route change
   window.dispatchEvent(new PopStateEvent('popstate'));
-  
-  // Scroll to top of the page
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 export const navigateBack = () => {

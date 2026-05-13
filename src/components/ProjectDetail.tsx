@@ -187,7 +187,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                   elasticity={0.4}
                   saturation={180}
                   displacementScale={150}
-                  blurAmount={12}
+                  blurAmount={6}
                   mode="shader"
                   overLight={false}
                 >
@@ -216,7 +216,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                   elasticity={0.3}
                   saturation={160}
                   displacementScale={100}
-                  blurAmount={8}
+                  blurAmount={4}
                   mode="polar"
                   overLight={false}
                 >
@@ -495,7 +495,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   elasticity={0.3}
                                   saturation={160}
                                   displacementScale={120}
-                                  blurAmount={10}
+                                  blurAmount={5}
                                   mode="shader"
                                   overLight={false}
                                 >
@@ -515,7 +515,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   elasticity={0.2}
                                   saturation={180}
                                   displacementScale={80}
-                                  blurAmount={6}
+                                  blurAmount={3}
                                   mode="shader"
                                   overLight={false}
                                 >
@@ -535,7 +535,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   elasticity={0.25}
                                   saturation={140}
                                   displacementScale={100}
-                                  blurAmount={8}
+                                  blurAmount={4}
                                   mode="shader"
                                   overLight={false}
                                 >
@@ -555,7 +555,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                   elasticity={0.15}
                                   saturation={200}
                                   displacementScale={90}
-                                  blurAmount={5}
+                                  blurAmount={3}
                                   mode="shader"
                                   overLight={false}
                                 >
@@ -578,7 +578,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 elasticity={0.2}
                                 saturation={140}
                                 displacementScale={60}
-                                blurAmount={4}
+                                blurAmount={2}
                                 mode="shader"
                                 overLight={false}
                               >
@@ -668,7 +668,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                                 elasticity={0.2}
                                 saturation={140}
                                 displacementScale={60}
-                                blurAmount={4}
+                                blurAmount={2}
                                 mode="shader"
                                 overLight={false}
                               >

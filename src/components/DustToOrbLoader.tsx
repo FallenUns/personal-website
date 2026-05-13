@@ -1,413 +1,286 @@
-import React, { useRef, useEffect, useState } from 'react';
-import * as THREE from 'three';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLoading } from '../contexts/LoadingContext';
 
+/**
+ * Minimalist "PA" monogram loader.
+ *
+ * Visual idea: a huge stroked "PA" monogram sits centred. As loading
+ * progresses, a coloured fill rises from the bottom of the letters like liquid
+ * filling a beaker. Underneath, a giant tabular-figure percent readout ticks
+ * up, a 1px progress line fills, and a status label crossfades through phases.
+ *
+ * Replaces the previous dust→orb Three.js loader (heavier, slower to render,
+ * and visually similar to many other portfolios). This one is GPU-cheap
+ * (pure SVG + CSS + framer-motion), boots instantly, and reads as a
+ * luxury-brand intro rather than a generic spinner.
+ *
+ * Identity stays on the loader; the playful text animations (decrypt /
+ * rotating role) now live inside the hero content after load, so they reward
+ * the user for arriving rather than entertaining them while they wait.
+ */
+
+const STATUS_STAGES: { upTo: number; label: string }[] = [
+  { upTo: 25, label: 'Preparing aurora' },
+  { upTo: 55, label: 'Loading liquid glass' },
+  { upTo: 80, label: 'Compiling shaders' },
+  { upTo: 98, label: 'Polishing surfaces' },
+  { upTo: 100, label: 'Ready' },
+];
+
+const statusFor = (p: number) => {
+  for (const s of STATUS_STAGES) if (p <= s.upTo) return s.label;
+  return STATUS_STAGES[STATUS_STAGES.length - 1].label;
+};
+
 const DustToOrbLoader: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | null>(null);
   const { progress, preventAutoHide, allowAutoHide } = useLoading();
-  const [animationPhase, setAnimationPhase] = useState<'forming' | 'greeting' | 'throwing' | 'complete'>('forming');
-  const [showWelcome, setShowWelcome] = useState(false);
   const [displayProgress, setDisplayProgress] = useState(0);
+  const [phase, setPhase] = useState<'loading' | 'ready' | 'exit'>('loading');
   const hasReached100 = useRef(false);
-  const greetingTimerRef = useRef<number | null>(null);
-  const throwTimerRef = useRef<number | null>(null);
-  
-  // Smooth progress animation
+  const readyTimer = useRef<number | null>(null);
+  const exitTimer = useRef<number | null>(null);
+
+  // Smoothly ease displayProgress toward the real progress value so the
+  // counter and bar never snap. Cubic ease-out on a 220ms interpolation.
   useEffect(() => {
-    const targetProgress = Math.max(0, Math.min(100, progress || 0));
-    
-    // Smoothly animate to target progress
-    const duration = 200; // ms
-    const startProgress = displayProgress;
-    const startTime = Date.now();
-    
-    const animateProgress = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Ease out function for smooth deceleration
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      const currentProgress = startProgress + (targetProgress - startProgress) * easeProgress;
-      
-      setDisplayProgress(currentProgress);
-      
-      if (progress < 1) {
-        requestAnimationFrame(animateProgress);
-      }
+    const target = Math.max(0, Math.min(100, progress || 0));
+    const start = displayProgress;
+    const startTime = performance.now();
+    const duration = 220;
+    let raf = 0;
+    const tick = () => {
+      const t = Math.min(1, (performance.now() - startTime) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplayProgress(start + (target - start) * eased);
+      if (t < 1) raf = requestAnimationFrame(tick);
     };
-    
-    animateProgress();
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress]);
-  
-  // Main Three.js animation for dust particles - progressive formation based on loading %
+
+  // Phase handoff at 100%: hold "Ready" for a beat, then fade the whole loader.
   useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-
-    // Three.js setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
-      canvas: canvas, 
-      antialias: true, 
-      alpha: true 
-    });
-    
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
-    
-    camera.position.z = 3;
-    
-    // Particle system - dust particles
-    const particleCount = 2000; // Increased from 800 for more particles
-    const geometry = new THREE.BufferGeometry();
-    
-    const positions = new Float32Array(particleCount * 3);
-    const originalPositions = new Float32Array(particleCount * 3);
-    const targetPositions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-    const velocities = new Float32Array(particleCount * 3); // Add velocity for smooth movement
-    const particleProgress = new Float32Array(particleCount); // Individual progress for each particle
-    const particleStartTime = new Float32Array(particleCount); // When each particle starts moving
-    
-    // Orb radius in 3D space - smaller size during formation
-    const sphereRadius = 0.5; // Reduced from 0.8 to make it smaller
-    const phi = Math.PI * (3 - Math.sqrt(5));
-    
-    // Initialize particles
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      
-      // Random dust positions (scattered)
-      originalPositions[i3] = (Math.random() - 0.5) * 8;
-      originalPositions[i3 + 1] = (Math.random() - 0.5) * 6;
-      originalPositions[i3 + 2] = (Math.random() - 0.5) * 4;
-      
-      // Sphere positions (target)
-      const y = 1 - (i / (particleCount - 1)) * 2;
-      const radius = Math.sqrt(1 - y * y);
-      const theta = phi * i;
-      
-      targetPositions[i3] = Math.cos(theta) * radius * sphereRadius;
-      targetPositions[i3 + 1] = y * sphereRadius;
-      targetPositions[i3 + 2] = Math.sin(theta) * radius * sphereRadius;
-      
-      // Start at dust positions
-      positions[i3] = originalPositions[i3];
-      positions[i3 + 1] = originalPositions[i3 + 1];
-      positions[i3 + 2] = originalPositions[i3 + 2];
-      
-      // Initialize velocity to zero
-      velocities[i3] = 0;
-      velocities[i3 + 1] = 0;
-      velocities[i3 + 2] = 0;
-      
-      // Initialize particle progress
-      particleProgress[i] = 0;
-      particleStartTime[i] = -1; // Not started yet
-      
-      // Color gradient (orange to blue)
-      const intensity = (targetPositions[i3 + 1] / sphereRadius + 1) / 2;
-      colors[i3] = 1.0 - intensity * 0.8;
-      colors[i3 + 1] = 0.6 - intensity * 0.4;
-      colors[i3 + 2] = 0.2 + intensity * 0.8;
-    }
-    
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    
-    const material = new THREE.PointsMaterial({
-      size: 0.03, // Much smaller particles for smoother look
-      sizeAttenuation: true,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.85, // Slightly more transparent for smoother appearance
-      blending: THREE.AdditiveBlending
-    });
-    
-    const particles = new THREE.Points(geometry, material);
-    scene.add(particles);
-    
-    // Animation state
-    let currentProgress = 0;
-    let shouldFadeOut = false;
-    const animationStartTime = Date.now();
-    
-    // Animation loop
-    const animate = () => {
-      const time = Date.now() * 0.001;
-      const elapsedTime = (Date.now() - animationStartTime) * 0.001; // Time since animation started
-      const posArray = geometry.attributes.position.array as Float32Array;
-      
-      if (shouldFadeOut) {
-        // Fade out particles when orb is complete
-        material.opacity = Math.max(0, material.opacity - 0.03); // Slower fade for smoothness
-        particles.rotation.y += 0.008; // Smoother rotation
-      } else {
-        // Form particles based on progress (0-100%)
-        for (let i = 0; i < particleCount; i++) {
-          const i3 = i * 3;
-          
-          // Calculate which particles should start moving based on progress
-          const particleThreshold = i / particleCount; // 0 to 1
-          
-          // Check if this particle should start moving
-          if (particleThreshold <= currentProgress) {
-            // Start the particle if it hasn't started yet
-            if (particleStartTime[i] < 0) {
-              particleStartTime[i] = elapsedTime;
-            }
-            
-            // Calculate time since this particle started moving
-            const particleElapsed = elapsedTime - particleStartTime[i];
-            const moveDuration = 1.2; // 1.2 seconds for each particle to reach the orb
-            
-            // Update particle progress (0 to 1)
-            particleProgress[i] = Math.min(particleElapsed / moveDuration, 1);
-            
-            if (particleProgress[i] < 1) {
-              // Particle is still traveling - use smooth easing
-              const easeProgress = particleProgress[i] * particleProgress[i] * (3 - 2 * particleProgress[i]); // Smoothstep
-              
-              // Calculate direction to target
-              const dx = targetPositions[i3] - originalPositions[i3];
-              const dy = targetPositions[i3 + 1] - originalPositions[i3 + 1];
-              const dz = targetPositions[i3 + 2] - originalPositions[i3 + 2];
-              
-              // Apply velocity-based smooth movement
-              posArray[i3] = originalPositions[i3] + dx * easeProgress;
-              posArray[i3 + 1] = originalPositions[i3 + 1] + dy * easeProgress;
-              posArray[i3 + 2] = originalPositions[i3 + 2] + dz * easeProgress;
-            } else {
-              // Particle has reached the orb - keep it there with slight orbit
-              const orbitSpeed = 0.5;
-              const orbitRadius = 0.02;
-              posArray[i3] = targetPositions[i3] + Math.cos(time * orbitSpeed + i * 0.1) * orbitRadius;
-              posArray[i3 + 1] = targetPositions[i3 + 1] + Math.sin(time * orbitSpeed * 0.7 + i * 0.1) * orbitRadius;
-              posArray[i3 + 2] = targetPositions[i3 + 2] + Math.sin(time * orbitSpeed + i * 0.1) * orbitRadius;
-            }
-          } else {
-            // Still floating as dust with gentler movement
-            posArray[i3] = originalPositions[i3] + Math.sin(time * 0.3 + i * 0.05) * 0.05;
-            posArray[i3 + 1] = originalPositions[i3 + 1] + Math.cos(time * 0.2 + i * 0.05) * 0.05;
-            posArray[i3 + 2] = originalPositions[i3 + 2] + Math.sin(time * 0.25 + i * 0.05) * 0.03;
-          }
-        }
-        
-        // Gentle rotation
-        particles.rotation.y += 0.003; // Slower, smoother rotation
-        
-        const pulse = Math.sin(time * 2) * 0.5 + 0.5; // Slower pulse
-        material.size = 0.03 + pulse * 0.008; // Adjusted for smaller size with subtle pulse
-      }
-      
-      geometry.attributes.position.needsUpdate = true;
-      renderer.render(scene, camera);
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    
-    // Handle resize
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    animate();
-    
-    // Expose progress update function
-    (canvas as any).__updateProgress = (prog: number) => {
-      currentProgress = Math.min(prog / 100, 1);
-    };
-    
-    (canvas as any).__fadeOut = () => {
-      shouldFadeOut = true;
-    };
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
-    };
-  }, []);
-
-  // Update particles based on loading progress
-  useEffect(() => {
-    const validProgress = Math.max(0, Math.min(100, progress || 0));
-    
-    if (canvasRef.current) {
-      const canvas = canvasRef.current as any;
-      if (canvas.__updateProgress) {
-        canvas.__updateProgress(validProgress);
-      }
-    }
-    
-    // Update phase - only trigger once when reaching 100%
-    if (validProgress >= 100 && !hasReached100.current) {
+    if ((progress || 0) >= 100 && !hasReached100.current) {
       hasReached100.current = true;
-      
-      // Prevent auto-hide while showing the welcome message
       preventAutoHide();
-      
-      // Show greeting message first with a slight delay
-      greetingTimerRef.current = window.setTimeout(() => {
-        setAnimationPhase('greeting');
-        setShowWelcome(true);
-      }, 500); // 500ms delay after reaching 100%
-      
-      // Then do the parabolic throw after user can read the message extensively (2 seconds total)
-      throwTimerRef.current = window.setTimeout(() => {
-        setAnimationPhase('throwing');
-        // Fade out particles when throwing
-        if (canvasRef.current) {
-          const canvas = canvasRef.current as any;
-          if (canvas.__fadeOut) {
-            canvas.__fadeOut();
-          }
-        }
-        // Allow auto-hide after animation starts
+      readyTimer.current = window.setTimeout(() => setPhase('ready'), 250);
+      exitTimer.current = window.setTimeout(() => {
+        setPhase('exit');
         allowAutoHide();
-      }, 2500); // 500ms delay + 2000ms to read = 2500ms (2 seconds to read the message)
-    } else if (validProgress < 100) {
-      setAnimationPhase('forming');
-      setShowWelcome(false);
+      }, 1400);
     }
-    
-    // Cleanup function to clear timers if component unmounts or progress changes
     return () => {
-      if (greetingTimerRef.current) {
-        window.clearTimeout(greetingTimerRef.current);
-        greetingTimerRef.current = null;
-      }
-      if (throwTimerRef.current) {
-        window.clearTimeout(throwTimerRef.current);
-        throwTimerRef.current = null;
-      }
+      if (readyTimer.current) window.clearTimeout(readyTimer.current);
+      if (exitTimer.current) window.clearTimeout(exitTimer.current);
     };
   }, [progress, preventAutoHide, allowAutoHide]);
 
+  // Pretty integer for the readout (always 3 digits so layout doesn't shift).
+  const pct = Math.floor(displayProgress);
+  const pctStr = useMemo(() => String(pct).padStart(3, '0'), [pct]);
+  const status = statusFor(displayProgress);
+
+  // SVG "fill height" — letters fill from bottom up as progress climbs.
+  // We render two overlapping <text> elements: a faint stroke outline that
+  // is always visible, and a filled version clipped from the bottom.
+  const fillTop = 100 - Math.min(100, Math.max(0, displayProgress));
+
   return (
-    <div className="fixed inset-0 z-[10000]">
-      {/* Three.js canvas for dust particles */}
-      <canvas 
-        ref={canvasRef}
-        className="absolute inset-0"
-        style={{ width: '100%', height: '100%' }}
+    <motion.div
+      className="fixed inset-0 z-[10000] flex flex-col items-center justify-center overflow-hidden"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: phase === 'exit' ? 0 : 1 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        background:
+          'radial-gradient(120% 80% at 50% 50%, #0c0a18 0%, #07060d 60%, #030206 100%)',
+        pointerEvents: phase === 'exit' ? 'none' : 'auto',
+      }}
+      aria-label="Loading"
+      role="status"
+    >
+      {/* Faint moving grid for atmosphere */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          maskImage:
+            'radial-gradient(60% 60% at 50% 50%, black 0%, transparent 75%)',
+          WebkitMaskImage:
+            'radial-gradient(60% 60% at 50% 50%, black 0%, transparent 75%)',
+          animation: 'loader-grid-drift 22s linear infinite',
+        }}
       />
-      
-      {/* Percentage at bottom center */}
-      <AnimatePresence>
-        {animationPhase === 'forming' && (
-          <motion.div
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-none z-20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.4 }}
+
+      {/* Top-left brand stamp */}
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 text-white/55 text-[10px] sm:text-xs uppercase tracking-[0.45em] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] flex items-center gap-3">
+        <span aria-hidden="true" className="inline-block w-6 h-px bg-white/35" />
+        <span>Patrick Adrianus — Portfolio</span>
+      </div>
+
+      {/* Top-right phase status */}
+      <div className="absolute top-6 right-6 sm:top-8 sm:right-8 text-white/55 text-[10px] sm:text-xs uppercase tracking-[0.4em] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] flex items-center gap-2">
+        <motion.span
+          aria-hidden="true"
+          className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-300"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ boxShadow: '0 0 10px rgba(110,230,180,0.7)' }}
+        />
+        <span>System {phase === 'loading' ? 'booting' : 'online'}</span>
+      </div>
+
+      {/* PA monogram. Two <text>s in one SVG so they sit pixel-perfect on top
+          of each other. The filled copy is clipped from the top so it appears
+          to fill from the bottom up as progress climbs. */}
+      <div className="relative flex items-center justify-center select-none">
+        <svg
+          width="100%"
+          viewBox="0 0 320 280"
+          aria-hidden="true"
+          style={{
+            width: 'clamp(220px, 32vw, 420px)',
+            height: 'auto',
+            display: 'block',
+          }}
+        >
+          <defs>
+            <linearGradient id="pa-fill" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%"   stopColor="#a78bfa" />
+              <stop offset="55%"  stopColor="#c4b5fd" />
+              <stop offset="100%" stopColor="#ffffff" />
+            </linearGradient>
+            <clipPath id="pa-clip">
+              <rect x="0" y={`${fillTop}%`} width="100%" height={`${100 - fillTop}%`} />
+            </clipPath>
+          </defs>
+
+          {/* Stroke outline — always visible at low opacity */}
+          <text
+            x="50%"
+            y="62%"
+            textAnchor="middle"
+            fontFamily="'Space Grotesk', 'Inter', system-ui, sans-serif"
+            fontWeight="700"
+            fontSize="220"
+            letterSpacing="-8"
+            fill="none"
+            stroke="rgba(255,255,255,0.22)"
+            strokeWidth="1.5"
           >
-            <motion.span
-              className="text-white/90 font-bold text-4xl [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]"
-              key={Math.floor(displayProgress / 5)}
-              initial={{ opacity: 0.7 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.15 }}
-            >
-              {Math.floor(displayProgress)}%
-            </motion.span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            PA
+          </text>
 
-
-
-      {/* Floating welcome message - appears below the dust orb when 100% before parabolic throw */}
-      <AnimatePresence>
-        {showWelcome && animationPhase === 'greeting' && (
-          <motion.div
-            className="absolute z-40 left-1/2 transform -translate-x-1/2"
-            style={{
-              top: 'calc(50% + 150px)', // Positioned further below the dust orb
-            }}
-            initial={{ 
-              opacity: 0, 
-              scale: 0.8,
-              y: -10
-            }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1,
-              y: 0
-            }}
-            exit={{ 
-              opacity: 0, 
-              scale: 0.8,
-              y: 10
-            }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            {/* Floating liquid glass message */}
-            <motion.div
-              className="relative px-5 py-3 rounded-xl overflow-hidden" // Smaller padding
+          {/* Filled copy — clipped to a rising bar */}
+          <g clipPath="url(#pa-clip)">
+            <text
+              x="50%"
+              y="62%"
+              textAnchor="middle"
+              fontFamily="'Space Grotesk', 'Inter', system-ui, sans-serif"
+              fontWeight="700"
+              fontSize="220"
+              letterSpacing="-8"
+              fill="url(#pa-fill)"
               style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
-              }}
-              animate={{
-                y: [0, -8, 0],
-              }}
-              transition={{
-                duration: 2.5,
-                repeat: Infinity,
-                ease: "easeInOut"
+                filter: 'drop-shadow(0 6px 26px rgba(167,139,250,0.45))',
               }}
             >
-              {/* Liquid glass effect overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-purple-500/10" />
-              
-              {/* Shimmer effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                animate={{
-                  x: ['-100%', '200%']
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-              />
-              
-              <div className="relative z-10">
-                <motion.p 
-                  className="text-base md:text-lg font-medium text-white text-center whitespace-nowrap"
-                  style={{
-                    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)'
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                >
-                  Welcome to my portfolio! 👋
-                </motion.p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+              PA
+            </text>
+          </g>
+
+          {/* Animated liquid surface line — sits at the fill boundary */}
+          <motion.line
+            x1="20%"
+            x2="80%"
+            y1={`${fillTop}%`}
+            y2={`${fillTop}%`}
+            stroke="rgba(255,255,255,0.7)"
+            strokeWidth="1"
+            initial={false}
+            animate={{ opacity: pct >= 100 ? 0 : 0.7 }}
+            transition={{ duration: 0.4 }}
+          />
+        </svg>
+      </div>
+
+      {/* Giant percent readout */}
+      <div className="mt-6 sm:mt-8 flex items-baseline gap-2 text-white">
+        <span
+          className="font-bold tabular-nums leading-none [text-shadow:0_2px_18px_rgba(140,120,255,0.45)]"
+          style={{
+            fontFamily: "'Space Grotesk', 'Inter', system-ui, sans-serif",
+            fontSize: 'clamp(56px, 10vw, 112px)',
+            letterSpacing: '-0.04em',
+          }}
+        >
+          {pctStr}
+        </span>
+        <span
+          className="text-white/55 font-medium tabular-nums"
+          style={{
+            fontSize: 'clamp(20px, 3vw, 32px)',
+            letterSpacing: '0.04em',
+          }}
+        >
+          %
+        </span>
+      </div>
+
+      {/* Thin progress line */}
+      <div
+        className="mt-5 sm:mt-6 h-px bg-white/15 overflow-hidden rounded-full"
+        style={{ width: 'min(280px, 60vw)' }}
+        aria-hidden="true"
+      >
+        <motion.div
+          className="h-full"
+          style={{
+            background:
+              'linear-gradient(90deg, rgba(167,139,250,0) 0%, #a78bfa 30%, #ffffff 100%)',
+            transformOrigin: 'left center',
+          }}
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: displayProgress / 100 }}
+          transition={{ type: 'spring', stiffness: 110, damping: 22, mass: 0.4 }}
+        />
+      </div>
+
+      {/* Status — crossfades between phases */}
+      <div className="mt-5 h-5 flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={status}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: phase === 'ready' ? 1 : 0.75, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="text-white/70 text-[11px] sm:text-xs uppercase tracking-[0.45em] [text-shadow:0_1px_3px_rgba(0,0,0,0.85)]"
+          >
+            {status}
+            {phase === 'ready' ? ' ↓' : '...'}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+
+      {/* Bottom-right counter (raw) for techy feel */}
+      <div className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 text-white/40 text-[10px] sm:text-xs tabular-nums tracking-[0.35em] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+        {pctStr} / 100
+      </div>
+
+      <style>{`
+        @keyframes loader-grid-drift {
+          0%   { background-position: 0 0, 0 0; }
+          100% { background-position: 64px 64px, 64px 64px; }
+        }
+      `}</style>
+    </motion.div>
   );
 };
 

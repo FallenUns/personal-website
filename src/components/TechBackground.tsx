@@ -121,59 +121,62 @@ const TechBackground: React.FC<TechBackgroundProps> = ({ hour }) => {
     const rnd = seeded(`tech:${phase}:${Math.floor(hour * 4) / 4}`);
     
     const elements = [];
-    
-    // Generate function symbols - more spread out
-    for (let i = 0; i < 4; i++) {
+
+    // Function symbols: fewer + larger. They now sit on top of the aurora
+    // so each one needs presence, not clutter.
+    for (let i = 0; i < 2; i++) {
       elements.push({
         type: 'function',
-        x: 5 + rnd() * 90,  // More spread out (5-95%)
-        y: 5 + rnd() * 90,  // More spread out (5-95%)
-        size: 35 + rnd() * 25,
-        duration: 30 + rnd() * 20,
+        x: 8 + rnd() * 84,
+        y: 8 + rnd() * 84,
+        size: 42 + rnd() * 22,
+        duration: 36 + rnd() * 18,
         delay: -rnd() * 50,
-        variant: ['lambda', 'fx', 'def', 'lambda'][i % 4],
+        variant: ['lambda', 'fx'][i % 2],
       });
     }
-    
-    // Generate floating green brackets with drift movement
-    for (let i = 0; i < 8; i++) {
+
+    // Code brackets: cut from 8 → 4, slower drift
+    for (let i = 0; i < 4; i++) {
       elements.push({
         type: 'bracket',
-        x: rnd() * 100,     // Full spread (0-100%)
-        y: rnd() * 100,     // Full spread (0-100%)
-        size: 25 + rnd() * 20,
-        duration: 20 + rnd() * 25,
+        x: rnd() * 100,
+        y: rnd() * 100,
+        size: 28 + rnd() * 18,
+        duration: 28 + rnd() * 22,
         delay: -rnd() * 45,
         direction: rnd() > 0.5 ? 'left' : 'right',
-        driftX: 30 + rnd() * 40,  // Horizontal drift range
-        driftY: 20 + rnd() * 30,  // Vertical drift range
+        driftX: 30 + rnd() * 40,
+        driftY: 20 + rnd() * 30,
       });
     }
-    
-    // Generate neural network nodes with different orientations
-    for (let i = 0; i < 6; i++) {
-      const orientations = ['right', 'down', 'left', 'up', 'diagonal-right', 'diagonal-left'];
+
+    // Neural nodes: cut from 6 → 3
+    for (let i = 0; i < 3; i++) {
+      const orientations = ['right', 'down', 'diagonal-right', 'diagonal-left'];
       elements.push({
         type: 'neural-node',
-        x: 10 + rnd() * 80,  // More spread out (10-90%)
-        y: 10 + rnd() * 80,  // More spread out (10-90%)
-        size: 20 + rnd() * 15,
-        duration: 25 + rnd() * 20,
+        x: 15 + rnd() * 70,
+        y: 15 + rnd() * 70,
+        size: 22 + rnd() * 14,
+        duration: 30 + rnd() * 20,
         delay: -rnd() * 40,
-        pulse: 2 + rnd() * 3,
+        pulse: 2.4 + rnd() * 3,
         orientation: orientations[i % orientations.length],
         nodeId: i,
       });
     }
-    
+
     return elements;
   }, [hour]);
 
   return (
     <div className="tech-bg" style={palette as React.CSSProperties}>
-      {/* Grid pattern overlay */}
+      {/* (aurora orbs replaced by WebGL AuroraShader — see App.tsx) */}
+
+      {/* Grid pattern overlay (subtle texture on top of the WebGL aurora) */}
       <div className="grid-pattern"></div>
-      
+
       {/* Tech elements container */}
       <div className="tech-container">
         {techElements.map((element, i) => {

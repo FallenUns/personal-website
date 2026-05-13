@@ -7,12 +7,18 @@
 /* Lenis measures the body's natural height to compute its scroll limit.
    Forcing `height: 100%` clamps the body to viewport height which makes Lenis
    report limit=0 and the scroll rail/section indicator stop tracking. Use
-   `min-height` so the body still fills short pages but grows with content. */
+   `min-height` so the body still fills short pages but grows with content.
+
+   `overflow-x: clip` instead of `hidden` — `hidden` implicitly upgrades the
+   other axis to `auto`, making the element a scroll container, which breaks
+   `position: sticky` descendants (sticky resolves against the nearest scroll
+   container, not the viewport). `clip` clips overflow without creating a
+   scroll container, so the Experience section's horizontal scrolljack works. */
 html, body, #root {
   min-height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 :root {
@@ -20,7 +26,13 @@ html, body, #root {
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
-  background-color: #242424;
+  background-color: #000000;
+}
+
+html,
+body,
+#root {
+  background-color: #000000;
 }
 
 /* ------------------------------ */
@@ -275,6 +287,7 @@ nav *, .nav *, .menu * {
 /* Per-character gradient — paints inside each <span> the decrypter emits. */
 .hero-display .name-char {
   font-weight: 900;
+  padding-right: 0.02em;
   background: linear-gradient(180deg, #ffffff 0%, #f0f3ff 35%, #c9d3ff 100%);
   -webkit-background-clip: text;
           background-clip: text;
@@ -287,10 +300,21 @@ nav *, .nav *, .menu * {
    still read clearly while the reveal is in progress. */
 .hero-display .name-char-dim {
   font-weight: 900;
+  padding-right: 0.02em;
   background: none;
   -webkit-text-fill-color: rgba(255, 255, 255, 0.45);
           color: rgba(255, 255, 255, 0.45);
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+}
+
+/* Archivo's A→T pair opens too wide once each glyph gets anti-clip padding.
+   Pull only that pair back in; keep protection for the rest of the headline. */
+.hero-display [data-char="A"] + [data-char="T"] {
+  margin-left: -0.075em;
+}
+
+.hero-display [data-char="P"] + [data-char="A"] {
+  margin-left: -0.055em;
 }
 
 /* Mobile: drop the gradient (can look dim against dark sections) and use

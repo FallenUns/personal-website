@@ -413,7 +413,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                               elasticity={0.2}
                               saturation={140}
                               displacementScale={60}
-                              blurAmount={4}
+                              blurAmount={2}
                               mode="shader"
                               overLight={false}
                             >
@@ -552,7 +552,7 @@ const ExperienceDetail: React.FC<ExperienceDetailProps> = ({ slug }) => {
                               elasticity={0.2}
                               saturation={140}
                               displacementScale={60}
-                              blurAmount={4}
+                              blurAmount={2}
                               mode="prominent"
                               overLight={false}
                             >

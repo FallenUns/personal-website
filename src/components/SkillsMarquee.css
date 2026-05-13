@@ -1,0 +1,121 @@
+/* Infinite skills marquee.
+   - Track holds the items twice; animation goes 0 → -50% so the second copy
+     replaces the first at the loop boundary (seamless, no visible seam).
+   - Pure CSS transform animation on a single element per row keeps it on the
+     compositor thread — no per-pill JS, no per-frame React work.
+   - mask-image fades both edges into the page background without painting a
+     coloured rectangle on top.
+*/
+
+.skills-marquee {
+  position: relative;
+  width: 100%;
+  padding: 72px 0 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  isolation: isolate;
+  /* Edge fade. Using mask-image (not a coloured overlay) means the background
+     of the page bleeds through naturally — no black halo or hard line. */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+          mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+
+.skills-marquee-row {
+  width: 100%;
+  overflow: hidden;
+}
+
+.skills-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: max-content;
+  /* translate3d forces the layer onto the GPU; linear keeps the loop velocity
+     constant so the boundary handoff is invisible. */
+  animation: skills-marquee-scroll 48s linear infinite;
+  will-change: transform;
+}
+
+.skills-marquee-track.reverse {
+  animation-name: skills-marquee-scroll-reverse;
+  animation-duration: 56s;
+}
+
+@keyframes skills-marquee-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes skills-marquee-scroll-reverse {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+/* Uniform pill — same height, content-sized width via padding. Glass look is
+   pure CSS so we can render dozens without the cost of per-pill WebGL shaders.
+*/
+.skills-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 6px 20px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+  color: #ffffff;
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  /* Stable layout — no transforms here that would break compositor batching */
+}
+
+.skills-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.skills-pill-label {
+  display: inline-block;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .skills-marquee { padding: 40px 0; gap: 12px; }
+  .skills-marquee-track { gap: 10px; animation-duration: 42s; }
+  .skills-marquee-track.reverse { animation-duration: 50s; }
+  .skills-pill { height: 40px; padding: 0 16px; font-size: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skills-marquee-track,
+  .skills-marquee-track.reverse {
+    animation: none;
+    transform: translate3d(0, 0, 0);
+  }
+}

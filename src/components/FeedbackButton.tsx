@@ -23,12 +23,13 @@ export const FeedbackButton: React.FC = () => {
     <>
       {/* Floating Feedback Button */}
       <motion.div
-        className="feedback-fab fixed bottom-3 left-3 sm:bottom-6 sm:left-6 z-40"
+        className="feedback-fab fixed left-3 top-1/2 sm:left-6 z-40"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 2, duration: 0.5, type: "spring" }}
       >
         <div
+          className="-translate-y-1/2"
           style={{ 
             cursor: 'pointer',
             position: 'relative',
@@ -41,10 +42,11 @@ export const FeedbackButton: React.FC = () => {
             className="cursor-pointer"
             onClick={() => setIsFormOpen(true)}
             isElastic={true}
-            elasticity={0.2}
-            blurAmount={12}
+            elasticity={0.15}
+            blurAmount={3}
             saturation={150}
-            displacementScale={50}
+            aberrationIntensity={1.2}
+            displacementScale={60}
             mode='shader'
             overLight={false}
           >

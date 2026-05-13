@@ -3,8 +3,8 @@ import React from 'react';
 // Beams removed — read as harsh diagonal "intersections" by the user. Base is
 // now a static CSS radial gradient (no shader). Per-section overlays still
 // run their own canvases for character.
-import DotGrid from './DotGrid/DotGrid';
-import LightRays from './LightRays/LightRays';
+import Dither from './Dither';
+import GridScan from './GridScan';
 import Particles from './Particles/Particles';
 import { useTime } from '../../contexts/TimeContext';
 
@@ -12,21 +12,40 @@ type StickySectionBackgroundProps = {
   variant: 'experience' | 'projects' | 'contact';
 };
 
-// Experience overlay tunings: smaller dots (6px, was 16 default) on a tighter
-// grid (gap 22) read as a finer "texture" rather than a chunky polka-dot.
-// Mask wrapping (applied per-variant below) fades the grid in the top/bottom
-// 18% of the viewport so it doesn't slam into the section edges.
 const effectByVariant = {
-  experience: <DotGrid dotSize={6} gap={22} proximity={120} />,
-  projects: <LightRays />,
+  experience: (
+    <GridScan
+      cellSize={54}
+      opacity={0.92}
+      primaryColor="#8b5cf6"
+      secondaryColor="#38bdf8"
+    />
+  ),
+  projects: (
+    <Dither
+      pixelSize={6}
+      opacity={0.98}
+      primaryColor="#a78bfa"
+      secondaryColor="#22d3ee"
+      tertiaryColor="#050816"
+    />
+  ),
   contact: <Particles />,
 };
 
-const maskByVariant: Record<'experience' | 'projects' | 'contact', string | undefined> = {
+const maskByVariant: Record<'experience' | 'projects' | 'contact', string> = {
   experience:
-    'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
-  projects: undefined,
-  contact: undefined,
+    'linear-gradient(180deg, transparent 0%, black 6%, black 96%, transparent 100%)',
+  projects:
+    'linear-gradient(180deg, transparent 0%, black 8%, black 92%, transparent 100%)',
+  contact:
+    'linear-gradient(180deg, transparent 0%, black 12%, black 88%, transparent 100%)',
+};
+
+const opacityByVariant: Record<'experience' | 'projects' | 'contact', number> = {
+  experience: 0.62,
+  projects: 0.58,
+  contact: 0.35,
 };
 
 const phaseFromHour = (hour: number) => {
@@ -120,7 +139,7 @@ export const StickySectionBackground: React.FC<StickySectionBackgroundProps> = (
         style={{
           position: 'absolute',
           inset: 0,
-          opacity: 0.35,
+          opacity: opacityByVariant[variant],
           maskImage: maskByVariant[variant],
           WebkitMaskImage: maskByVariant[variant],
         }}

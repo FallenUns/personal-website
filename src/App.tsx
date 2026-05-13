@@ -77,7 +77,13 @@ const AppContent: React.FC = () => {
   useCriticalResourceLoader();
   useImagePreloader();
 
-  // Prevent scrolling during loading and prevent pull-to-refresh on detail pages
+  // Prevent scrolling during loading and prevent pull-to-refresh on detail pages.
+  // NOTE: in the unlocked state, body overflow is cleared (not set to `auto`).
+  // `overflow: auto` makes body its own scroll container, which makes Lenis's
+  // window scroll out of sync with descendants' `position: sticky` resolution
+  // (sticky resolves against the nearest scrolling box, and an auto-overflow
+  // body becomes that box). Clearing the inline style lets overflow propagate
+  // to the viewport so sticky elements like the Experience scrolljack work.
   useEffect(() => {
     if (isLoading || isProjectDetail || isExperienceDetail || isBirthday) {
       document.body.style.overflow = 'hidden';
@@ -85,9 +91,9 @@ const AppContent: React.FC = () => {
       // Prevent pull-to-refresh on mobile
       document.documentElement.style.overscrollBehavior = 'none';
     } else {
-      document.body.style.overflow = 'auto';
-      document.body.style.overscrollBehavior = 'auto';
-      document.documentElement.style.overscrollBehavior = 'auto';
+      document.body.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+      document.documentElement.style.overscrollBehavior = '';
     }
   }, [isLoading, isProjectDetail, isExperienceDetail, isBirthday]);
 

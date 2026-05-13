@@ -46,11 +46,11 @@ const AssistantIcon: React.FC<AssistantIconProps> = ({ onClick, isThinking = fal
         positioning="relative"
         style={{ borderRadius: '50%', cursor: 'pointer' }}
         className="hover:bg-white/20"
-        aberrationIntensity={1}
-        elasticity={0.2}
-        blurAmount={12}
+        aberrationIntensity={isHovered ? 1.5 : 1.2}
+        elasticity={0.15}
+        blurAmount={isHovered ? 4 : 3}
         saturation={150}
-        displacementScale={50}
+        displacementScale={isHovered ? 80 : 60}
         mode='shader'
         overLight={false}
       >

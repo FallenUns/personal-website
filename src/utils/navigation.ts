@@ -1,39 +1,68 @@
-// Navigation utility for smooth scrolling to sections - Enhanced version based on navbar implementation
+import { getLenis } from './lenis';
+
+/**
+ * Compute the Lenis-scroll offset that lands the section's centred content on
+ * the true viewport centre.
+ *
+ * We MEASURE the actual rendered content child rather than assume the
+ * section's geometric midpoint — padding asymmetry and `items-center` on
+ * content that doesn't fill the section both mean the content's real centre
+ * sits at an offset within the section that we can't infer from height alone.
+ *
+ *   visible_center  = vp/2
+ *   content_centre  = section_top_in_vp + content_offset_in_section + content_h/2
+ *   Solve:            section_top_in_vp = visible_center − content_offset_in_section − content_h/2
+ *   Lenis offset    = −section_top_in_vp
+ */
+export const sectionScrollOffset = (el: HTMLElement): number => {
+  if (el.id === 'experience') {
+    return 0;
+  }
+
+  const vp = window.innerHeight;
+  const visibleCentre = vp / 2;
+  // Pick the first in-flow direct child as the content stage. Skips absolute
+  // / fixed decorations (bottom-pinned category strips, scroll cues, etc.)
+  // that aren't part of the centred composition.
+  const sectionRect = el.getBoundingClientRect();
+  let contentOffsetInSection = 0;
+  let contentH = el.offsetHeight || sectionRect.height;
+  for (const child of Array.from(el.children) as HTMLElement[]) {
+    const pos = window.getComputedStyle(child).position;
+    if (pos === 'absolute' || pos === 'fixed') continue;
+    const rect = child.getBoundingClientRect();
+    if (rect.height < 40) continue; // tiny utility elements
+    contentOffsetInSection = child.offsetParent === el
+      ? child.offsetTop
+      : rect.top - sectionRect.top;
+    contentH = child.offsetHeight || rect.height;
+    break;
+  }
+  const sectionTopTarget = visibleCentre - contentOffsetInSection - contentH / 2;
+  return -sectionTopTarget;
+};
+
+// Prefers the Lenis instance so anchor jumps share the same eased motion as
+// the wheel; falls back to native window.scrollTo when Lenis isn't ready.
 export const scrollToSection = (sectionId: string): void => {
   const targetSection = document.getElementById(sectionId);
-  if (targetSection) {
-    // Get current scroll position
-    const currentScrollY = window.scrollY;
-    
-    // Get target position
-    const targetRect = targetSection.getBoundingClientRect();
-    const targetY = targetRect.top + currentScrollY;
-    
-    // Use both scrollIntoView AND window.scrollTo for maximum compatibility
-    try {
-      // Method 1: scrollIntoView with improved settings
-      targetSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start', // Align to top of viewport
-        inline: 'nearest'
-      });
-      
-      // Method 2: Backup using window.scrollTo
-      setTimeout(() => {
-        window.scrollTo({
-          top: targetY,
-          behavior: 'smooth'
-        });
-      }, 100);
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error(`Scroll error for ${sectionId}:`, error);
-      }
-    }
-  } else {
-    if (import.meta.env.DEV) {
-      console.error(`Section not found: ${sectionId}`);
-    }
+  if (!targetSection) {
+    if (import.meta.env.DEV) console.error(`Section not found: ${sectionId}`);
+    return;
+  }
+
+  const offset = sectionScrollOffset(targetSection);
+  const lenis = getLenis();
+  if (lenis) {
+    lenis.scrollTo(targetSection, { duration: 1.2, lock: false, offset });
+    return;
+  }
+
+  try {
+    const top = targetSection.getBoundingClientRect().top + window.scrollY + offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  } catch (error) {
+    if (import.meta.env.DEV) console.error(`Scroll error for ${sectionId}:`, error);
   }
 };
 

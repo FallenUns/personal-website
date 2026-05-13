@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { hudLog } from '../hooks/useHudBus';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useScrollSpy } from '../hooks/useScrollSpy';
 import { getLenis } from '../utils/lenis';
 import { sectionScrollOffset } from '../utils/navigation';
 
@@ -57,47 +58,31 @@ const CameraWheel: React.FC = () => {
   const [activeIdx, setActiveIdx] = useState(0);
   const [hidden, setHidden] = useState(false);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeSection = useScrollSpy(
+    SECTIONS.map((section) => section.id),
+    { offset: 100 }
+  );
+
+  useEffect(() => {
+    if (!activeSection) return;
+    const nextIdx = SECTIONS.findIndex((section) => section.id === activeSection);
+    if (nextIdx === -1 || nextIdx === activeIdxMV.get()) return;
+    activeIdxMV.set(nextIdx);
+    setActiveIdx(nextIdx);
+  }, [activeIdxMV, activeSection]);
 
   useEffect(() => {
     let cleanup: (() => void) | null = null;
     const attach = () => {
       const lenis = getLenis();
       if (!lenis) return false;
-      const handle = ({ scroll }: { scroll: number; limit: number }) => {
-        // Pick the active section by midpoint between resting scroll positions.
-        // Using each section's exact navigation target (offsetTop + offset)
-        // ensures the wheel + navbar agree on which section is current.
-        const tops: { i: number; rest: number }[] = [];
-        SECTIONS.forEach((s, i) => {
-          const el = document.getElementById(s.id);
-          if (el) tops.push({ i, rest: el.offsetTop + sectionScrollOffset(el) });
-        });
-        if (tops.length === 0) return;
-
-        let current = tops[0].i;
-        for (let k = 0; k < tops.length; k++) {
-          const a = tops[k];
-          const b = tops[k + 1];
-          if (!b) {
-            current = a.i;
-            break;
-          }
-          const mid = (a.rest + b.rest) / 2;
-          if (scroll < mid) {
-            current = a.i;
-            break;
-          }
-        }
-        if (current !== activeIdxMV.get()) {
-          activeIdxMV.set(current);
-          setActiveIdx(current);
-        }
+      const handle = () => {
         setHidden(false);
         if (hideTimer.current) clearTimeout(hideTimer.current);
         hideTimer.current = setTimeout(() => setHidden(true), 2400);
       };
       lenis.on('scroll', handle);
-      handle({ scroll: lenis.scroll || 0, limit: lenis.limit || 1 });
+      handle();
       cleanup = () => lenis.off('scroll', handle);
       return true;
     };

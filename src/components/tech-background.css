@@ -1,5 +1,30 @@
 /* src/components/tech-background.css */
 
+/* =================================================================== */
+/*  Aurora orb layer — large drifting blurry color blobs that pass     */
+/*  behind LiquidGlass elements so refraction is actually visible.     */
+/* =================================================================== */
+
+
+
+
+
+
+
+
+
+
+
+
+/* Vignette so center content stays legible against the aurora */
+
+/* On phones, reduce orb sizes + animation speed to keep paint cheap */
+@media (max-width: 768px) {
+}
+
+@media (prefers-reduced-motion: reduce) {
+}
+
 /* Keyframes for tech elements */
 @keyframes float {
   0%, 100% {
@@ -78,35 +103,46 @@
   }
 }
 
-/* Main background container */
+/* Main background container — transparent so the WebGL AuroraShader
+   (mounted just below in App.tsx) shows through. tech-bg is now just
+   a positioning container for the grid + tech symbols layered above. */
+/* Was position:fixed → looked stuck to viewport. Now position:absolute over
+   the whole document so the code symbols + grid scroll naturally with the
+   page, matching the aurora's scroll-driven pattern shift. Together they
+   read as one "long background" anchored to the document. */
 .tech-bg {
   width: 100%;
   height: 100%;
-  position: fixed;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--color-bg1), var(--color-bg2));
-  top: 0;
-  left: 0;
-  z-index: 0;
+  background: transparent;
+  z-index: 1;
+  pointer-events: none;
   will-change: auto;
   contain: layout style paint;
 }
 
-/* Grid pattern overlay */
+/* Grid pattern overlay — now a secondary texture under the aurora */
+/* Grid pattern reduced: low-contrast and finer so it doesn't visibly tile
+   as a "black square" pattern across the now full-body-height background. */
 .grid-pattern {
   position: absolute;
   top: 0;
   left: 0;
   width: 120%;
   height: 120%;
-  background-image: 
-    linear-gradient(rgba(var(--grid), 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--grid), 0.1) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: gridShift 60s linear infinite;
-  opacity: 0.5;
+  background-image:
+    linear-gradient(rgba(var(--grid), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--grid), 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridShift 80s linear infinite;
+  opacity: 0.22;
   will-change: transform;
+  z-index: 2;
 }
+
+.tech-container { z-index: 3; }
 
 /* Tech elements container */
 .tech-container {

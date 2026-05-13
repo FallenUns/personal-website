@@ -94,7 +94,7 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
              <LiquidGlass
                 width={description.length * 8 + 20} height={35}
                 positioning="relative" style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                aberrationIntensity={0.2} elasticity={0.3} blurAmount={6} saturation={120} displacementScale={15} mode='shader'
+                aberrationIntensity={0.2} elasticity={0.3} blurAmount={3} saturation={120} displacementScale={15} mode='shader'
             >
                 <span className="text-white text-xs font-medium px-2 py-1 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">{description}</span>
             </LiquidGlass>
@@ -107,7 +107,7 @@ const TechBubble: React.FC<TechBubbleProps> = ({ logo, size, style, alt, delay, 
         className="hover:bg-white/10"
         aberrationIntensity={0.8}
         elasticity={0.2}
-        blurAmount={8}
+        blurAmount={4}
         saturation={130}
         displacementScale={30}
         mode='shader'
@@ -156,7 +156,7 @@ const TechSphere: React.FC = () => {
             <LiquidGlass
               width={portraitWidth} height={portraitHeight}
               positioning="absolute" style={{ borderRadius: '24px' }}
-              elasticity={0.1} blurAmount={15} saturation={120} aberrationIntensity={0.5} displacementScale={80} mode='shader'
+              elasticity={0.1} blurAmount={8} saturation={120} aberrationIntensity={0.5} displacementScale={80} mode='shader'
             />
           </motion.div>
           

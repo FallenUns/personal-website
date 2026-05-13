@@ -6,6 +6,7 @@ import { navigateTo } from '../utils/router';
 import './performance.css';
 import { projects } from '../data/projects';
 import { hudLog } from '../hooks/useHudBus';
+import { StickySectionBackground } from './visuals/SectionBackground';
 
 // SVG filter for pixelated blur effect
 const PixelateFilter = memo(() => (
@@ -1465,12 +1466,13 @@ const ProjectsSection: React.FC = () => {
   return (
     <motion.section
       id="projects"
-      className="min-h-[100svh] box-border flex flex-col items-center justify-center py-20 px-4 sm:px-6 lg:px-8 w-full"
+      className="relative min-h-[100svh] box-border flex flex-col items-center justify-center py-20 px-4 sm:px-6 lg:px-8 w-full"
     >
+      <StickySectionBackground variant="projects" />
       {/* SVG filter for pixelated effect */}
       <PixelateFilter />
 
-      <div className="max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-0">
+      <div className="relative z-10 max-w-7xl mx-auto w-full flex flex-col items-center justify-center min-h-0">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}

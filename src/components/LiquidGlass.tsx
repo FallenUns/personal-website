@@ -37,6 +37,9 @@ interface GlassFilterProps {
   id: string;
   displacementScale: number;
   aberrationIntensity: number;
+  // Surface-size multiplier (0.45..1.5). Smaller surfaces get a smaller
+  // chromatic fringe and softer edge blur so they don't look "shredded".
+  sizeFactor: number;
   width: number;
   height: number;
   mode: "standard" | "polar" | "prominent" | "shader";
@@ -47,10 +50,17 @@ interface GlassFilterProps {
 // with explicit pixel coordinates that exactly match the filtered element.
 // Mixing objectBoundingBox + percentage feImage produces clipped/black bands
 // on iOS Safari and at any size the props don't match the rendered CSS size.
+//
+// Chromatic-aberration chain: the source is split into R, G, B channels via
+// three feColorMatrix nodes, each channel is displaced through the same map
+// with a slightly different scale, and the channels are screen-blended back.
+// This produces the cyan/magenta edge fringing of real refractive glass —
+// a single feDisplacementMap on SourceGraphic only ever yields uniform blur.
 const GlassFilter: React.FC<GlassFilterProps> = ({
   id,
   displacementScale,
   aberrationIntensity,
+  sizeFactor,
   width,
   height,
   mode,
@@ -58,6 +68,17 @@ const GlassFilter: React.FC<GlassFilterProps> = ({
 }) => {
   const w = Math.max(1, Math.round(width));
   const h = Math.max(1, Math.round(height));
+  const sign = mode === 'shader' ? 1 : -1;
+  // Per-channel offset scaled by surface size so the visible cyan/magenta
+  // fringe is always a consistent fraction of the rim band — tiny pills get
+  // a gentle fringe, large modals get a pronounced one. Matches the
+  // ray-tracing approach in kube.io's liquid-glass article where the
+  // refraction radius is proportional to element size.
+  const aber = aberrationIntensity * 0.22 * sizeFactor;
+  const scaleR = displacementScale * (1.0 - aber) * sign;
+  const scaleG = displacementScale * sign;
+  const scaleB = displacementScale * (1.0 + aber) * sign;
+  const edgeBlur = Math.max(0.25, aberrationIntensity * 0.25 * sizeFactor);
   return (
     <svg
       width={w}
@@ -90,25 +111,67 @@ const GlassFilter: React.FC<GlassFilterProps> = ({
             y="0"
             width={w}
             height={h}
-            result="DISPLACEMENT_MAP"
+            result="MAP"
             href={getMap(mode, shaderMapUrl)}
             preserveAspectRatio="none"
           />
 
-          <feDisplacementMap
+          {/* Isolate each channel — alpha preserved so the recombination keeps
+              the original element shape. */}
+          <feColorMatrix
             in="SourceGraphic"
-            in2="DISPLACEMENT_MAP"
-            scale={displacementScale * (mode === 'shader' ? 1 : -1)}
-            xChannelSelector="R"
-            yChannelSelector="G"
-            result="DISPLACED"
+            type="matrix"
+            values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            result="R_ONLY"
+          />
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            result="G_ONLY"
+          />
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+            result="B_ONLY"
           />
 
-          <feGaussianBlur
-            in="DISPLACED"
-            stdDeviation={Math.max(0.1, aberrationIntensity * 0.3)}
-            result="BLURRED"
+          {/* Per-channel displacement at slightly different scales. */}
+          <feDisplacementMap
+            in="R_ONLY"
+            in2="MAP"
+            scale={scaleR}
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="R_SHIFT"
           />
+          <feDisplacementMap
+            in="G_ONLY"
+            in2="MAP"
+            scale={scaleG}
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="G_SHIFT"
+          />
+          <feDisplacementMap
+            in="B_ONLY"
+            in2="MAP"
+            scale={scaleB}
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="B_SHIFT"
+          />
+
+          {/* Screen-blend the isolated channels back together. Because each
+              source contains only one color channel, screen behaves like
+              addition for color while preserving the union of alpha. */}
+          <feBlend in="G_SHIFT" in2="R_SHIFT" mode="screen" result="RG" />
+          <feBlend in="B_SHIFT" in2="RG" mode="screen" result="RGB" />
+
+          {/* Soften the recombined edges so the fringe reads as light bending
+              through glass rather than a hard color outline. */}
+          <feGaussianBlur in="RGB" stdDeviation={edgeBlur} />
         </filter>
       </defs>
     </svg>
@@ -142,12 +205,12 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   className,
   style,
   positioning = "relative",
-  blurAmount = 10,
-  saturation = 120,
+  blurAmount = 4,
+  saturation = 180,
   isElastic = true,
   elasticity = 0.15,
-  aberrationIntensity = 1,
-  displacementScale = 30, // Reduced default for subtler effect
+  aberrationIntensity = 6,
+  displacementScale = 180,
   cornerRadius = 24,
   overLight = 'auto', // Default to 'auto' to use time context
   mode = "standard",
@@ -221,15 +284,36 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const elementWidth = measuredSize.width;
   const elementHeight = measuredSize.height;
 
-  // Clamp displacement so the maximum pixel shift (= scale * 0.5) can't sample
-  // outside the source bounds. Without this, small elements (e.g. a 50px-tall
-  // input bar with scale=150) get a 75px shift that pulls transparent black
-  // into the top of the element — the "top 1/4 blank" symptom.
-  const optimizedDisplacementScale = useMemo(() => {
-    const base = isLowPerf ? displacementScale * 0.5 : displacementScale;
-    const safeMax = Math.max(2, Math.min(elementWidth, elementHeight) * 0.6);
-    return Math.min(base, safeMax);
+  // Size-aware refraction. The kube.io liquid-glass write-up describes the
+  // refractive rim as a fraction of the surface's smaller side: ray paths are
+  // computed in normalized coordinates and scaled to the element. We do the
+  // same here so a 54px pill, a 440px card, and an 800px modal all bend the
+  // backdrop like the same physical material — not like three different
+  // hand-tuned effects.
+  //
+  //   idealDisplacement = clamp( min(w,h) * 0.14 , 6 , 52 )
+  //   effectiveScale    = min( prop , ideal * 1.2 )
+  //   sizeFactor        = clamp( min(w,h)/240 , 0.45 , 1.0 )   // used by GlassFilter
+  //
+  // The ceiling at 52px (and sizeFactor cap at 1.0) is the key calibration —
+  // in real liquid glass the rim refraction band is roughly constant once the
+  // surface is large enough; only small surfaces scale down. Without this
+  // plateau, a full-screen modal hits 110px displacement and 1.5× fringe,
+  // which reads as "very aggressive bands across the whole surface" rather
+  // than a calm rim. With the plateau, a 54px nav pill bends ~8px, a 440px
+  // card bends ~52px, and a 1000px modal also bends ~52px — same rim, just
+  // applied to different sizes.
+  const refractionGeometry = useMemo(() => {
+    const minSide = Math.max(1, Math.min(elementWidth, elementHeight));
+    const idealDisplacement = Math.min(52, Math.max(6, minSide * 0.14));
+    const ceiling = Math.min(displacementScale, idealDisplacement * 1.2);
+    const scale = isLowPerf ? ceiling * 0.55 : ceiling;
+    const sizeFactor = Math.max(0.45, Math.min(1.0, minSide / 240));
+    return { scale, sizeFactor };
   }, [isLowPerf, displacementScale, elementWidth, elementHeight]);
+
+  const optimizedDisplacementScale = refractionGeometry.scale;
+  const refractionSizeFactor = refractionGeometry.sizeFactor;
 
   // Memoize expensive calculations that depend on dimensions
   const optimizedConstants = useMemo(() => ({
@@ -649,7 +733,14 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         </>
       )}
 
-      {/* Layer 1: Filtered Background with Frosted Effect */}
+      {/* Layer 1: Filtered Background with Frosted Effect.
+          The SVG chromatic-aberration filter is applied via backdrop-filter
+          (not `filter`) so it actually warps the page behind the card — the
+          aurora, page text, anything sitting under the element. Putting it on
+          `filter` (the prior implementation) only displaced this layer's own
+          background gradient, which is mostly transparent → no visible
+          refraction. Browser support: Chrome 76+, Edge, Safari 18+ accept
+          `<url>` inside backdrop-filter. */}
       <div
         style={{
           position: 'absolute',
@@ -658,12 +749,15 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
           width: '100%',
           height: '100%',
           borderRadius: `${cornerRadius}px`,
-          backdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
-          WebkitBackdropFilter: `blur(${(actualOverLight ? 12 : 4) + optimizedBlurAmount}px) saturate(${saturation}%)`,
-          filter: filterEnabled ? `url(#${id})` : undefined,
+          backdropFilter: filterEnabled
+            ? `url(#${id}) blur(${(actualOverLight ? 4 : 2) + optimizedBlurAmount * 0.5}px) saturate(${saturation}%)`
+            : `blur(${(actualOverLight ? 4 : 2) + optimizedBlurAmount * 0.5}px) saturate(${saturation}%)`,
+          WebkitBackdropFilter: filterEnabled
+            ? `url(#${id}) blur(${(actualOverLight ? 4 : 2) + optimizedBlurAmount * 0.5}px) saturate(${saturation}%)`
+            : `blur(${(actualOverLight ? 4 : 2) + optimizedBlurAmount * 0.5}px) saturate(${saturation}%)`,
           background: actualOverLight
-            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.12) 100%)'
-            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.08) 100%)',
+            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(255, 255, 255, 0.07) 100%)'
+            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.05) 100%)',
           overflow: 'hidden',
           zIndex: 1,
           transform: 'translateZ(0)',
@@ -700,15 +794,20 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
             id={id}
             width={elementWidth}
             height={elementHeight}
-            displacementScale={actualOverLight ? optimizedDisplacementScale * 0.5 : optimizedDisplacementScale}
+            // Hold displacement steady across light/dark so the glass doesn't
+            // visibly "morph" when the user toggles theme — only a mild
+            // reduction in light mode to keep the look readable on bright
+            // surfaces.
+            displacementScale={actualOverLight ? optimizedDisplacementScale * 0.85 : optimizedDisplacementScale}
             aberrationIntensity={aberrationIntensity}
+            sizeFactor={refractionSizeFactor}
             mode={mode}
             shaderMapUrl={shaderMapUrl}
           />
         )}
       </div>
 
-      {/* Layer 2: Decorative Overlay (borders, shines) */}
+      {/* Layer 2: Decorative Overlay (borders, persistent specular, hover shine) */}
       <div
         style={{
           position: 'absolute',
@@ -730,6 +829,31 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       >
         <span style={borderStyle1} />
         <span style={borderStyle2} />
+        {/* Always-on top-edge specular bloom + bottom rim refraction. Origin
+            tracks the mouse so the highlight feels reactive even before hover. */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: `${cornerRadius}px`,
+            pointerEvents: 'none',
+            background: `radial-gradient(140% 90% at ${50 + mouseOffset.x * 0.7}% ${-14 + mouseOffset.y * 0.25}%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.18) 28%, rgba(255,255,255,0) 62%)`,
+            mixBlendMode: 'overlay',
+            opacity: actualOverLight ? 0.55 : 0.75,
+            transition: 'opacity 0.3s ease-out',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: `${cornerRadius}px`,
+            pointerEvents: 'none',
+            background: `radial-gradient(160% 60% at ${50 - mouseOffset.x * 0.4}% ${110 + mouseOffset.y * 0.2}%, rgba(140,200,255,0.40) 0%, rgba(180,140,255,0.18) 30%, rgba(0,0,0,0) 70%)`,
+            mixBlendMode: 'screen',
+            opacity: 0.6,
+          }}
+        />
         <div style={shineStyle} />
       </div>
 
@@ -744,7 +868,9 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
         justifyContent: 'center',
         color: 'inherit',
         textShadow: actualOverLight ? '0px 2px 12px rgba(0, 0, 0, 0)' : '0px 2px 12px rgba(0, 0, 0, 0.4)',
-        pointerEvents: 'auto', // Ensure content layer receives pointer events
+        // Inherit so a parent with pointer-events:none (e.g. cursors, overlays)
+        // can opt out cleanly. Default cascade gives "auto" anyway.
+        pointerEvents: 'inherit',
         // Hardware acceleration for content layer
         transform: 'translateZ(0)',
         willChange: 'contents',

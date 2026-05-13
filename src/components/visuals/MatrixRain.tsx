@@ -12,15 +12,27 @@ import React, { useEffect, useRef } from 'react';
  */
 
 const GLYPHS = '01アイウエオカキクケコサシスセソタチツテト+-=<>{}[]'.split('');
-const COL_WIDTH = 14;     // px between columns
-const FONT_SIZE = 14;
+const COL_WIDTH = 16;     // px between columns
+const FONT_SIZE = 16;
 const FRAME_MS = 1000 / 24;
 
 interface MatrixRainProps {
   opacity?: number; // overall canvas opacity multiplier (0..1)
+  impactLine?: boolean;
+  impactOffset?: number;
 }
 
-const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
+interface ImpactBurst {
+  x: number;
+  age: number;
+  life: number;
+}
+
+const MatrixRain: React.FC<MatrixRainProps> = ({
+  opacity = 0.12,
+  impactLine = false,
+  impactOffset = 26,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -40,6 +52,7 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
     let columns = 0;
     let yPositions: number[] = [];
     let speeds: number[] = [];
+    let impacts: ImpactBurst[] = [];
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -54,6 +67,7 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
       columns = Math.ceil(width / COL_WIDTH);
       yPositions = new Array(columns).fill(0).map(() => Math.random() * -height);
       speeds = new Array(columns).fill(0).map(() => 1 + Math.random() * 2);
+      impacts = [];
     };
 
     const ro = new ResizeObserver(resize);
@@ -96,8 +110,9 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
     const drawFrame = () => {
       ctx.fillStyle = 'rgba(7, 6, 14, 0.10)';
       ctx.fillRect(0, 0, width, height);
-      ctx.font = `${FONT_SIZE}px 'JetBrains Mono', monospace`;
+      ctx.font = `600 ${FONT_SIZE}px 'JetBrains Mono', monospace`;
       ctx.textBaseline = 'top';
+      const lineY = Math.max(18, height - impactOffset);
 
       for (let i = 0; i < columns; i++) {
         const x = i * COL_WIDTH + COL_WIDTH / 2;
@@ -120,7 +135,7 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
         ctx.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], i * COL_WIDTH, y);
 
         if (y - FONT_SIZE * 2 >= 0) {
-          ctx.fillStyle = `rgba(167, 139, 250, ${Math.min(1, 0.55 * boost)})`;
+          ctx.fillStyle = `rgba(167, 139, 250, ${Math.min(1, 0.68 * boost)})`;
           ctx.fillText(
             GLYPHS[Math.floor(Math.random() * GLYPHS.length)],
             i * COL_WIDTH,
@@ -128,10 +143,87 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
           );
         }
 
-        yPositions[i] = y + speeds[i] * slow;
-        if (y > height && Math.random() > 0.975) {
+        const nextY = y + speeds[i] * slow;
+        yPositions[i] = nextY;
+
+        if (impactLine && y < lineY && nextY >= lineY) {
+          impacts.push({
+            x,
+            age: 0,
+            life: 22 + Math.floor(Math.random() * 10),
+          });
+          yPositions[i] = -FONT_SIZE * (2 + Math.random() * 4);
+          continue;
+        }
+
+        if (!impactLine && y > height && Math.random() > 0.975) {
           yPositions[i] = -FONT_SIZE * 3;
         }
+      }
+
+      if (impactLine) {
+        ctx.save();
+        const lineGradient = ctx.createLinearGradient(0, lineY, width, lineY);
+        lineGradient.addColorStop(0, 'rgba(255,255,255,0.72)');
+        lineGradient.addColorStop(0.14, 'rgba(255,255,255,0.95)');
+        lineGradient.addColorStop(0.5, 'rgba(255,255,255,1)');
+        lineGradient.addColorStop(0.86, 'rgba(255,255,255,0.95)');
+        lineGradient.addColorStop(1, 'rgba(255,255,255,0.72)');
+
+        ctx.strokeStyle = lineGradient;
+        ctx.lineWidth = 3;
+        ctx.shadowColor = 'rgba(220, 232, 255, 0.98)';
+        ctx.shadowBlur = 24;
+        ctx.beginPath();
+        ctx.moveTo(-24, lineY);
+        ctx.lineTo(width + 24, lineY);
+        ctx.stroke();
+        ctx.shadowBlur = 42;
+        ctx.globalAlpha = 0.42;
+        ctx.lineWidth = 7;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        impacts = impacts.filter((impact) => {
+          impact.age += 1;
+          const progress = impact.age / impact.life;
+          if (progress >= 1) return false;
+
+          const alpha = 1 - progress;
+          const glowRadius = 20 + progress * 40;
+          const glow = ctx.createRadialGradient(
+            impact.x,
+            lineY,
+            0,
+            impact.x,
+            lineY,
+            glowRadius
+          );
+          glow.addColorStop(0, `rgba(255,255,255,${1 * alpha})`);
+          glow.addColorStop(0.28, `rgba(174,205,255,${0.72 * alpha})`);
+          glow.addColorStop(1, 'rgba(174,205,255,0)');
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(impact.x, lineY, glowRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = `rgba(255,255,255,${0.7 * alpha})`;
+          ctx.lineWidth = 1;
+          ctx.shadowBlur = 0;
+          ctx.beginPath();
+          ctx.ellipse(
+            impact.x,
+            lineY,
+            8 + progress * 28,
+            1.4 + progress * 2.4,
+            0,
+            0,
+            Math.PI * 2
+          );
+          ctx.stroke();
+          return true;
+        });
+        ctx.restore();
       }
     };
 
@@ -162,7 +254,7 @@ const MatrixRain: React.FC<MatrixRainProps> = ({ opacity = 0.12 }) => {
       io.disconnect();
       ro.disconnect();
     };
-  }, []);
+  }, [impactLine, impactOffset]);
 
   return (
     <canvas

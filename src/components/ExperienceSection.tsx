@@ -126,8 +126,9 @@ const ExperienceItem: React.FC<{
   index: number;
   cardWidth: number;
   isMobile: boolean;
+  layout?: 'timeline' | 'rail';
   onViewDetails: () => void;
-}> = ({ exp, index, cardWidth, isMobile, onViewDetails }) => {
+}> = ({ exp, index, cardWidth, isMobile, layout = 'timeline', onViewDetails }) => {
   const period = formatPeriod(exp.start, exp.end);
   const durationMonths = diffMonths(exp.start, exp.end);
   const durationStr = durationMonths >= 12 ? `${(durationMonths / 12).toFixed(durationMonths % 12 === 0 ? 0 : 1)} yrs` : `${durationMonths} mos`;
@@ -144,6 +145,200 @@ const ExperienceItem: React.FC<{
   ];
   const cardHeight = 380;
   const visibleSkills = isMobile ? exp.skills.slice(0, 1) : exp.skills.slice(0, 2);
+
+  const card = (
+    <motion.div
+      initial={{ opacity: 0, y: 20, rotateY: index % 2 === 0 ? -15 : 15 }}
+      animate={isInView ? {
+        opacity: 1,
+        y: 0,
+        rotateY: 0
+      } : {}}
+      viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+      transition={{
+        duration: 0.6,
+        ease: 'easeOut',
+        delay: index * 0.1,
+        rotateY: { duration: 0.8 }
+      }}
+      style={{ width: `${cardWidth}px`, height: `${cardHeight}px`, maxWidth: '100%' }}
+      className="group cursor-pointer perspective-1000 mx-auto"
+      onClick={onViewDetails}
+      onMouseEnter={() => { setIsHovered(true); hudLog(`> hover: ${exp.company} · ${exp.role}`); }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+      }}
+      whileHover={{
+        scale: 1.02,
+        rotateY: index % 2 === 0 ? 2 : -2,
+        transition: { duration: 0.3 }
+      }}
+    >
+      <LiquidGlass
+        width={cardWidth}
+        height={cardHeight}
+        positioning="relative"
+        style={{ borderRadius: '18px' }}
+        elasticity={0.15}
+        saturation={isHovered ? 180 : 150}
+        aberrationIntensity={isHovered ? 1.5 : 1.2}
+        displacementScale={isHovered ? 80 : 60}
+        blurAmount={isHovered ? 4 : 3}
+        mode='shader'
+      >
+        <div className="detail-readable p-4 sm:p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
+          {/* Animated background pattern */}
+          <motion.div
+            className="absolute inset-0 opacity-5"
+            animate={isHovered ? {
+              background: [
+                "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)",
+                "radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)",
+                "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)"
+              ]
+            } : {}}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          />
+
+          {/* Header with company info */}
+          <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 relative z-10">
+            <div className="flex-1">
+              <motion.h3
+                className="text-base sm:text-lg md:text-xl font-semibold leading-tight line-clamp-2 [text-shadow:0_2px_5px_rgba(0,0,0,0.8)] mb-2"
+                animate={isHovered ? { scale: 1.02 } : { scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                {exp.role}
+              </motion.h3>
+              <motion.div
+                className="text-white/80 text-xs sm:text-sm mb-2 line-clamp-2"
+                animate={isHovered ? { x: 5 } : { x: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {exp.company}{exp.location ? ` • ${exp.location}` : ''}
+              </motion.div>
+              <motion.div
+                className="text-white/70 text-[11px] sm:text-xs"
+                animate={isHovered ? { x: 5 } : { x: 0 }}
+                transition={{ duration: 0.2, delay: 0.05 }}
+              >
+                <div className="flex items-center gap-2">
+                  <span>{period}</span>
+                  <span className="text-white/60">({durationStr})</span>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Category badge with animation */}
+            <motion.div
+              className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10"
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.25)" }}
+              transition={{ duration: 0.2 }}
+            >
+              {exp.category}
+            </motion.div>
+          </div>
+
+          {/* Quick stats row */}
+          <motion.div
+            className="flex gap-3 sm:gap-4 mb-4 relative z-10"
+            initial={{ opacity: 0, y: 10 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: index * 0.1 + 0.3 }}
+          >
+            {stats.map((stat, statIndex) => (
+              <div key={stat.label} className="text-center">
+                <motion.div
+                  className="text-base sm:text-lg font-bold text-orange-300"
+                  animate={isInView ? { scale: [0.8, 1.1, 1] } : {}}
+                  transition={{ delay: index * 0.1 + 0.4 + statIndex * 0.1, duration: 0.5 }}
+                >
+                  <AnimatedCounter value={stat.value} duration={0.8} />
+                  {stat.suffix && <span className="text-xs sm:text-sm">{stat.suffix}</span>}
+                </motion.div>
+                <div className="text-[11px] sm:text-xs text-white/60">{stat.label}</div>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Main content - simplified without show more/less functionality */}
+          <div className="flex-1 mb-3 sm:mb-4 relative z-10 min-h-[72px]">
+            <p className="text-white/90 text-sm leading-relaxed line-clamp-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] break-words">
+              {exp.highlights[0]}
+            </p>
+          </div>
+
+          {/* Bottom section with enhanced tags and action button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2 sm:mt-4 gap-3 relative z-10">
+            {/* Animated skill tags */}
+            <div className="flex flex-wrap gap-2">
+              <Tag text={exp.category} index={0} />
+              {visibleSkills.map((skill, skillIndex) => (
+                <Tag key={skill} text={skill} index={skillIndex + 1} />
+              ))}
+              {exp.skills.length > visibleSkills.length && (
+                <motion.span
+                  className="text-xs px-2.5 py-1 bg-white/5 text-white/60 rounded-full backdrop-blur-sm border border-white/10"
+                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)", scale: 1.05 }}
+                >
+                  +{exp.skills.length - visibleSkills.length} more
+                </motion.span>
+              )}
+            </div>
+
+            {/* Enhanced action button - matching ProjectsSection arrow style */}
+            <motion.div
+              className="self-end sm:self-auto p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
+              animate={{
+                scale: isHovered ? 1.1 : 1,
+                rotate: isHovered ? 45 : 0
+              }}
+              transition={{
+                duration: 0.3,
+                ease: "easeOut"
+              }}
+              whileTap={{ scale: 0.9 }}
+              style={{
+                transformOrigin: "center"
+              }}
+            >
+              <motion.svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-white transition-colors duration-300"
+                animate={{
+                  rotate: isHovered ? [0, 5, -5, 0] : 0
+                }}
+                transition={{
+                  duration: isHovered ? 0.6 : 0.3,
+                  ease: "easeInOut",
+                  repeat: isHovered ? Infinity : 0,
+                  repeatDelay: isHovered ? 2 : 0
+                }}
+              >
+                <path d="M7 17L17 7" />
+                <path d="M7 7L17 7L17 17" />
+              </motion.svg>
+            </motion.div>
+          </div>
+        </div>
+      </LiquidGlass>
+    </motion.div>
+  );
+
+  if (layout === 'rail') {
+    return (
+      <div className="relative flex h-full w-full items-center justify-center" ref={cardRef}>
+        {card}
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full" ref={cardRef}>
@@ -187,189 +382,7 @@ const ExperienceItem: React.FC<{
           <div className="hidden md:block" />
         ) : null}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20, rotateY: index % 2 === 0 ? -15 : 15 }}
-          animate={isInView ? {
-            opacity: 1,
-            y: 0,
-            rotateY: 0
-          } : {}}
-          viewport={{ once: true, margin: '0px 0px -10% 0px' }}
-          transition={{
-            duration: 0.6,
-            ease: 'easeOut',
-            delay: index * 0.1,
-            rotateY: { duration: 0.8 }
-          }}
-          style={{ width: `${cardWidth}px`, height: `${cardHeight}px`, maxWidth: '100%' }}
-          className="group cursor-pointer perspective-1000 mx-auto"
-          onClick={onViewDetails}
-          onMouseEnter={() => { setIsHovered(true); hudLog(`> hover: ${exp.company} · ${exp.role}`); }}
-          onMouseLeave={() => {
-            setIsHovered(false);
-          }}
-          whileHover={{
-            scale: 1.02,
-            rotateY: index % 2 === 0 ? 2 : -2,
-            transition: { duration: 0.3 }
-          }}
-        >
-          <LiquidGlass
-            width={cardWidth}
-            height={cardHeight}
-            positioning="relative"
-            style={{ borderRadius: '18px' }}
-            elasticity={0.15}
-            saturation={isHovered ? 180 : 150}
-            aberrationIntensity={isHovered ? 1.5 : 1.2}
-            displacementScale={isHovered ? 80 : 60}
-            blurAmount={isHovered ? 4 : 3}
-            mode='shader'
-          >
-            <div className="detail-readable p-4 sm:p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
-              {/* Animated background pattern */}
-              <motion.div
-                className="absolute inset-0 opacity-5"
-                animate={isHovered ? {
-                  background: [
-                    "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)",
-                    "radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)",
-                    "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)"
-                  ]
-                } : {}}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-
-              {/* Header with company info */}
-              <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 relative z-10">
-                <div className="flex-1">
-                  <motion.h3
-                    className="text-base sm:text-lg md:text-xl font-semibold leading-tight line-clamp-2 [text-shadow:0_2px_5px_rgba(0,0,0,0.8)] mb-2"
-                    animate={isHovered ? { scale: 1.02 } : { scale: 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {exp.role}
-                  </motion.h3>
-                  <motion.div
-                    className="text-white/80 text-xs sm:text-sm mb-2 line-clamp-2"
-                    animate={isHovered ? { x: 5 } : { x: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {exp.company}{exp.location ? ` • ${exp.location}` : ''}
-                  </motion.div>
-                  <motion.div
-                    className="text-white/70 text-[11px] sm:text-xs"
-                    animate={isHovered ? { x: 5 } : { x: 0 }}
-                    transition={{ duration: 0.2, delay: 0.05 }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{period}</span>
-                      <span className="text-white/60">({durationStr})</span>
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Category badge with animation */}
-                <motion.div
-                  className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10"
-                  whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.25)" }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {exp.category}
-                </motion.div>
-              </div>
-
-              {/* Quick stats row */}
-              <motion.div
-                className="flex gap-3 sm:gap-4 mb-4 relative z-10"
-                initial={{ opacity: 0, y: 10 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: index * 0.1 + 0.3 }}
-              >
-                {stats.map((stat, statIndex) => (
-                  <div key={stat.label} className="text-center">
-                    <motion.div
-                      className="text-base sm:text-lg font-bold text-orange-300"
-                      animate={isInView ? { scale: [0.8, 1.1, 1] } : {}}
-                      transition={{ delay: index * 0.1 + 0.4 + statIndex * 0.1, duration: 0.5 }}
-                    >
-                      <AnimatedCounter value={stat.value} duration={0.8} />
-                      {stat.suffix && <span className="text-xs sm:text-sm">{stat.suffix}</span>}
-                    </motion.div>
-                    <div className="text-[11px] sm:text-xs text-white/60">{stat.label}</div>
-                  </div>
-                ))}
-              </motion.div>
-
-              {/* Main content - simplified without show more/less functionality */}
-              <div className="flex-1 mb-3 sm:mb-4 relative z-10 min-h-[72px]">
-                <p className="text-white/90 text-sm leading-relaxed line-clamp-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] break-words">
-                  {exp.highlights[0]}
-                </p>
-              </div>
-
-              {/* Bottom section with enhanced tags and action button */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2 sm:mt-4 gap-3 relative z-10">
-                {/* Animated skill tags */}
-                <div className="flex flex-wrap gap-2">
-                  <Tag text={exp.category} index={0} />
-                  {visibleSkills.map((skill, skillIndex) => (
-                    <Tag key={skill} text={skill} index={skillIndex + 1} />
-                  ))}
-                  {exp.skills.length > visibleSkills.length && (
-                    <motion.span
-                      className="text-xs px-2.5 py-1 bg-white/5 text-white/60 rounded-full backdrop-blur-sm border border-white/10"
-                      whileHover={{ backgroundColor: "rgba(255,255,255,0.1)", scale: 1.05 }}
-                    >
-                      +{exp.skills.length - visibleSkills.length} more
-                    </motion.span>
-                  )}
-                </div>
-
-                {/* Enhanced action button - matching ProjectsSection arrow style */}
-                <motion.div
-                  className="self-end sm:self-auto p-2.5 bg-white/15 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/25 transition-colors duration-300"
-                  animate={{
-                    scale: isHovered ? 1.1 : 1,
-                    rotate: isHovered ? 45 : 0
-                  }}
-                  transition={{
-                    duration: 0.3,
-                    ease: "easeOut"
-                  }}
-                  whileTap={{ scale: 0.9 }}
-                  style={{
-                    transformOrigin: "center"
-                  }}
-                >
-                  <motion.svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-white transition-colors duration-300"
-                    animate={{
-                      rotate: isHovered ? [0, 5, -5, 0] : 0
-                    }}
-                    transition={{
-                      duration: isHovered ? 0.6 : 0.3,
-                      ease: "easeInOut",
-                    repeat: isHovered ? Infinity : 0,
-                    repeatDelay: isHovered ? 2 : 0
-                  }}
-                  >
-                    <path d="M7 17L17 7" />
-                    <path d="M7 7L17 7L17 17" />
-                  </motion.svg>
-                </motion.div>
-              </div>
-            </div>
-          </LiquidGlass>
-        </motion.div>
+        {card}
 
         {index % 2 !== 0 ? (
           <div className="hidden md:block" />
@@ -427,7 +440,7 @@ const YearBillboard: React.FC<YearBillboardProps> = ({
       aria-hidden="true"
     >
       <span className="text-white/55 text-xs uppercase tracking-[0.32em] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-        Where I've worked
+        What I've done
       </span>
       <RotatingText
         ref={rotatingRef}
@@ -528,7 +541,7 @@ const HorizontalExperienceTimeline: React.FC<HorizontalExperienceTimelineProps> 
         {/* Centre band — cards sit in a flex row. We apply `x` via motion so
             framer-motion takes the perf-friendly path (transform, no reflow). */}
         <motion.div
-          className="absolute top-1/2 -translate-y-1/2 flex items-center"
+          className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center"
           style={{
             x: trackX,
             gap: CARD_GAP,
@@ -546,6 +559,7 @@ const HorizontalExperienceTimeline: React.FC<HorizontalExperienceTimelineProps> 
                 index={i}
                 cardWidth={CARD_WIDTH}
                 isMobile={false}
+                layout="rail"
                 onViewDetails={() => onViewDetails(exp.id)}
               />
             </div>
@@ -623,13 +637,22 @@ const ExperienceSection: React.FC = () => {
     <motion.section
       ref={sectionRef}
       id="experience"
-      className={`relative min-h-screen w-full flex items-center justify-center ${isHorizontal ? '' : 'px-4 sm:px-8 md:px-16 lg:px-24'} pt-24 pb-14`}
+      className={
+        isHorizontal
+          ? 'relative w-full'
+          : 'relative min-h-screen w-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 pt-24 pb-14'
+      }
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 30 : 0 }}
       transition={{ duration: 0.8, ease: 'easeOut', delay: isLoading ? 0 : 0.8 }}
     >
       {isHorizontal ? (
-        <HorizontalExperienceTimeline onViewDetails={handleViewDetails} />
+        <>
+          <StickySectionBackground variant="experience" />
+          <div className="relative z-10">
+            <HorizontalExperienceTimeline onViewDetails={handleViewDetails} />
+          </div>
+        </>
       ) : (
         <>
           <StickySectionBackground variant="experience" />
@@ -659,7 +682,7 @@ const ExperienceSection: React.FC = () => {
               >
                 <span className="hero-eyebrow inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
-                  Where I've worked
+                  What I've done
                 </span>
               </motion.div>
               <motion.h2

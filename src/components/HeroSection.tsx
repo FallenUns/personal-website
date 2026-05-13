@@ -139,12 +139,12 @@ const HeroSection: React.FC = () => {
               inset: 0,
               pointerEvents: 'none',
               maskImage:
-                'linear-gradient(180deg, black 0%, black 55%, rgba(0,0,0,0.55) 80%, transparent 100%)',
+                'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
               WebkitMaskImage:
-                'linear-gradient(180deg, black 0%, black 55%, rgba(0,0,0,0.55) 80%, transparent 100%)',
+                'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
             }}
           >
-            <MatrixRain opacity={0.14} impactLine impactOffset={28} />
+            <MatrixRain opacity={0.22} impactLine impactOffset={28} />
           </div>
         )}
         {/* CursorSpotlight is now mounted globally at App.tsx root (fixed
