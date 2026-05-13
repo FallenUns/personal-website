@@ -2,10 +2,12 @@ import React from 'react';
 import { hudLog } from '../hooks/useHudBus';
 import {
   motion,
+  AnimatePresence,
   useInView,
   useScroll,
   useTransform,
   useMotionValueEvent,
+  useReducedMotion,
   type MotionValue,
 } from 'framer-motion';
 import RotatingText, { type RotatingTextRef } from './animations/RotatingText';
@@ -111,7 +113,13 @@ const TimelineProgress: React.FC<{ progress: number }> = ({ progress }) => {
   return (
     <div className="absolute left-1/2 -translate-x-1/2 top-0 w-1 h-full bg-white/15">
       <motion.div
-        className="w-full bg-green-500"
+        className="w-full"
+        style={{
+          background:
+            'linear-gradient(180deg, #2F293A 0%, #8b5cf6 58%, #FF9FFC 100%)',
+          boxShadow:
+            '0 0 12px rgba(139, 92, 246, 0.45), 0 0 6px rgba(255, 159, 252, 0.45)',
+        }}
         initial={{ height: 0 }}
         whileInView={{ height: `${progress}%` }}
         viewport={{ once: true }}
@@ -180,10 +188,15 @@ const ExperienceItem: React.FC<{
         positioning="relative"
         style={{ borderRadius: '18px' }}
         elasticity={0.15}
-        saturation={isHovered ? 180 : 150}
-        aberrationIntensity={isHovered ? 1.5 : 1.2}
-        displacementScale={isHovered ? 80 : 60}
-        blurAmount={isHovered ? 4 : 3}
+        // Stable shader uniforms. Previously these flipped on hover, which
+        // re-uploaded uniforms / re-evaluated the displacement map every
+        // pointer-enter — visible as a frame stutter. The whileHover scale
+        // (1.02) on the parent motion.div already conveys "lift" cheaply
+        // via the compositor; we don't need to perturb the shader for it.
+        saturation={165}
+        aberrationIntensity={1.35}
+        displacementScale={70}
+        blurAmount={3.5}
         mode='shader'
       >
         <div className="detail-readable p-4 sm:p-6 md:p-8 text-white h-full flex flex-col relative overflow-hidden">
@@ -342,38 +355,73 @@ const ExperienceItem: React.FC<{
 
   return (
     <div className="relative w-full" ref={cardRef}>
-      {/* Enhanced Timeline dot with pulse effect */}
+      {/* Timeline dot — refined ripple.
+          Old version had a repeating box-shadow keyframe (like a drop hitting
+          water over and over) plus a separately repeating scale ring. That
+          read as jittery "rain hitting the line" — too busy, no rest state.
+          New version:
+            - Outer halo: a soft, slow breathing glow (always on for in-view
+              items). Steady ambient presence, like a star.
+            - Inner dot: gradient orange→amber, gentle scale on hover.
+            - Hover ripple: ONE single, spring-eased wave that emerges on
+              hover-enter and resets on hover-leave — feels intentional,
+              not noisy. */}
       <motion.div
         className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
         initial={{ scale: 0, opacity: 0 }}
         animate={isInView ? { scale: 1, opacity: 1 } : {}}
-        transition={{ duration: 0.4, delay: index * 0.1 }}
+        transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
       >
-        <motion.div
-          className="relative w-4 h-4 bg-orange-400 rounded-full shadow-lg"
-          animate={isInView ? {
-            boxShadow: isHovered
-              ? ["0 0 0 0 rgba(251, 146, 60, 0.4)", "0 0 0 15px rgba(251, 146, 60, 0)"]
-              : "0 0 0 0 rgba(251, 146, 60, 0.4)"
-          } : {}}
-          transition={{
-            boxShadow: {
-              duration: isHovered ? 1.5 : 0.3,
-              repeat: isHovered ? Infinity : 0,
-              ease: "easeOut"
+        <div className="relative flex h-4 w-4 items-center justify-center">
+          {/* Soft ambient halo — always on, breathes slowly. */}
+          <motion.span
+            className="absolute inset-0 rounded-full"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(251,146,60,0.55) 0%, rgba(251,146,60,0) 70%)',
+              filter: 'blur(4px)',
+            }}
+            animate={
+              isInView
+                ? { scale: [1, 1.45, 1], opacity: [0.55, 0.85, 0.55] }
+                : {}
             }
-          }}
-        >
-          {/* Animated ring around the dot */}
-          <motion.div
-            className="absolute inset-0 rounded-full border-2 border-orange-300"
-            animate={isInView && isHovered ? {
-              scale: [1, 1.8, 1],
-              opacity: [0.8, 0, 0.8]
-            } : {}}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            transition={{
+              duration: 3.6,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
           />
-        </motion.div>
+
+          {/* Single hover ripple — animates once on hover-enter. */}
+          <motion.span
+            key={isHovered ? 'on' : 'off'}
+            className="absolute inset-0 rounded-full border border-orange-200/70"
+            initial={{ scale: 1, opacity: 0 }}
+            animate={
+              isHovered
+                ? { scale: 2.4, opacity: [0, 0.9, 0] }
+                : { scale: 1, opacity: 0 }
+            }
+            transition={{
+              duration: 0.9,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+          />
+
+          {/* Inner dot — gradient, lifts slightly on hover. */}
+          <motion.span
+            className="relative h-2.5 w-2.5 rounded-full"
+            style={{
+              background:
+                'radial-gradient(circle at 35% 30%, #fde68a 0%, #fb923c 55%, #ea580c 100%)',
+              boxShadow:
+                '0 0 8px 0 rgba(251,146,60,0.55), 0 0 18px 2px rgba(251,146,60,0.25)',
+            }}
+            animate={isHovered ? { scale: 1.18 } : { scale: 1 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 18 }}
+          />
+        </div>
       </motion.div>
 
       {/* Card wrapper with enhanced alternating layout */}
@@ -464,6 +512,110 @@ const YearBillboard: React.FC<YearBillboardProps> = ({
   );
 };
 
+interface ExperiencePhotoStripProps {
+  /** Index into sortedExps for the currently centred card. */
+  currentIdx: number;
+  /** Honour the reduced-motion media query (disables stagger/fade). */
+  reducedMotion: boolean;
+}
+
+/**
+ * Photo strip that sits below the cards in the sticky scrolljack viewport.
+ * Shows up to 3 photos from the currently-centred experience and crossfades
+ * when the centred card changes. Photos are tiny "polaroids" with a caption
+ * underneath; hovering one lifts and tilts it slightly (TiltedCard-style).
+ *
+ * Uses AnimatePresence with mode="popLayout" so old photos exit while new
+ * ones stagger in — feels alive instead of snapping. Respects reduced-motion
+ * by collapsing all animations to instant fades.
+ */
+const ExperiencePhotoStrip: React.FC<ExperiencePhotoStripProps> = ({
+  currentIdx,
+  reducedMotion,
+}) => {
+  const exp = sortedExps[currentIdx];
+  const photos = exp?.photos?.slice(0, 3) ?? [];
+  if (photos.length === 0) return null;
+
+  // Use a stable key per experience so AnimatePresence swaps the WHOLE group
+  // instead of trying to diff individual photos across experiences (which
+  // would feel like a slot-machine flicker).
+  return (
+    <div
+      className="pointer-events-none absolute bottom-16 left-1/2 -translate-x-1/2 z-10 flex items-end justify-center gap-4"
+      aria-hidden="true"
+    >
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.div
+          key={exp.id}
+          className="flex items-end gap-4"
+          initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+          transition={{
+            duration: reducedMotion ? 0.12 : 0.22,
+            ease: 'easeOut',
+          }}
+        >
+          {photos.map((photo, i) => (
+            <motion.figure
+              key={photo.url}
+              className="pointer-events-auto relative w-[180px] shrink-0"
+              initial={
+                reducedMotion
+                  ? { opacity: 0 }
+                  : { opacity: 0, y: 14, rotate: i % 2 === 0 ? -2 : 2 }
+              }
+              animate={{
+                opacity: 1,
+                y: 0,
+                rotate: reducedMotion ? 0 : i % 2 === 0 ? -1.5 : 1.5,
+              }}
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+              transition={{
+                duration: reducedMotion ? 0.12 : 0.26,
+                delay: reducedMotion ? 0 : 0.04 + i * 0.05,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              whileHover={
+                reducedMotion
+                  ? undefined
+                  : {
+                      y: -6,
+                      rotate: 0,
+                      scale: 1.05,
+                      transition: { duration: 0.18, ease: 'easeOut' },
+                    }
+              }
+            >
+              <div
+                className="relative overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/15 shadow-[0_18px_48px_-18px_rgba(0,0,0,0.7)] backdrop-blur-sm"
+                style={{ aspectRatio: '4 / 3' }}
+              >
+                <img
+                  src={photo.url}
+                  alt={photo.caption ?? `${exp.role} photo ${i + 1}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                {/* Subtle bottom-edge vignette so caption stays legible if it
+                    ever overlaps a bright photo region during entry. */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/50 to-transparent" />
+              </div>
+              {photo.caption ? (
+                <figcaption className="mt-2 line-clamp-2 text-[11px] leading-snug text-white/70 [text-shadow:0_1px_3px_rgba(0,0,0,0.85)]">
+                  {photo.caption}
+                </figcaption>
+              ) : null}
+            </motion.figure>
+          ))}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
 interface HorizontalExperienceTimelineProps {
   /** Click handler that opens the ExperienceDetail modal. */
   onViewDetails: (id: string) => void;
@@ -522,6 +674,29 @@ const HorizontalExperienceTimeline: React.FC<HorizontalExperienceTimelineProps> 
     return Array.from({ length: N }, (_, i) => i / (N - 1));
   }, [N]);
 
+  // Track the currently-centred card so the photo strip below knows which
+  // experience's photos to display. YearBillboard derives this internally
+  // for its own (imperative) text rotation; we mirror the same nearest-
+  // centre logic here so both stay in lockstep without coupling. Updates
+  // are gated by an equality check so we only re-render when the index
+  // actually changes — the motion value fires on every scroll frame.
+  const [currentIdx, setCurrentIdx] = React.useState(0);
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    if (cardCenters.length === 0) return;
+    let nearest = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < cardCenters.length; i++) {
+      const d = Math.abs(cardCenters[i] - v);
+      if (d < bestDist) {
+        bestDist = d;
+        nearest = i;
+      }
+    }
+    setCurrentIdx((prev) => (prev === nearest ? prev : nearest));
+  });
+
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
   // Section height: (N + 1) viewports for comfortable scroll travel.
   const sectionHeight = `${(N + 1) * 100}vh`;
 
@@ -566,12 +741,54 @@ const HorizontalExperienceTimeline: React.FC<HorizontalExperienceTimelineProps> 
           ))}
         </motion.div>
 
-        {/* Thin scroll-progress bar at the bottom of the sticky frame */}
-        <div className="absolute bottom-10 left-[6vw] right-[6vw] h-px bg-white/10">
-          <motion.div
-            className="h-full bg-white/55 origin-left"
-            style={{ scaleX: scrollYProgress }}
+        {/* Scroll-synced photo strip — shows photos from whichever experience
+            is currently centred. Lives in the lower-third of the sticky view
+            where the cards leave generous vertical breathing room. */}
+        <ExperiencePhotoStrip
+          currentIdx={currentIdx}
+          reducedMotion={prefersReducedMotion}
+        />
+
+        {/* Scroll-progress rail — gradient fill, soft glow, traveling head.
+            Three layers stacked at the same position:
+              1. Track  — rounded 3px pill, low-alpha bg, faint inner shadow.
+              2. Fill   — gradient (cyan → violet → magenta) scaled-X by
+                          scrollYProgress; the gradient stays anchored so the
+                          colour you see at any point on the track is stable.
+              3. Head   — small glowing dot that rides the fill's leading edge
+                          via useTransform(progress → left%). Acts as a
+                          "comet" cursor for the timeline. */}
+        <div className="pointer-events-none absolute bottom-10 left-[6vw] right-[6vw] h-[3px]">
+          <div
+            className="absolute inset-0 rounded-full shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]"
+            style={{ backgroundColor: 'rgba(47, 41, 58, 0.88)' }}
           />
+          <motion.div
+            className="absolute inset-y-0 left-0 origin-left rounded-full"
+            style={{
+              scaleX: scrollYProgress,
+              backgroundImage:
+                'linear-gradient(90deg, #2F293A 0%, #8b5cf6 55%, #FF9FFC 100%)',
+              boxShadow:
+                '0 0 12px 0 rgba(139, 92, 246, 0.55), 0 0 6px 0 rgba(255, 159, 252, 0.5)',
+              width: '100%',
+            }}
+          />
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
+            style={{
+              left: useTransform(scrollYProgress, [0, 1], ['0%', '100%']),
+            }}
+          >
+            <div
+              className="h-3 w-3 rounded-full"
+              style={{
+                background: '#FF9FFC',
+                boxShadow:
+                  '0 0 18px 4px rgba(255, 159, 252, 0.58), 0 0 6px 0 rgba(255, 159, 252, 0.95)',
+              }}
+            />
+          </motion.div>
         </div>
       </div>
     </div>
@@ -625,6 +842,13 @@ const ExperienceSection: React.FC = () => {
   }, [containerWidth, isMdUp]);
 
   const handleViewDetails = (experienceId: string) => {
+    const experience = sorted.find((item) => item.id === experienceId);
+    hudLog(
+      experience
+        ? `> experience.open "${experience.company} · ${experience.role}"`
+        : `> experience.open "${experienceId}"`,
+      'ok'
+    );
     navigateTo(`/experience/${experienceId}`);
   };
 

@@ -4,21 +4,41 @@ import React from 'react';
 // now a static CSS radial gradient (no shader). Per-section overlays still
 // run their own canvases for character.
 import Dither from './Dither';
-import GridScan from './GridScan';
-import Particles from './Particles/Particles';
+import { GridScan } from './GridScan';
+import Snow from './Snow';
 import { useTime } from '../../contexts/TimeContext';
+import useInViewport from '../../hooks/useInViewport';
 
 type StickySectionBackgroundProps = {
   variant: 'experience' | 'projects' | 'contact';
 };
 
 const effectByVariant = {
+  // Real react-bits GridScan — WebGL shader with grid raycast + scanning
+  // beam. Webcam + gyro + scanOnClick disabled so the section never
+  // requests camera/sensor permissions and clicks pass through to cards.
+  //
+  // `enablePost={false}` is the 120fps-target trade: the post-processing
+  // pipeline (bloom + chromatic aberration + film grain) was costing
+  // ~10 ms/frame all by itself, pinning the experience section at 60fps.
+  // The main fragment shader keeps the grid, the perspective raycast,
+  // and the scan beam glow (uScanGlow is computed in the shader, not in
+  // post) — so we lose the "blooming halo + CRT chromatic fringe" but
+  // keep the iconic GridScan identity. Bumping `scanGlow` slightly
+  // compensates for the lost bloom.
   experience: (
     <GridScan
-      cellSize={54}
-      opacity={0.92}
-      primaryColor="#8b5cf6"
-      secondaryColor="#38bdf8"
+      enableWebcam={false}
+      enableGyro={false}
+      scanOnClick={false}
+      lineThickness={1}
+      linesColor="#2F293A"
+      scanColor="#FF9FFC"
+      gridScale={0.1}
+      lineJitter={0.1}
+      enablePost={false}
+      scanGlow={0.85}
+      scanSoftness={2.4}
     />
   ),
   projects: (
@@ -30,7 +50,7 @@ const effectByVariant = {
       tertiaryColor="#050816"
     />
   ),
-  contact: <Particles />,
+  contact: <Snow />,
 };
 
 const maskByVariant: Record<'experience' | 'projects' | 'contact', string> = {
@@ -45,7 +65,7 @@ const maskByVariant: Record<'experience' | 'projects' | 'contact', string> = {
 const opacityByVariant: Record<'experience' | 'projects' | 'contact', number> = {
   experience: 0.62,
   projects: 0.58,
-  contact: 0.35,
+  contact: 0.75,
 };
 
 const phaseFromHour = (hour: number) => {
@@ -94,7 +114,7 @@ const auraByPhase = {
  * Static base — pure CSS radial gradient tinted with the time-of-day primary
  * colour. No shader, no diagonals, no per-frame paint. The most "seamless"
  * possible base because there's nothing animating that could read as a
- * section seam. Per-section overlays (DotGrid / LightRays / Particles)
+ * section seam. Per-section overlays (GridScan / Dither / Snow)
  * provide the kinetic character.
  */
 const BaseAurora: React.FC = () => {
@@ -132,23 +152,47 @@ const BaseAurora: React.FC = () => {
  * stack of identical aurora layers — the "duplicates + intersection" the
  * user saw at section boundaries.
  */
-export const StickySectionBackground: React.FC<StickySectionBackgroundProps> = ({ variant }) => (
-  <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
-    <div className="sticky top-0 h-screen w-full overflow-hidden">
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          opacity: opacityByVariant[variant],
-          maskImage: maskByVariant[variant],
-          WebkitMaskImage: maskByVariant[variant],
-        }}
-      >
-        {effectByVariant[variant]}
+export const StickySectionBackground: React.FC<StickySectionBackgroundProps> = ({ variant }) => {
+  // Viewport-gate the per-section effect. When the section is well off-screen
+  // (more than `rootMargin` away from the viewport) we unmount the effect
+  // entirely, killing its requestAnimationFrame loop and freeing the
+  // associated canvas + WebGL context. With four heavy section canvases
+  // (MatrixRain, GridScan, Dither, Snow) all running simultaneously, doing
+  // this drops the per-frame budget by ~3× when the user is reading any
+  // single section.
+  //
+  // `rootMargin: '600px'` mounts the effect a generous bit before the
+  // section is actually visible so the user never sees a blank background
+  // pop in at the seam — the canvas has time to initialise (especially
+  // the WebGL2 GridScan) before any part of its section reaches the
+  // viewport.
+  const wrapRef = React.useRef<HTMLDivElement>(null);
+  const inView = useInViewport(wrapRef, { rootMargin: '600px' });
+  return (
+    <div ref={wrapRef} aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+      <div className="sticky top-0 h-screen w-full overflow-hidden">
+        {inView ? (
+          // Two-layer wrapper so the fade-in (0 → 1) and the per-variant
+          // opacity (0.62 / 0.58 / 0.75) don't fight each other. The outer
+          // owns the animation, the inner owns the constant visibility.
+          <div className="section-bg-fade-in absolute inset-0">
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                opacity: opacityByVariant[variant],
+                maskImage: maskByVariant[variant],
+                WebkitMaskImage: maskByVariant[variant],
+              }}
+            >
+              {effectByVariant[variant]}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const SectionBackground: React.FC = () => (
   <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">

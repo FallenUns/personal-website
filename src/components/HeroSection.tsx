@@ -11,6 +11,7 @@ import RotatingText from './animations/RotatingText';
 // cursor across every section. Removed from HeroSection.
 import MatrixRain from './visuals/MatrixRain';
 import { isLowPerformanceDevice } from '../utils/performance';
+import useInViewport from '../hooks/useInViewport';
 
 const HeroSection: React.FC = () => {
   useComponentLoader('HeroSection');
@@ -127,26 +128,12 @@ const HeroSection: React.FC = () => {
       )}
 
       <section ref={heroRef} id="about" className="min-h-[100svh] lg:h-[100svh] box-border flex flex-col lg:flex-row items-start lg:items-center justify-center px-5 sm:px-10 md:px-16 lg:px-32 pt-24 pb-8 sm:pb-10 lg:pt-20 lg:pb-20 relative overflow-hidden">
-        {!isLowPerformanceDevice() && (
-          // Bottom-fade mask so the matrix rain doesn't slam into the section
-          // edge as a visible horizontal line — fades over the last 35% of
-          // the hero's height into transparent, blending with whatever's
-          // below.
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              pointerEvents: 'none',
-              maskImage:
-                'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
-              WebkitMaskImage:
-                'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
-            }}
-          >
-            <MatrixRain opacity={0.22} impactLine impactOffset={28} />
-          </div>
-        )}
+        {/* Viewport-gate MatrixRain: when the user has scrolled past the hero
+            we unmount the entire canvas so its rAF + per-frame draws stop.
+            Same pattern as StickySectionBackground — a 600 px rootMargin
+            keeps the effect alive a little outside the viewport so coming
+            back to the hero feels instant. */}
+        {!isLowPerformanceDevice() && <HeroMatrixRainGate heroRef={heroRef} />}
         {/* CursorSpotlight is now mounted globally at App.tsx root (fixed
             position) so it follows the cursor across every section. */}
         <motion.div
@@ -890,6 +877,40 @@ const HeroSection: React.FC = () => {
         </motion.div>
       </section>
     </>
+  );
+};
+
+/**
+ * Renders the MatrixRain canvas only while the hero is on/near the
+ * viewport. When the user scrolls past the hero, the canvas (and its
+ * requestAnimationFrame loop) unmount — freeing main-thread budget for
+ * whichever section the user is actually reading.
+ */
+const HeroMatrixRainGate: React.FC<{ heroRef: React.RefObject<HTMLElement | null> }> = ({
+  heroRef,
+}) => {
+  const inView = useInViewport(heroRef, { rootMargin: '600px' });
+  if (!inView) return null;
+  return (
+    <div
+      aria-hidden="true"
+      className="section-bg-fade-in"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        // Bottom-fade mask so the matrix rain doesn't slam into the section
+        // edge as a visible horizontal line — fades over the last 35% of
+        // the hero's height into transparent, blending with whatever's
+        // below.
+        maskImage:
+          'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
+        WebkitMaskImage:
+          'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
+      }}
+    >
+      <MatrixRain opacity={0.22} impactLine impactOffset={28} />
+    </div>
   );
 };
 

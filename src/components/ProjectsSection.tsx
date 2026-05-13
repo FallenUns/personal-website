@@ -876,8 +876,12 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
   // Handle project card click - navigate to project detail page
   const handleProjectClick = () => {
     // Don't navigate for coming soon projects
-    if (isComingSoon) return;
+    if (isComingSoon) {
+      hudLog(`> project.locked "${project.title}"`, 'warn');
+      return;
+    }
     // Navigate using the router utility
+    hudLog(`> project.open "${project.title}"`, 'ok');
     navigateTo(`/projects/${project.slug}`);
   };
 

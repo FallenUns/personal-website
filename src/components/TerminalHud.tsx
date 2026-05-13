@@ -20,6 +20,42 @@ const formatUptime = (ms: number): string => {
   return `${hh}:${mm}:${ss}`;
 };
 
+const INTERACTIVE_SELECTOR = [
+  '[data-hud-label]',
+  'button',
+  'a',
+  'input',
+  'select',
+  'textarea',
+  'summary',
+  '[role="button"]',
+].join(', ');
+
+const compactHudLabel = (value: string | null | undefined): string => {
+  if (!value) return '';
+  return value.replace(/\s+/g, ' ').trim().slice(0, 52);
+};
+
+const describeInteractiveTarget = (element: Element): string => {
+  const htmlElement = element as HTMLElement;
+  const tag = element.tagName.toLowerCase();
+  const explicitLabel = compactHudLabel(htmlElement.dataset.hudLabel);
+  const ariaLabel = compactHudLabel(htmlElement.getAttribute('aria-label'));
+  const title = compactHudLabel(htmlElement.getAttribute('title'));
+  const placeholder =
+    element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
+      ? compactHudLabel(element.placeholder)
+      : '';
+  const text = compactHudLabel(htmlElement.innerText || htmlElement.textContent);
+  const href =
+    element instanceof HTMLAnchorElement
+      ? compactHudLabel(element.getAttribute('href'))
+      : '';
+  const label = explicitLabel || ariaLabel || title || placeholder || text || href || tag;
+
+  return label ? `${tag} "${label}"` : tag;
+};
+
 const TerminalHud: React.FC = () => {
   const [uptime, setUptime] = useState(0);
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -64,13 +100,33 @@ const TerminalHud: React.FC = () => {
     return () => window.clearInterval(id);
   }, []);
 
-  // Boot sequence — types out 5 lines once, after the loader has yielded.
+  // Debug-style interaction tracer. It stays intentionally scoped to
+  // semantically interactive targets so ordinary page clicks do not flood
+  // the terminal, while meaningful UI actions still read as live telemetry.
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const origin = event.target instanceof Element ? event.target : null;
+      if (!origin) return;
+      if (origin.closest('.hud-panel, .hud-mobile')) return;
+
+      const target = origin.closest(INTERACTIVE_SELECTOR);
+      if (!target) return;
+
+      hudLog(`> click: ${describeInteractiveTarget(target)}`, 'info');
+    };
+
+    document.addEventListener('click', handleDocumentClick, true);
+    return () => document.removeEventListener('click', handleDocumentClick, true);
+  }, []);
+
+  // Boot sequence — types out 5 lines once as soon as the HUD mounts, which
+  // lets the terminal feel alive even while the loader overlay is still up.
   // The `hasBootedRef` survives React StrictMode's double-mount in dev so
   // boot only runs once per page lifecycle.
   const { isLoading } = useLoading();
   const hasBootedRef = React.useRef(false);
   useEffect(() => {
-    if (isLoading || hasBootedRef.current) return;
+    if (hasBootedRef.current) return;
     hasBootedRef.current = true;
 
     const lines: { text: string; level: 'ok' | 'info' }[] = [
@@ -110,7 +166,7 @@ const TerminalHud: React.FC = () => {
     })();
 
     return () => { cancelled = true; };
-  }, [isLoading]);
+  }, []);
 
   return (
     <>
@@ -126,7 +182,7 @@ const TerminalHud: React.FC = () => {
           width: 320,
           height: collapsed ? 24 : 220,
           transition: 'height 220ms cubic-bezier(0.22, 1, 0.36, 1)',
-          zIndex: 40,
+          zIndex: isLoading ? 10001 : 40,
           background: 'rgba(7, 6, 14, 0.62)',
           border: '1px solid rgba(124, 227, 139, 0.18)',
           borderRadius: 8,
@@ -244,7 +300,7 @@ const TerminalHud: React.FC = () => {
           backdropFilter: 'blur(10px)',
           color: '#7CE38B',
           fontFamily: "'JetBrains Mono', monospace",
-          zIndex: 40,
+          zIndex: isLoading ? 10001 : 40,
         }}
       >
         ›_

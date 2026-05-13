@@ -294,6 +294,10 @@ const AppContent: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Persistent activity console: visible during the loader, then remains
+          attached to the live site after the transition completes. */}
+      <TerminalHud />
+
       {/* Render main content - hidden during loading but allows components to mount */}
       <TimeProvider hour={currentTime} isDarkMode={isDarkMode}>
         <div style={{
@@ -329,7 +333,6 @@ const AppContent: React.FC = () => {
           <GlobalFeedbackShortcut />
           <FilmGrain />
           <CameraWheel />
-          <TerminalHud />
         </div>
 
         {/* Project Detail Overlay - Only shows when on project route */}

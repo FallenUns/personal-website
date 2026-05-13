@@ -50,6 +50,37 @@ body,
   100% { transform: rotate(0deg); }
 }
 
+/* Used by viewport-gated section backgrounds (StickySectionBackground, the
+   HeroMatrixRain gate, etc.). When their parent IntersectionObserver flips
+   `inView` from false→true, the effect element mounts with this animation
+   so it eases in slowly instead of popping.
+
+   Tuning:
+     - 1200 ms duration — long enough that the eye registers the ease, not
+       so long that the section feels empty waiting for it.
+     - 150 ms delay — gives the scroll-quiet bus a moment to settle and
+       prevents the fade from racing with any tail-end scroll motion.
+     - `cubic-bezier(0.16, 1, 0.3, 1)` — out-quint. Starts almost flat then
+       accelerates softly into the final value. Reads as "appearing" rather
+       than "ramping up".
+     - 6 px upward slide — adds presence/intent without drawing attention
+       to itself. Translate-only animation stays on the compositor.
+     - `both` fill-mode keeps end state after the keyframe completes. */
+@keyframes sectionBgFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.section-bg-fade-in {
+  animation: sectionBgFadeIn 1200ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+  will-change: opacity, transform;
+}
+
 .wave-animation {
   animation: wave 2.5s ease-in-out infinite;
   transform-origin: 70% 70%;

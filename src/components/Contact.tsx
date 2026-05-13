@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import LiquidGlass from "./LiquidGlass";
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 import { StickySectionBackground } from './visuals/SectionBackground';
+import { hudLog } from '../hooks/useHudBus';
 
 const Contact: React.FC = () => {
   useComponentLoader('ContactSection'); // Register component for loading
@@ -88,6 +89,7 @@ const Contact: React.FC = () => {
               displacementScale={60}
               mode='shader'
               onClick={() => {
+                hudLog('> contact.email compose', 'ok');
                 window.location.href = 'mailto:patrickadrianus04@gmail.com';
               }}
               overLight={false}
@@ -110,6 +112,7 @@ const Contact: React.FC = () => {
               displacementScale={60}
               mode='shader'
               onClick={() => {
+                hudLog('> contact.linkedin open', 'ok');
                 window.open('https://linkedin.com/in/patrick-adrianus', '_blank');
               }}
               overLight={false}

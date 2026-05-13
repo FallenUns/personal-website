@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { hudLog } from './useHudBus';
 
+// Multiple UI surfaces consume the scroll spy at once (navbar, camera wheel,
+// side progress rail). The terminal should still report a section transition
+// only once, so the visible log dedupes at module scope across hook instances.
+let globallyLoggedSection: string | null = null;
+
 /**
  * A custom hook to track which section is currently visible in the viewport using Intersection Observer.
  * @param sectionIds - An array of the DOM element IDs for the sections to track.
@@ -19,8 +24,6 @@ export const useScrollSpy = (
   
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sectionsRef = useRef<Map<string, IntersectionObserverEntry>>(new Map());
-  const lastLoggedRef = useRef<string | null>(null);
-
   useEffect(() => {
     // Clean up previous observer
     if (observerRef.current) {
@@ -75,9 +78,9 @@ export const useScrollSpy = (
         }
 
         const commit = (next: string | null) => {
-          if (next && lastLoggedRef.current !== next) {
+          if (next && globallyLoggedSection !== next) {
             hudLog(`> section: ${next}`, 'ok');
-            lastLoggedRef.current = next;
+            globallyLoggedSection = next;
           }
           setActiveSection(next);
         };

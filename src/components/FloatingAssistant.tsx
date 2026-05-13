@@ -4,6 +4,7 @@ import AssistantIcon from './AssistantIcon';
 import ChatWindow from './ChatWindow';
 import { llmService } from '../api/llmService';
 import type { LLMMessage } from '../api/types';
+import { hudLog } from '../hooks/useHudBus';
 import './mobile-optimizations.css';
 
 // Define the shape of a message
@@ -34,12 +35,14 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
   const handleOrbClick = () => {
     // If AI is currently typing, do nothing - don't interrupt
     if (isAITyping) {
+      hudLog('> assistant.click ignored: response in progress', 'warn');
       return;
     }
     
     // If chat is closed, open it
     if (!isChatOpen) {
       setIsChatOpen(true);
+      hudLog('> assistant.panel open', 'ok');
       // Show previous messages if any
       if (messages.length > 0) {
         setShowOutput(true);
@@ -50,6 +53,7 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
     // If chat is open and AI is done, toggle closed
     setIsChatOpen(false);
     setShowOutput(false);
+    hudLog('> assistant.panel close', 'info');
   };
 
   // This handles closing when clicking outside the chat windows.
@@ -60,16 +64,19 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
     }
     setIsChatOpen(false);
     setShowOutput(false);
+    hudLog('> assistant.panel dismissed', 'info');
     // Don't clear messages or history - keep them for when user reopens
   };
 
   const handleSendMessage = async (input: string) => {
     if (!input.trim() || isAITyping) return;
+    const preview = input.trim().replace(/\s+/g, ' ').slice(0, 56);
 
     // Hide the previous output and disable input
     setShowOutput(false);
     setIsAITyping(true);
     setMessages(prev => [...prev, { role: 'user', text: input }]);
+    hudLog(`> assistant.query "${preview}"`, 'info');
 
     // Add user message to conversation history (keep only last 6 messages)
     const newConversationHistory: LLMMessage[] = [
@@ -88,10 +95,12 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
           ...newConversationHistory,
           { role: 'assistant', content: response.message! }
         ]);
+        hudLog(`> assistant.response ready (${response.message.length} chars)`, 'ok');
       } else {
         // Handle API error
         const errorMessage = response.error || 'Sorry, I encountered an error. Please try again.';
         setMessages(prev => [...prev, { role: 'model', text: `⚠️ ${errorMessage}` }]);
+        hudLog(`> assistant.response error: ${errorMessage}`, 'warn');
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -100,6 +109,7 @@ const FloatingAssistant: React.FC<{ isLoading?: boolean }> = ({ isLoading = fals
         : 'Sorry, I\'m having trouble connecting. Please check your configuration and try again.';
       
       setMessages(prev => [...prev, { role: 'model', text: `⚠️ ${errorMessage}` }]);
+      hudLog(`> assistant.transport error: ${errorMessage}`, 'warn');
     } finally {
       // Show the new output and re-enable the input
       setShowOutput(true);

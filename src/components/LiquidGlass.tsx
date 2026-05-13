@@ -12,6 +12,7 @@ import { useTime } from '../contexts/TimeContext';
 import { displacementMap, polarDisplacementMap, prominentDisplacementMap } from "../utils/utils";
 import { ShaderDisplacementGenerator, fragmentShaders } from '../utils/shader-utils';
 import { isLowPerformanceDevice, supportsLiquidGlassFilter } from '../utils/performance';
+import useInViewport from '../hooks/useInViewport';
 
 // Helper to get the correct displacement map based on the mode
 const getMap = (
@@ -239,7 +240,22 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   // Detect Safari/iOS once. There SVG `filter: url(#id)` combined with
   // backdrop-filter is unreliable (top band goes black, edges clip).
   // We still apply the gradient + backdrop blur so the element stays "glassy".
-  const filterEnabled = useMemo(() => supportsLiquidGlassFilter(), []);
+  const filterSupported = useMemo(() => supportsLiquidGlassFilter(), []);
+
+  // Viewport-gate the heavy SVG filter chain. Each LiquidGlass instance
+  // generates 3 feDisplacementMap nodes (one per RGB channel) plus a
+  // feImage referencing a displacement texture. feDisplacementMap is
+  // CPU-bound in most browsers; with 30+ instances on this site that
+  // cost alone was pinning sections at 60 fps.
+  //
+  // The hook uses scroll-quiet debouncing: visibility flips only apply
+  // when scrolling has been idle for ~150 ms. This means a navbar jump
+  // (1.2 s Lenis smooth-scroll passing through 3 sections) doesn't
+  // flicker every LiquidGlass filter on and off as the page races by.
+  // Pass-through filters stay in whatever state they were in until the
+  // user actually settles on a section.
+  const inViewport = useInViewport(containerRef, { rootMargin: '400px' });
+  const filterEnabled = filterSupported && inViewport;
 
   const [isHovering, setIsHovering] = useState(false);
   const [isActive, setIsActive] = useState(false);
