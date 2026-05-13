@@ -33,9 +33,6 @@ const yearLabels: string[] = Array.from(
   new Set(sortedExps.map((e) => String(e.start.year)))
 );
 
-// Bridge placeholders — consumed in Task 3; remove when used.
-void useScroll; void useTransform;
-
 /**
  * Gate for the horizontal scrolljack layout.
  *
@@ -450,6 +447,119 @@ const YearBillboard: React.FC<YearBillboardProps> = ({
         exit={{ y: '-110%', opacity: 0 }}
         style={{ textShadow: '0 4px 28px rgba(0,0,0,0.7)' }}
       />
+    </div>
+  );
+};
+
+interface HorizontalExperienceTimelineProps {
+  /** Click handler that opens the ExperienceDetail modal. */
+  onViewDetails: (id: string) => void;
+}
+
+const CARD_WIDTH = 720;
+const CARD_HEIGHT = 480;
+const CARD_GAP = 32;
+
+/**
+ * Sticky scrolljack version of the experience timeline.
+ *
+ * Outer <div> is (N+1) viewport-heights tall so there's vertical scroll
+ * travel. Inside, a sticky container locks the viewport for the duration
+ * of the section. A flex rail of LiquidGlass cards translates left via
+ * useTransform on the section's scrollYProgress. A YearBillboard sits in
+ * the top-left and tracks which card is centred.
+ */
+const HorizontalExperienceTimeline: React.FC<HorizontalExperienceTimelineProps> = ({
+  onViewDetails,
+}) => {
+  const sectionRef = React.useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end end'] as const,
+  });
+
+  // Viewport width tracked in state so xMax updates on resize. We also
+  // recompute on mount to pick up the actual rendered width (in case
+  // initial render runs at a wrong size during the loading-state).
+  const [viewportW, setViewportW] = React.useState(() =>
+    typeof window === 'undefined' ? 1280 : window.innerWidth
+  );
+  React.useEffect(() => {
+    const onResize = () => setViewportW(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const N = sortedExps.length;
+  const SLOT = CARD_WIDTH + CARD_GAP;
+  const trackWidth = N * SLOT - CARD_GAP;
+  // We want card i sitting centred when progress puts the rail at a
+  // specific x. At progress=0, place the first card centred:
+  //   xStart = viewportW/2 - CARD_WIDTH/2
+  // At progress=1, last card centred:
+  //   xEnd = viewportW/2 - ((N-1) * SLOT + CARD_WIDTH/2)
+  const xStart = viewportW / 2 - CARD_WIDTH / 2;
+  const xEnd = viewportW / 2 - ((N - 1) * SLOT + CARD_WIDTH / 2);
+  const trackX = useTransform(scrollYProgress, [0, 1], [xStart, xEnd]);
+
+  // Card centres in scroll-progress space: card i is centred at progress
+  // i / (N-1) when N >= 2; for N=1 it's centred at 0.
+  const cardCenters = React.useMemo(() => {
+    if (N <= 1) return [0];
+    return Array.from({ length: N }, (_, i) => i / (N - 1));
+  }, [N]);
+
+  // Section height: (N + 1) viewports for comfortable scroll travel.
+  const sectionHeight = `${(N + 1) * 100}vh`;
+
+  return (
+    <div
+      ref={sectionRef}
+      className="relative w-full"
+      style={{ height: sectionHeight }}
+    >
+      <div className="sticky top-0 h-screen w-full overflow-hidden">
+        <YearBillboard
+          yearLabels={yearLabels}
+          scrollYProgress={scrollYProgress}
+          cardCenters={cardCenters}
+        />
+
+        {/* Centre band — cards sit in a flex row. We apply `x` via motion so
+            framer-motion takes the perf-friendly path (transform, no reflow). */}
+        <motion.div
+          className="absolute top-1/2 -translate-y-1/2 flex items-center"
+          style={{
+            x: trackX,
+            gap: CARD_GAP,
+            width: trackWidth,
+            willChange: 'transform',
+          }}
+        >
+          {sortedExps.map((exp, i) => (
+            <div
+              key={exp.id}
+              style={{ width: CARD_WIDTH, height: CARD_HEIGHT, flexShrink: 0 }}
+            >
+              <ExperienceItem
+                exp={exp}
+                index={i}
+                cardWidth={CARD_WIDTH}
+                isMobile={false}
+                onViewDetails={() => onViewDetails(exp.id)}
+              />
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Thin scroll-progress bar at the bottom of the sticky frame */}
+        <div className="absolute bottom-10 left-[6vw] right-[6vw] h-px bg-white/10">
+          <motion.div
+            className="h-full bg-white/55 origin-left"
+            style={{ scaleX: scrollYProgress }}
+          />
+        </div>
+      </div>
     </div>
   );
 };
