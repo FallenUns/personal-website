@@ -91,10 +91,17 @@ const BaseAurora: React.FC = () => {
   );
 };
 
+/**
+ * Per-section sticky overlay. ONLY renders the variant's effect — the base
+ * (Beams aurora) lives ONCE at the root via the default `<SectionBackground />`
+ * export. Previously each StickySectionBackground also rendered its own
+ * `<BaseAurora />`, which meant 4 base shaders running simultaneously and a
+ * stack of identical aurora layers — the "duplicates + intersection" the
+ * user saw at section boundaries.
+ */
 export const StickySectionBackground: React.FC<StickySectionBackgroundProps> = ({ variant }) => (
   <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
     <div className="sticky top-0 h-screen w-full overflow-hidden">
-      <BaseAurora />
       <div
         style={{
           position: 'absolute',
