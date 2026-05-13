@@ -7,8 +7,7 @@ import { setLenis } from './utils/lenis';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { TimeProvider } from './contexts/TimeContext';
 import { useCriticalResourceLoader, useImagePreloader } from './hooks/useAssetPreloader';
-import TechBackground from './components/TechBackground';
-import AuroraShader from './components/AuroraShader';
+import SectionBackground from './components/visuals/SectionBackground';
 import HeroSection from './components/HeroSection';
 import SkillsMarquee from './components/SkillsMarquee';
 import FilmGrain from './components/FilmGrain';
@@ -295,8 +294,7 @@ const AppContent: React.FC = () => {
           visibility: isLoading ? 'hidden' : 'visible',
           transition: isLoading ? 'none' : 'opacity 0.8s ease-out'
         }}>
-          <AuroraShader />
-          <TechBackground hour={currentTime} />
+          <SectionBackground />
 
           <Navbar
             time={currentTime}
