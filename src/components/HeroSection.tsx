@@ -5,7 +5,6 @@ import LiquidGlass from './LiquidGlass';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 import { PreloadedImage } from '../utils/preloadedImageHooks';
 import { scrollToSection } from '../utils/navigation';
-import { useMagnetic } from '../hooks/useMagnetic';
 import DecryptedText from './animations/DecryptedText';
 import RotatingText from './animations/RotatingText';
 import CursorSpotlight from './animations/CursorSpotlight';
@@ -66,10 +65,6 @@ const HeroSection: React.FC = () => {
     window.addEventListener('pointermove', onMove, { passive: true });
     return () => window.removeEventListener('pointermove', onMove);
   }, [mx, my]);
-
-  // Magnetic refs for the two CTAs.
-  const projectsBtnRef = useMagnetic<HTMLDivElement>({ strength: 0.4, radius: 160 });
-  const resumeBtnRef = useMagnetic<HTMLDivElement>({ strength: 0.4, radius: 160 });
 
   // Scroll-scrubbed fade for the hero content. As the section scrolls out
   // upward the inner stage scales down slightly, drifts up, and fades — the
@@ -152,7 +147,7 @@ const HeroSection: React.FC = () => {
               delay: isLoading ? 0 : 0.5
             }}
             style={{ x: textTx, y: textTy }}
-            className="text-left flex-1 max-w-[560px] w-full lg:w-auto"
+            className="text-left flex-1 max-w-[680px] w-full lg:w-auto"
           >
             <div className="text-white">
               {/* Eyebrow tag */}
@@ -242,7 +237,7 @@ const HeroSection: React.FC = () => {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
 
-                <div ref={projectsBtnRef} style={{ willChange: 'transform' }}>
+                <div>
                   <LiquidGlass
                     width={180}
                     height={45}
@@ -251,12 +246,12 @@ const HeroSection: React.FC = () => {
                       borderRadius: '99px',
                       cursor: 'pointer',
                     }}
-                    className="hover:bg-white/10"
-                    aberrationIntensity={0.5}
-                    elasticity={0.2}
+                    className="hover:bg-white/20"
+                    aberrationIntensity={1.2}
+                    elasticity={0.15}
                     blurAmount={6}
                     saturation={150}
-                    displacementScale={35}
+                    displacementScale={60}
                     mode='shader'
                     overLight={false}
                     onClick={() => scrollToSection('projects')}
@@ -268,7 +263,7 @@ const HeroSection: React.FC = () => {
                 </div>
 
                 {/* Download Resume Button - Transparent with border */}
-                <div ref={resumeBtnRef} style={{ willChange: 'transform' }}>
+                <div>
                   <LiquidGlass
                     width={180}
                     height={45}
@@ -277,12 +272,12 @@ const HeroSection: React.FC = () => {
                       borderRadius: '99px',
                       cursor: 'pointer',
                     }}
-                    className="hover:bg-white/10"
-                    aberrationIntensity={0.5}
-                    elasticity={0.2}
+                    className="hover:bg-white/20"
+                    aberrationIntensity={1.2}
+                    elasticity={0.15}
                     blurAmount={6}
                     saturation={150}
-                    displacementScale={35}
+                    displacementScale={60}
                     mode='shader'
                     overLight={false}
                     onClick={() => {
