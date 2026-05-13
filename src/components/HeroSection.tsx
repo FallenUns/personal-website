@@ -165,7 +165,7 @@ const HeroSection: React.FC = () => {
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
                   <span className="text-xl wave-animation leading-none">👋</span>
                 </span>
-                <span className="hero-eyebrow shiny-text [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+                <span className="hero-eyebrow [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
                   Hello, my name is
                 </span>
               </motion.div>
@@ -185,7 +185,7 @@ const HeroSection: React.FC = () => {
                   trigger={nameTrigger}
                   sequential
                   revealDirection="center"
-                  speed={55}
+                  speed={110}
                   characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#%&@"
                   parentClassName="block name cursor-pointer select-none"
                   className="name-char"
@@ -211,9 +211,8 @@ const HeroSection: React.FC = () => {
                   splitBy="characters"
                   auto
                   loop
-                  mainClassName="text-base sm:text-lg font-medium font-body-grotesk inline-flex"
+                  mainClassName="text-base sm:text-lg font-medium font-body-grotesk text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] inline-flex"
                   splitLevelClassName="overflow-hidden"
-                  elementLevelClassName="gradient-text"
                   transition={{ type: 'spring', damping: 28, stiffness: 360 }}
                   initial={{ y: '110%', opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
