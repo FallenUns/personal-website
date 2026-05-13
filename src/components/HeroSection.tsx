@@ -163,9 +163,9 @@ const HeroSection: React.FC = () => {
                 transition={{ duration: 0.6, delay: isLoading ? 0 : 0.55 }}
                 className="flex items-center gap-3 mb-5"
               >
-                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
-                  <span className="text-xl wave-animation leading-none">👋</span>
-                </span>
+                {/* Naked waving hand — the previous frosted-glass chip
+                    behind the emoji was overkill for one decorative element. */}
+                <span className="text-2xl wave-animation leading-none [filter:drop-shadow(0_2px_4px_rgba(0,0,0,0.5))]">👋</span>
                 <span className="hero-eyebrow [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
                   Hello, my name is
                 </span>
@@ -221,26 +221,35 @@ const HeroSection: React.FC = () => {
                 />
               </div>
 
-              {/* Description */}
-              <p className="text-sm sm:text-base text-white/90 max-w-xl mb-6 [text-shadow:0_1px_4px_rgba(0,0,0,1)]">
-                Hello! I’m Patrick, a <span className="font-semibold">Data Scientist</span> who loves building projects from apps and data solutions to creative tools and always experimenting with new technologies and development frameworks to turn fresh ideas into real-world impact.
-              </p>
+              {/* Tagline — one tight value-prop sentence in place of the
+                  former 50-word paragraph + 3 checkmark bullets. Keeps the
+                  signal (what I do), drops the noise. */}
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 12 : 0 }}
+                transition={{ duration: 0.6, delay: isLoading ? 0 : 0.85 }}
+                className="text-base sm:text-lg text-white/85 max-w-xl mb-7 leading-relaxed [text-shadow:0_1px_4px_rgba(0,0,0,1)]"
+              >
+                Building data products, full-stack apps, and creative tools — end to end.
+              </motion.p>
 
-              {/* Key Points */}
-              <div className="mb-8 space-y-2 max-w-sm">
-                <div className="flex items-center text-white/90">
-                  <span className="text-green-400 mr-3">✓</span>
-                  <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">End‑to‑end model deployment</span>
-                </div>
-                <div className="flex items-center text-white/90">
-                  <span className="text-green-400 mr-3">✓</span>
-                  <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Storytelling with data</span>
-                </div>
-                <div className="flex items-center text-white/90">
-                  <span className="text-green-400 mr-3">✓</span>
-                  <span className="text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">User‑centric collaboration</span>
-                </div>
-              </div>
+              {/* Availability pill — replaces the 3 checkmark bullets. One
+                  small signal that I'm open to work, with a soft pulsing
+                  dot. Reads in a glance instead of a list. */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: isLoading ? 0 : 1, y: isLoading ? 8 : 0 }}
+                transition={{ duration: 0.6, delay: isLoading ? 0 : 0.95 }}
+                className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full bg-white/8 border border-white/15 backdrop-blur-md"
+              >
+                <span className="relative inline-flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                <span className="text-xs font-medium text-white/85 tracking-wide [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+                  Available for opportunities
+                </span>
+              </motion.div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
 
                 <div>
@@ -850,7 +859,7 @@ const HeroSection: React.FC = () => {
             ease: 'easeOut',
             delay: isLoading ? 0 : 1
           }}
-          className="w-full max-w-4xl mt-8 lg:absolute lg:bottom-16 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:mt-0"
+          className="w-full max-w-4xl mt-8 lg:absolute lg:bottom-44 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:mt-0"
         >
           <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 sm:gap-x-6 md:gap-x-8 px-4 text-white/80 text-sm font-medium">
             <div className="flex items-center space-x-2">
@@ -875,6 +884,35 @@ const HeroSection: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Scroll cue — anchored to the bottom-RIGHT corner so it doesn't
+            collide with the centred skills strip (which lives at
+            `lg:bottom-16 lg:left-1/2 -translate-x-1/2`). Desktop-only:
+            on mobile the photo + skills already fill the viewport, an
+            extra cue is noise. Vertical "SCROLL" label + thin track +
+            animated dot. Side-anchored cues are a common pattern on
+            awwwards-style portfolios and avoid the bottom-centre column
+            entirely. */}
+        <motion.button
+          type="button"
+          aria-label="Scroll to next section"
+          onClick={() => scrollToSection('projects')}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: isLoading ? 0 : 0.85, y: isLoading ? 8 : 0 }}
+          transition={{ duration: 0.6, delay: isLoading ? 0 : 1.15 }}
+          whileHover={{ opacity: 1, y: -2 }}
+          className="hidden lg:flex absolute bottom-8 left-10 flex-col items-center gap-2 group cursor-pointer"
+        >
+          <span
+            className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/70 [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
+            style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+          >
+            Scroll
+          </span>
+          <div className="relative h-10 w-px overflow-hidden bg-white/20">
+            <span className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-white/85 hero-scroll-cue" />
+          </div>
+        </motion.button>
       </section>
     </>
   );
