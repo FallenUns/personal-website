@@ -1,7 +1,25 @@
-import * as faceapi from 'face-api.js';
+// `face-api.js` is type-only at module load — it's a 5+ MB dependency
+// (TFJS + node-fetch transitive vuln) that only runs when `enableWebcam`
+// is enabled. The real module is loaded on demand inside the webcam
+// effects via `ensureFaceapi()` below. Keeps the static bundle clean
+// and removes the dead-code path from `npm audit`.
+import type * as faceapi from 'face-api.js';
 import { BloomEffect, ChromaticAberrationEffect, EffectComposer, EffectPass, RenderPass } from 'postprocessing';
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+
+let faceapiModule: typeof faceapi | null = null;
+let faceapiLoading: Promise<typeof faceapi> | null = null;
+const ensureFaceapi = async (): Promise<typeof faceapi> => {
+  if (faceapiModule) return faceapiModule;
+  if (!faceapiLoading) {
+    faceapiLoading = import('face-api.js').then((m) => {
+      faceapiModule = m as typeof faceapi;
+      return faceapiModule;
+    });
+  }
+  return faceapiLoading;
+};
 
 type GridScanProps = {
   enableWebcam?: boolean;
@@ -680,12 +698,20 @@ export const GridScan: React.FC<GridScanProps> = ({
   }, [enableGyro, uiFaceActive]);
 
   useEffect(() => {
+    // Skip entirely when webcam is disabled — keeps face-api.js out of the
+    // hot path so the 5 MB bundle + node-fetch dependency chain are only
+    // touched if the feature is actually opted into.
+    if (!enableWebcam) {
+      setModelsReady(false);
+      return;
+    }
     let canceled = false;
     const load = async () => {
       try {
+        const fa = await ensureFaceapi();
         await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(modelsPath),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelsPath)
+          fa.nets.tinyFaceDetector.loadFromUri(modelsPath),
+          fa.nets.faceLandmark68TinyNet.loadFromUri(modelsPath)
         ]);
         if (!canceled) setModelsReady(true);
       } catch {
@@ -696,7 +722,7 @@ export const GridScan: React.FC<GridScanProps> = ({
     return () => {
       canceled = true;
     };
-  }, [modelsPath]);
+  }, [enableWebcam, modelsPath]);
 
   useEffect(() => {
     let stop = false;
@@ -718,7 +744,8 @@ export const GridScan: React.FC<GridScanProps> = ({
         return;
       }
 
-      const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
+      const fa = await ensureFaceapi();
+      const opts = new fa.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
 
       const detect = async (ts: number) => {
         if (stop) return;
@@ -726,7 +753,7 @@ export const GridScan: React.FC<GridScanProps> = ({
         if (ts - lastDetect >= 33) {
           lastDetect = ts;
           try {
-            const res = await faceapi.detectSingleFace(video, opts).withFaceLandmarks(true);
+            const res = await fa.detectSingleFace(video, opts).withFaceLandmarks(true);
             if (res && res.detection) {
               const det = res.detection;
               const box = det.box;

@@ -3,7 +3,7 @@ import React from 'react';
 // Beams removed — read as harsh diagonal "intersections" by the user. Base is
 // now a static CSS radial gradient (no shader). Per-section overlays still
 // run their own canvases for character.
-import Dither from './Dither';
+import MatrixRain from './MatrixRain';
 import { GridScan } from './GridScan';
 import Snow from './Snow';
 import { useTime } from '../../contexts/TimeContext';
@@ -41,15 +41,11 @@ const effectByVariant = {
       scanSoftness={2.4}
     />
   ),
-  projects: (
-    <Dither
-      pixelSize={6}
-      opacity={0.98}
-      primaryColor="#a78bfa"
-      secondaryColor="#22d3ee"
-      tertiaryColor="#050816"
-    />
-  ),
+  // Swapped with Hero — Projects now wears the MatrixRain "code-falling"
+  // background that used to live behind the hero. Reads as appropriately
+  // techy for "Featured Work" cards and lets the Dither texture move to
+  // the more contemplative Hero.
+  projects: <MatrixRain opacity={0.22} impactLine impactOffset={28} />,
   contact: <Snow />,
 };
 

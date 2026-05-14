@@ -9,7 +9,7 @@ import DecryptedText from './animations/DecryptedText';
 import RotatingText from './animations/RotatingText';
 // CursorSpotlight moved to App.tsx root with fixed=true so it tracks the
 // cursor across every section. Removed from HeroSection.
-import MatrixRain from './visuals/MatrixRain';
+import Dither from './visuals/Dither';
 import { isLowPerformanceDevice } from '../utils/performance';
 import useInViewport from '../hooks/useInViewport';
 
@@ -128,12 +128,12 @@ const HeroSection: React.FC = () => {
       )}
 
       <section ref={heroRef} id="about" className="min-h-[100svh] lg:h-[100svh] box-border flex flex-col lg:flex-row items-start lg:items-center justify-center px-5 sm:px-10 md:px-16 lg:px-32 pt-24 pb-8 sm:pb-10 lg:pt-20 lg:pb-20 relative overflow-hidden">
-        {/* Viewport-gate MatrixRain: when the user has scrolled past the hero
-            we unmount the entire canvas so its rAF + per-frame draws stop.
-            Same pattern as StickySectionBackground — a 600 px rootMargin
-            keeps the effect alive a little outside the viewport so coming
-            back to the hero feels instant. */}
-        {!isLowPerformanceDevice() && <HeroMatrixRainGate heroRef={heroRef} />}
+        {/* Viewport-gated Dither background (was MatrixRain — swapped with
+            Projects). Same gating pattern as StickySectionBackground: a
+            600 px rootMargin keeps the canvas alive a little outside the
+            viewport so re-entering the hero feels instant, but the rAF
+            loop stops once you've scrolled well past. */}
+        {!isLowPerformanceDevice() && <HeroDitherGate heroRef={heroRef} />}
         {/* CursorSpotlight is now mounted globally at App.tsx root (fixed
             position) so it follows the cursor across every section. */}
         <motion.div
@@ -919,12 +919,15 @@ const HeroSection: React.FC = () => {
 };
 
 /**
- * Renders the MatrixRain canvas only while the hero is on/near the
- * viewport. When the user scrolls past the hero, the canvas (and its
+ * Renders the Dither canvas only while the hero is on/near the viewport.
+ * When the user scrolls past the hero, the canvas (and its
  * requestAnimationFrame loop) unmount — freeing main-thread budget for
  * whichever section the user is actually reading.
+ *
+ * (Swapped with Projects on 2026-05-14 — MatrixRain moved to
+ * `StickySectionBackground variant="projects"`, Dither came here.)
  */
-const HeroMatrixRainGate: React.FC<{ heroRef: React.RefObject<HTMLElement | null> }> = ({
+const HeroDitherGate: React.FC<{ heroRef: React.RefObject<HTMLElement | null> }> = ({
   heroRef,
 }) => {
   const inView = useInViewport(heroRef, { rootMargin: '600px' });
@@ -937,17 +940,22 @@ const HeroMatrixRainGate: React.FC<{ heroRef: React.RefObject<HTMLElement | null
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
-        // Bottom-fade mask so the matrix rain doesn't slam into the section
-        // edge as a visible horizontal line — fades over the last 35% of
-        // the hero's height into transparent, blending with whatever's
-        // below.
+        // Bottom-fade mask so the dither pattern doesn't slam into the
+        // section edge as a visible horizontal line — fades over the last
+        // 35% of the hero's height into transparent.
         maskImage:
           'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
         WebkitMaskImage:
           'linear-gradient(180deg, black 0%, black 72%, rgba(0,0,0,0.92) 96%, transparent 100%)',
       }}
     >
-      <MatrixRain opacity={0.22} impactLine impactOffset={28} />
+      <Dither
+        pixelSize={6}
+        opacity={0.98}
+        primaryColor="#a78bfa"
+        secondaryColor="#22d3ee"
+        tertiaryColor="#050816"
+      />
     </div>
   );
 };

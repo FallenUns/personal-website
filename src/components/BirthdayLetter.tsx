@@ -76,9 +76,10 @@ const BirthdayLetter: React.FC<BirthdayLetterProps> = ({ onClose }) => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <svg 
-                  className="w-5 h-5 text-white group-hover:text-gray-100" 
-                  fill="none" 
+                <svg
+                  aria-hidden="true"
+                  className="w-5 h-5 text-white group-hover:text-gray-100"
+                  fill="none"
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
                 >

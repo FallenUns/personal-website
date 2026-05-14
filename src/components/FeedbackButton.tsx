@@ -58,10 +58,11 @@ export const FeedbackButton: React.FC = () => {
             <motion.div
               className="flex items-center justify-center w-full h-full text-white"
             >
-              <svg 
+              <svg
+                aria-hidden="true"
                 className={iconSizeClass}
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
                 style={{
                   filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
