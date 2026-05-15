@@ -845,13 +845,29 @@ const HeroDitherGate: React.FC<{ heroRef: React.RefObject<HTMLElement | null> }>
 };
 
 const HeroProfileCard: React.FC<{ variant: 'desktop' | 'mobile' }> = ({ variant }) => (
-  <div className={`hero-profile-card lg-lite hero-profile-card--${variant}`}>
+  <LiquidGlass
+    width={variant === 'desktop' ? 350 : 230}
+    height={variant === 'desktop' ? 500 : 300}
+    positioning="relative"
+    className={`hero-profile-glass hero-profile-glass--${variant}`}
+    style={{
+      borderRadius: variant === 'desktop' ? '24px' : '20px',
+      overflow: 'hidden',
+    }}
+    aberrationIntensity={0.3}
+    elasticity={0.2}
+    blurAmount={4}
+    saturation={150}
+    displacementScale={variant === 'desktop' ? 120 : 80}
+    overLight={false}
+    mode="shader"
+  >
     <PreloadedImage
       src="/Subject.png"
       alt="Patrick's Portrait"
-      className="hero-profile-card__image"
+      className="hero-profile-glass__image"
     />
-  </div>
+  </LiquidGlass>
 );
 
 export default React.memo(HeroSection);
