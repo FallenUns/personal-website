@@ -1,7 +1,7 @@
 // src/components/TechSphere.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import LiquidGlass from './LiquidGlass';
+import LiquidGlass from './LiquidGlassLite';
 import { PreloadedImage } from '../utils/preloadedImageHooks';
 import './TechSphere.css';
 

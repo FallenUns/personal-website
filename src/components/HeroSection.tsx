@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion';
 import LiquidGlass from './LiquidGlass';
+import LiquidGlassLite from './LiquidGlassLite';
 import { useLoading, useComponentLoader } from '../contexts/LoadingContext';
 import { PreloadedImage } from '../utils/preloadedImageHooks';
 import { scrollToSection } from '../utils/navigation';
@@ -385,21 +386,16 @@ const HeroSection: React.FC = () => {
                 onMouseLeave={handleTechLeave}
                 whileHover={{ scale: 1.1 }}
               >
-                <LiquidGlass
+                <LiquidGlassLite
                   width={50}
                   height={50}
                   positioning="relative"
                   style={{ borderRadius: '20px' }}
-                  aberrationIntensity={0.2}
-                  elasticity={0.3}
                   blurAmount={3}
                   saturation={140}
-                  displacementScale={20}
-                  overLight={false}
-                  mode='shader'
                 >
                   <PreloadedImage src="/react-logo.png" alt="React" className="w-6 h-6" />
-                </LiquidGlass>
+                </LiquidGlassLite>
               </motion.div>
 
               {/* Python Sphere - Top Right */}
@@ -420,21 +416,16 @@ const HeroSection: React.FC = () => {
                 onMouseLeave={handleTechLeave}
                 whileHover={{ scale: 1.1 }}
               >
-                <LiquidGlass
+                <LiquidGlassLite
                   width={50}
                   height={50}
                   positioning="relative"
                   style={{ borderRadius: '20px' }}
-                  aberrationIntensity={0.2}
-                  elasticity={0.3}
                   blurAmount={3}
                   saturation={140}
-                  displacementScale={20}
-                  overLight={false}
-                  mode='shader'
                 >
                   <PreloadedImage src="/python-logo.png" alt="Python" className="w-6 h-6" />
-                </LiquidGlass>
+                </LiquidGlassLite>
               </motion.div>
 
               {/* JavaScript Sphere - Middle Right */}
@@ -455,21 +446,16 @@ const HeroSection: React.FC = () => {
                 onMouseLeave={handleTechLeave}
                 whileHover={{ scale: 1.1 }}
               >
-                <LiquidGlass
+                <LiquidGlassLite
                   width={50}
                   height={50}
                   positioning="relative"
                   style={{ borderRadius: '20px' }}
-                  aberrationIntensity={0.2}
-                  elasticity={0.3}
                   blurAmount={3}
                   saturation={140}
-                  displacementScale={20}
-                  overLight={false}
-                  mode='shader'
                 >
                   <PreloadedImage src="/js-logo.png" alt="JavaScript" className="w-6 h-6" />
-                </LiquidGlass>
+                </LiquidGlassLite>
               </motion.div>
 
               {/* TensorFlow Sphere - Middle Left */}
@@ -490,21 +476,16 @@ const HeroSection: React.FC = () => {
                 onMouseLeave={handleTechLeave}
                 whileHover={{ scale: 1.1 }}
               >
-                <LiquidGlass
+                <LiquidGlassLite
                   width={50}
                   height={50}
                   positioning="relative"
                   style={{ borderRadius: '20px' }}
-                  aberrationIntensity={0.2}
-                  elasticity={0.3}
                   blurAmount={3}
                   saturation={140}
-                  displacementScale={20}
-                  overLight={false}
-                  mode='shader'
                 >
                   <PreloadedImage src="/tensorflow-logo.png" alt="TensorFlow" className="w-6 h-6" />
-                </LiquidGlass>
+                </LiquidGlassLite>
               </motion.div>
 
               {/* ML Sphere - Bottom Left */}
@@ -525,21 +506,16 @@ const HeroSection: React.FC = () => {
                 onMouseLeave={handleTechLeave}
                 whileHover={{ scale: 1.15 }}
               >
-                <LiquidGlass
+                <LiquidGlassLite
                   width={45}
                   height={45}
                   positioning="relative"
                   style={{ borderRadius: '20px' }}
-                  aberrationIntensity={0.2}
-                  elasticity={0.3}
                   blurAmount={3}
                   saturation={140}
-                  displacementScale={18}
-                  overLight={false}
-                  mode='shader'
                 >
                   <PreloadedImage src="/r-logo.png" alt="R" className="w-6 h-6" />
-                </LiquidGlass>
+                </LiquidGlassLite>
               </motion.div>
 
               {/* SQL Sphere - Bottom Right */}
@@ -559,21 +535,16 @@ const HeroSection: React.FC = () => {
                 onMouseLeave={handleTechLeave}
                 whileHover={{ scale: 1.15 }}
               >
-                <LiquidGlass
+                <LiquidGlassLite
                   width={45}
                   height={45}
                   positioning="relative"
                   style={{ borderRadius: '20px' }}
-                  aberrationIntensity={0.2}
-                  elasticity={0.3}
                   blurAmount={3}
                   saturation={140}
-                  displacementScale={18}
-                  overLight={false}
-                  mode='shader'
                 >
                   <PreloadedImage src="/sql-logo.png" alt="SQL" className="w-6 h-6" />
-                </LiquidGlass>
+                </LiquidGlassLite>
               </motion.div>
             </div>
           </motion.div>
@@ -651,21 +622,16 @@ const HeroSection: React.FC = () => {
                   onMouseLeave={handleTechLeave}
                   whileHover={{ scale: 1.1 }}
                 >
-                  <LiquidGlass
+                  <LiquidGlassLite
                     width={70}
                     height={70}
                     positioning="relative"
                     style={{ borderRadius: '24px' }}
-                    aberrationIntensity={0.2}
-                    elasticity={0.3}
                     blurAmount={3}
                     saturation={140}
-                    displacementScale={20}
-                    overLight={false}
-                    mode='shader'
                   >
                     <PreloadedImage src="/react-logo.png" alt="React" className="w-9 h-9" />
-                  </LiquidGlass>
+                  </LiquidGlassLite>
                 </motion.div>
 
                 {/* Python Sphere - Top Right */}
@@ -686,21 +652,16 @@ const HeroSection: React.FC = () => {
                   onMouseLeave={handleTechLeave}
                   whileHover={{ scale: 1.1 }}
                 >
-                  <LiquidGlass
-                    width={70} // Increased size
-                    height={70} // Increased size
+                  <LiquidGlassLite
+                    width={70}
+                    height={70}
                     positioning="relative"
                     style={{ borderRadius: '24px' }}
-                    aberrationIntensity={0.2}
-                    elasticity={0.3}
                     blurAmount={3}
                     saturation={140}
-                    displacementScale={25}
-                    overLight={false}
-                    mode='shader'
                   >
                     <PreloadedImage src="/python-logo.png" alt="Python" className="w-9 h-9" />
-                  </LiquidGlass>
+                  </LiquidGlassLite>
                 </motion.div>
 
                 {/* TensorFlow Sphere - Middle Left */}
@@ -721,21 +682,16 @@ const HeroSection: React.FC = () => {
                   onMouseLeave={handleTechLeave}
                   whileHover={{ scale: 1.1 }}
                 >
-                  <LiquidGlass
-                    width={70} // Increased size
-                    height={70} // Increased size
+                  <LiquidGlassLite
+                    width={70}
+                    height={70}
                     positioning="relative"
                     style={{ borderRadius: '24px' }}
-                    aberrationIntensity={0.2}
-                    elasticity={0.3}
                     blurAmount={3}
                     saturation={140}
-                    displacementScale={25}
-                    overLight={false}
-                    mode='shader'
                   >
                     <PreloadedImage src="/tensorflow-logo.png" alt="TensorFlow" className="w-9 h-9" />
-                  </LiquidGlass>
+                  </LiquidGlassLite>
                 </motion.div>
 
                 {/* JavaScript Sphere - Middle Right */}
@@ -756,21 +712,16 @@ const HeroSection: React.FC = () => {
                   onMouseLeave={handleTechLeave}
                   whileHover={{ scale: 1.1 }}
                 >
-                  <LiquidGlass
-                    width={70} // Increased size
-                    height={70} // Increased size
+                  <LiquidGlassLite
+                    width={70}
+                    height={70}
                     positioning="relative"
                     style={{ borderRadius: '24px' }}
-                    aberrationIntensity={0.2}
-                    elasticity={0.3}
                     blurAmount={3}
                     saturation={140}
-                    displacementScale={25}
-                    overLight={false}
-                    mode='shader'
                   >
                     <PreloadedImage src="/js-logo.png" alt="JavaScript" className="w-9 h-9" />
-                  </LiquidGlass>
+                  </LiquidGlassLite>
                 </motion.div>
 
                 {/* Additional Small Tech Spheres */}
@@ -792,21 +743,16 @@ const HeroSection: React.FC = () => {
                   onMouseLeave={handleTechLeave}
                   whileHover={{ scale: 1.15 }}
                 >
-                  <LiquidGlass
-                    width={70} // Increased size
-                    height={70} // Increased size
+                  <LiquidGlassLite
+                    width={70}
+                    height={70}
                     positioning="relative"
                     style={{ borderRadius: '24px' }}
-                    aberrationIntensity={0.2}
-                    elasticity={0.3}
                     blurAmount={3}
                     saturation={140}
-                    displacementScale={25}
-                    overLight={false}
-                    mode='shader'
                   >
                     <PreloadedImage src="/r-logo.png" alt="R" className="w-9 h-9" />
-                  </LiquidGlass>
+                  </LiquidGlassLite>
                 </motion.div>
 
                 {/* Small sphere - Bottom Right */}
@@ -826,21 +772,16 @@ const HeroSection: React.FC = () => {
                   onMouseLeave={handleTechLeave}
                   whileHover={{ scale: 1.15 }}
                 >
-                  <LiquidGlass
-                    width={70} // Increased size
-                    height={70} // Increased size
+                  <LiquidGlassLite
+                    width={70}
+                    height={70}
                     positioning="relative"
                     style={{ borderRadius: '24px' }}
-                    aberrationIntensity={0.2}
-                    elasticity={0.3}
                     blurAmount={3}
                     saturation={140}
-                    displacementScale={25}
-                    overLight={false}
-                    mode='shader'
                   >
                     <PreloadedImage src="/sql-logo.png" alt="SQL" className="w-9 h-9" />
-                  </LiquidGlass>
+                  </LiquidGlassLite>
                 </motion.div>
               </div>
             </div>

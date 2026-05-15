@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import LiquidGlass from './LiquidGlass';
+import LiquidGlass from './LiquidGlassLite';
 import './ChatScrollbar.css';
 import './ChatAlignment.css';
 import './mobile-optimizations.css';

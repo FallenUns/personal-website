@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FeedbackForm } from './FeedbackForm';
-import LiquidGlass from './LiquidGlass';
+import LiquidGlass from './LiquidGlassLite';
 
 export const FeedbackButton: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
