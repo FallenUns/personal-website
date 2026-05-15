@@ -88,6 +88,25 @@ body,
   will-change: opacity, transform;
 }
 
+/* Pause expensive backdrop-filter passes during active scroll. Toggled by
+   the scroll-quiet bus in `src/hooks/useInViewport.ts` (`body.lg-scrolling`
+   is added on first scroll event, removed 150 ms after the last one).
+
+   Why: every `backdrop-filter`'d element has to re-sample the pixels
+   behind it on every frame its position changes relative to the
+   background. Multiple instances + active scroll on iPad Safari = the
+   "fan spinning, page lags" symptom. Dropping the filter for the duration
+   of the scroll gesture is invisible to the user (the page is moving too
+   fast to register the difference) and removes the cost spike entirely.
+
+   The fallback `background` (set inline on each `.lg-lite`) still renders
+   the gradient + border so the surface doesn't completely disappear — it
+   just loses its frosted blur for ~150 ms. */
+body.lg-scrolling .lg-lite {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 /* Hero scroll-cue — a 3 px tall pill slides from the top of a 36 px vertical
    track to the bottom, fades, and repeats. Gives a soft "keep scrolling"
    prompt without being noisy. Respects reduced-motion. */
@@ -370,6 +389,79 @@ nav *, .nav *, .menu * {
 
 .hero-display [data-char="P"] + [data-char="A"] {
   margin-left: -0.055em;
+}
+
+.hero-profile-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.055) 48%, rgba(125, 145, 255, 0.14)),
+    rgba(11, 16, 34, 0.2);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  isolation: isolate;
+}
+
+.hero-profile-card--desktop {
+  width: 350px;
+  height: 500px;
+  border-radius: 24px;
+}
+
+.hero-profile-card--mobile {
+  width: 230px;
+  height: 300px;
+  border-radius: 20px;
+}
+
+.hero-profile-card::before,
+.hero-profile-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-profile-card::before {
+  z-index: 0;
+  background:
+    radial-gradient(115% 80% at 0% 0%, rgba(255, 255, 255, 0.24), transparent 58%),
+    radial-gradient(90% 70% at 100% 100%, rgba(34, 211, 238, 0.18), transparent 62%);
+}
+
+.hero-profile-card::after {
+  z-index: 2;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 0 42px rgba(255, 255, 255, 0.08);
+}
+
+.hero-profile-card__image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: inherit;
+  transform: scale(0.92);
+  transform-origin: center top;
+  transition: transform 0.3s ease-out;
+  filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.36));
+}
+
+.hero-profile-card:hover .hero-profile-card__image {
+  transform: scale(0.945);
 }
 
 /* Mobile: drop the gradient (can look dim against dark sections) and use

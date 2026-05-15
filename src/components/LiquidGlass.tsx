@@ -8,11 +8,13 @@ import React, {
   type CSSProperties,
 } from "react";
 import { motion, useSpring } from "framer-motion";
-import { useTime } from '../contexts/TimeContext';
+import { useOptionalTime } from '../contexts/TimeContext';
 import { displacementMap, polarDisplacementMap, prominentDisplacementMap } from "../utils/utils";
 import { ShaderDisplacementGenerator, fragmentShaders } from '../utils/shader-utils';
 import { isLowPerformanceDevice, supportsLiquidGlassFilter } from '../utils/performance';
 import useInViewport from '../hooks/useInViewport';
+import LiquidGlassLite from './LiquidGlassLite';
+import { getGlassQuality } from '../utils/glassQuality';
 
 // Helper to get the correct displacement map based on the mode
 const getMap = (
@@ -199,7 +201,7 @@ interface LiquidGlassProps {
   mode?: "standard" | "polar" | "prominent" | "shader";
 }
 
-const LiquidGlass: React.FC<LiquidGlassProps> = ({
+const LiquidGlassHeavy: React.FC<LiquidGlassProps> = ({
   children,
   width: initialWidth = 300,
   height: initialHeight = 200,
@@ -220,13 +222,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
   const id = useId();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get time context for automatic overLight behavior
-  let timeContext: { overLight: boolean } | null = null;
-  try {
-    timeContext = useTime();
-  } catch {
-    // TimeContext is not available, use default value
-  }
+  const timeContext = useOptionalTime();
 
   // Determine the actual overLight value
   const actualOverLight = overLight === 'auto' && timeContext ? timeContext.overLight : (overLight === 'auto' ? false : overLight);
@@ -609,28 +605,27 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     decorativeLayerStyles.zIndex = 10000;
   }
 
-  const borderBaseStyle: React.CSSProperties = {
-    position: "absolute",
-    inset: 0,
-    height: elementHeight,
-    width: elementWidth,
-    borderRadius: `${cornerRadius}px`,
-    pointerEvents: "none",
-    transition: "all 0.2s ease-out",
-    padding: "1.5px", // MODIFIED
-    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-    WebkitMaskComposite: "xor",
-    maskComposite: "exclude",
-    // Hardware acceleration for borders
-    transform: "translateZ(0)",
-    willChange: "opacity, background",
-    backfaceVisibility: "hidden",
-    WebkitTransform: "translateZ(0)",
-    WebkitBackfaceVisibility: "hidden",
-  };
-
   // Memoize border styles to prevent unnecessary recalculations
   const borderStyles = useMemo(() => {
+    const borderBaseStyle: React.CSSProperties = {
+      position: "absolute",
+      inset: 0,
+      height: elementHeight,
+      width: elementWidth,
+      borderRadius: `${cornerRadius}px`,
+      pointerEvents: "none",
+      transition: "all 0.2s ease-out",
+      padding: "1.5px",
+      WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+      WebkitMaskComposite: "xor",
+      maskComposite: "exclude",
+      transform: "translateZ(0)",
+      willChange: "opacity, background",
+      backfaceVisibility: "hidden",
+      WebkitTransform: "translateZ(0)",
+      WebkitBackfaceVisibility: "hidden",
+    };
+
     // Pre-calculate gradient values for performance
     const gradientAngle = 135 + mouseOffset.x * 1.2;
     const baseOpacity1 = 0.12 + Math.abs(mouseOffset.x) * 0.008;
@@ -653,7 +648,7 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
     };
 
     return { borderStyle1, borderStyle2 };
-  }, [mouseOffset.x, mouseOffset.y, isHovering, borderBaseStyle]);
+  }, [cornerRadius, elementHeight, elementWidth, mouseOffset.x, mouseOffset.y, isHovering]);
 
   const { borderStyle1, borderStyle2 } = borderStyles;
 
@@ -899,6 +894,48 @@ const LiquidGlass: React.FC<LiquidGlassProps> = ({
       </div>
     </motion.div>
   );
+};
+
+const LiquidGlass: React.FC<LiquidGlassProps> = (props) => {
+  const {
+    children,
+    width = 300,
+    height = 200,
+    className,
+    style,
+    positioning = "relative",
+    blurAmount = 4,
+    saturation = 180,
+    cornerRadius = 24,
+    overLight = 'auto',
+    onClick,
+  } = props;
+  const timeContext = useOptionalTime();
+  const liteOverLight =
+    overLight === 'auto' ? timeContext?.overLight ?? false : overLight;
+
+  // Auto-quality router. Low-capability devices get a CSS-only surface
+  // before the heavy component mounts, so no SVG filters, shader maps, or
+  // elastic pointer listeners are created on iPad/Safari/low-end hardware.
+  if (getGlassQuality() === 'lite') {
+    return (
+      <LiquidGlassLite
+        width={width}
+        height={height}
+        positioning={positioning === 'fixed' ? 'fixed' : positioning === 'absolute' ? 'absolute' : 'relative'}
+        className={className}
+        style={{ borderRadius: `${cornerRadius}px`, ...style }}
+        onClick={onClick}
+        blurAmount={blurAmount}
+        saturation={saturation}
+        overLight={liteOverLight}
+      >
+        {children}
+      </LiquidGlassLite>
+    );
+  }
+
+  return <LiquidGlassHeavy {...props} />;
 };
 
 export default LiquidGlass;

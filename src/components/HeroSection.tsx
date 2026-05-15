@@ -338,35 +338,7 @@ const HeroSection: React.FC = () => {
             className="w-full hidden sm:flex justify-center mt-6 lg:hidden"
           >
             <div className="relative flex items-center justify-center">
-              <LiquidGlass
-                width={230}
-                height={300}
-                positioning="relative"
-                style={{
-                  borderRadius: '20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                aberrationIntensity={0.3}
-                elasticity={0.2}
-                blurAmount={4}
-                saturation={150}
-                displacementScale={80}
-                overLight={false}
-                mode='shader'
-              >
-                <PreloadedImage
-                  src="/Subject.png"
-                  alt="Patrick's Portrait"
-                  className="w-full h-full object-cover object-top"
-                  style={{
-                    borderRadius: '20px',
-                    transform: 'scale(0.92)',
-                    transition: 'transform 0.3s ease-out'
-                  }}
-                />
-              </LiquidGlass>
+              <HeroProfileCard variant="mobile" />
 
               {/* Mobile Tech Spheres - Smaller and positioned around portrait */}
               {/* React Sphere - Top Left */}
@@ -573,36 +545,7 @@ const HeroSection: React.FC = () => {
             <div className="relative w-full h-full flex items-center justify-center">
               <div className="relative flex items-center justify-center">
                 {/* Main Portrait */}
-                <LiquidGlass
-                  width={350}
-                  height={500}
-                  positioning="relative"
-                  style={{
-                    borderRadius: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  className="hover:bg-white/10"
-                  aberrationIntensity={0.3}
-                  elasticity={0.2}
-                  blurAmount={4}
-                  saturation={150}
-                  displacementScale={120}
-                  overLight={false}
-                  mode='shader'
-                >
-                  <PreloadedImage
-                    src="/Subject.png"
-                    alt="Patrick's Portrait"
-                    className="w-full h-full object-cover object-top"
-                    style={{
-                      borderRadius: '24px',
-                      transform: 'scale(0.92)', // Added scale for a gap
-                      transition: 'transform 0.3s ease-out' // Smooth transition for scale
-                    }}
-                  />
-                </LiquidGlass>
+                <HeroProfileCard variant="desktop" />
 
                 {/* Tech Spheres - Floating around the portrait */}
                 {/* React Sphere - Top Left */}
@@ -900,5 +843,15 @@ const HeroDitherGate: React.FC<{ heroRef: React.RefObject<HTMLElement | null> }>
     </div>
   );
 };
+
+const HeroProfileCard: React.FC<{ variant: 'desktop' | 'mobile' }> = ({ variant }) => (
+  <div className={`hero-profile-card lg-lite hero-profile-card--${variant}`}>
+    <PreloadedImage
+      src="/Subject.png"
+      alt="Patrick's Portrait"
+      className="hero-profile-card__image"
+    />
+  </div>
+);
 
 export default React.memo(HeroSection);

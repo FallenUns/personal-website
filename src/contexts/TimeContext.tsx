@@ -28,10 +28,16 @@ export const TimeProvider: React.FC<TimeProviderProps> = ({ children, hour, isDa
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTime = (): TimeContextType => {
   const context = useContext(TimeContext);
   if (context === undefined) {
     throw new Error('useTime must be used within a TimeProvider');
   }
   return context;
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const useOptionalTime = (): TimeContextType | null => {
+  return useContext(TimeContext) ?? null;
 };

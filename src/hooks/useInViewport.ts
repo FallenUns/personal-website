@@ -27,10 +27,23 @@ let scrollListenerAttached = false;
 
 const fireQuiet = () => {
   quietTimer = null;
+  // Drop the "user is currently scrolling" body class. CSS rules
+  // (`body.lg-scrolling .lg-lite { backdrop-filter: none }`) can use
+  // this to pause expensive backdrop-filter passes during active scroll
+  // — a massive iPad Safari win since each `backdrop-filter` element
+  // re-samples the page behind it on every scroll frame.
+  if (typeof document !== 'undefined') {
+    document.body.classList.remove('lg-scrolling');
+  }
   handlers.forEach((h) => h());
 };
 
 const onScroll = () => {
+  // Mark "user is scrolling" on first scroll event after a quiet period.
+  // Idempotent — adding a class that's already present is a no-op.
+  if (!quietTimer && typeof document !== 'undefined') {
+    document.body.classList.add('lg-scrolling');
+  }
   if (quietTimer) clearTimeout(quietTimer);
   quietTimer = setTimeout(fireQuiet, QUIET_MS);
 };
