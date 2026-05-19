@@ -52,6 +52,37 @@ export const hudReplaceLast = (text: string, level: HudLevel = 'info'): void => 
 };
 
 /**
+ * Push an empty slot and return its stable id. Pair with `hudReplaceById`
+ * to safely build a message char-by-char even while other producers are
+ * appending to the buffer concurrently — the typewriter's slot is found
+ * by id, not by "last index", so interlopers don't corrupt it.
+ *
+ * Was a real bug: during boot, hover and section-change handlers fired
+ * `hudLog` while the boot typewriter was mid-line. `hudReplaceLast` then
+ * overwrote those new entries while the original placeholder stayed
+ * frozen at "> aur", "> camera_whee", etc.
+ */
+export const hudPushOwn = (level: HudLevel = 'info'): number => {
+  const msg: HudMessage = { id: ++counter, t: Date.now(), text: '', level };
+  buffer.push(msg);
+  if (buffer.length > MAX) buffer.shift();
+  broadcast();
+  return msg.id;
+};
+
+/**
+ * Replace the text/level of an existing message by its id. Silently no-ops
+ * if the slot has aged out of the ring buffer.
+ */
+export const hudReplaceById = (id: number, text: string, level?: HudLevel): void => {
+  const idx = buffer.findIndex((m) => m.id === id);
+  if (idx === -1) return;
+  buffer[idx].text = text;
+  if (level) buffer[idx].level = level;
+  broadcast();
+};
+
+/**
  * React hook — returns the current message buffer and re-renders on each
  * new log entry. Initial value is the existing buffer so a HUD mounted late
  * in the page lifecycle still shows the boot messages.

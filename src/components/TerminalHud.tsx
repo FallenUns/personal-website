@@ -1,7 +1,7 @@
 // src/components/TerminalHud.tsx
 import React, { useEffect, useState } from 'react';
 import './TerminalHud.css';
-import { hudLog, hudReplaceLast, useHudBus } from '../hooks/useHudBus';
+import { hudLog, hudPushOwn, hudReplaceById, useHudBus } from '../hooks/useHudBus';
 import { useLoading } from '../contexts/LoadingContext';
 
 /**
@@ -173,18 +173,20 @@ const TerminalHud: React.FC = () => {
     const GAP_MS = 200;
 
     (async () => {
-      // Use a placeholder message we keep overwriting for the typewriter
-      // effect. After each line is fully typed we drop a final entry at the
-      // correct level and start a fresh placeholder for the next line.
+      // Use a placeholder we OWN by id — so concurrent `hudLog` calls
+      // from hover handlers, section-change listeners, etc don't corrupt
+      // the partial line. Previously `hudReplaceLast` followed the
+      // buffer's tail, which would jump to the interloper and leave the
+      // typewriter's placeholder frozen at "> aur" / "> camera_whee".
       for (let li = 0; li < lines.length; li++) {
         const { text, level } = lines[li];
-        hudLog('', 'info');
+        const slotId = hudPushOwn('info');
         for (let i = 1; i <= text.length; i++) {
           if (cancelled) return;
-          hudReplaceLast(text.slice(0, i), 'info');
+          hudReplaceById(slotId, text.slice(0, i), 'info');
           await new Promise((r) => setTimeout(r, CHAR_MS));
         }
-        hudReplaceLast(text, level);
+        hudReplaceById(slotId, text, level);
         await new Promise((r) => setTimeout(r, GAP_MS));
         if (cancelled) return;
       }
@@ -284,10 +286,16 @@ const TerminalHud: React.FC = () => {
               ref={bodyRef}
               id="hud-body"
               className="hud-body"
+              // `data-lenis-prevent` makes Lenis ignore wheel/touch events
+              // that originate inside this element, so the inner log can
+              // scroll natively. Without it Lenis ate every wheel tick and
+              // drove the page scroll instead of the panel.
+              data-lenis-prevent
               style={{
                 height: 180,
                 padding: '8px 10px 4px',
                 overflowY: 'auto',
+                overscrollBehavior: 'contain',
                 position: 'relative',
               }}
             >

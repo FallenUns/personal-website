@@ -677,7 +677,13 @@ const LiquidGlassHeavy: React.FC<LiquidGlassProps> = ({
   return (
     <motion.div
       ref={containerRef}
-      className={className}
+      // `lg-heavy` is the hook the global scroll-quiet bus uses to drop
+      // backdrop-filter on full-shader instances during active scroll, the
+      // same way `.lg-lite` does it for the cheap variant. Big iPad win:
+      // the heavy instance's `backdrop-filter: url(#id) blur() saturate()`
+      // is the most expensive single composition step on the page; pausing
+      // it for the 150 ms scroll-quiet window erases the spike.
+      className={`lg-heavy${className ? ` ${className}` : ''}`}
       style={{
         position: positioning,
         width: `${elementWidth}px`,

@@ -179,7 +179,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <div
                 ref={scrollContainerRef}
                 className="scroll-container p-4 text-white/90 text-sm leading-relaxed overflow-y-auto h-full scrollbar-transparent chat-container"
-                style={{ maxHeight: '300px', textAlign: 'left' }}
+                // `data-lenis-prevent` exempts this scroll surface from
+                // Lenis's wheel/touch capture. Without it long AI replies
+                // were unscrollable inside the panel — every wheel tick
+                // scrolled the page instead.
+                data-lenis-prevent
+                style={{ maxHeight: '300px', textAlign: 'left', overscrollBehavior: 'contain' }}
               >
                 <div ref={responseTextRef} className="chat-content chat-text-left" style={{textAlign: 'left', width: '100%'}}>
                   <div className="chat-text-left" style={{textAlign: 'left', width: '100%'}}>
