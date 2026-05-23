@@ -235,7 +235,6 @@ function buildApp(opts = {}) {
   app.use(cors({
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'DELETE'],
-    credentials: true
   }));
 
   // Body parser with size limits
