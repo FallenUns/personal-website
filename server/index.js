@@ -40,7 +40,7 @@ function csvEscape(value) {
 function generateCSV(feedbackArray) {
   const headers = [
     'ID', 'Name', 'Email', 'Rating', 'Category', 'Message',
-    'Timestamp', 'User Agent', 'Referrer'
+    'Timestamp'
   ];
 
   const csvRows = [
@@ -52,9 +52,7 @@ function generateCSV(feedbackArray) {
       csvEscape(f.rating),
       csvEscape(f.category),
       csvEscape(f.message || ''),
-      csvEscape(f.timestamp),
-      csvEscape(f.userAgent || ''),
-      csvEscape(f.referrer || '')
+      csvEscape(f.timestamp)
     ].join(','))
   ];
 
@@ -159,12 +157,15 @@ function buildApp(opts = {}) {
   if (!env.LLM_API_KEY) {
     throw new Error('FATAL: LLM_API_KEY environment variable is not set');
   }
+  if (!env.ADMIN_API_KEY) {
+    throw new Error('FATAL: ADMIN_API_KEY environment variable is not set');
+  }
 
   // Configuration Constants
   const CONFIG = {
     PORT: env.PORT || 3001,
-    MAX_FEEDBACK_ENTRIES: 1000,
-    MAX_FEEDBACK_AGE_DAYS: 365,
+    MAX_FEEDBACK_ENTRIES: 500,
+    MAX_FEEDBACK_AGE_DAYS: 90,
     LLM_TIMEOUT_MS: 30000,
     LLM_API_URL: env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions',
     LLM_TEMPERATURE: 0.5,
@@ -278,26 +279,9 @@ function buildApp(opts = {}) {
   // Admin API key authentication middleware
   const adminAuth = (req, res, next) => {
     const apiKey = req.headers['x-admin-api-key'];
-    const validApiKey = env.ADMIN_API_KEY;
-
-    if (!validApiKey) {
-      // If no admin key is configured, only allow in development
-      if (env.NODE_ENV !== 'production') {
-        return next();
-      }
-      return res.status(503).json({
-        success: false,
-        message: 'Admin API not configured'
-      });
+    if (!safeCompare(apiKey, env.ADMIN_API_KEY)) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
-
-    if (!safeCompare(apiKey, validApiKey)) {
-      return res.status(401).json({
-        success: false,
-        message: 'Unauthorized: Invalid or missing API key'
-      });
-    }
-
     next();
   };
 
@@ -305,8 +289,9 @@ function buildApp(opts = {}) {
   app.use('/api/', globalLimiter);
 
   // Feedback storage file paths
-  const FEEDBACK_FILE = path.join(__dirname, 'data', 'feedback.json');
-  const CSV_DIR = path.join(__dirname, 'data', 'csv');
+  const DATA_DIR = env.DATA_DIR || path.join(__dirname, 'data');
+  const FEEDBACK_FILE = path.join(DATA_DIR, 'feedback.json');
+  const CSV_DIR = path.join(DATA_DIR, 'csv');
 
   // API Routes
 
@@ -318,9 +303,7 @@ function buildApp(opts = {}) {
       body('email').optional().trim().isEmail().normalizeEmail(),
       body('rating').isInt({ min: 1, max: 5 }),
       body('category').trim().notEmpty().isIn(['design', 'content', 'functionality', 'performance', 'general']),
-      body('message').trim().notEmpty().isLength({ min: 10, max: 1000 }).escape(),
-      body('userAgent').optional().trim().isLength({ max: 500 }),
-      body('referrer').optional().trim().isLength({ max: 500 })
+      body('message').trim().notEmpty().isLength({ min: 10, max: 1000 }).escape()
     ],
     async (req, res) => {
     try {
@@ -330,7 +313,7 @@ function buildApp(opts = {}) {
         return res.status(400).json(validationErrorBody(errors, env));
       }
 
-      const { name, email, rating, category, message, userAgent, referrer } = req.body;
+      const { name, email, rating, category, message } = req.body;
 
       const feedback = {
         id: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -340,12 +323,18 @@ function buildApp(opts = {}) {
         category,
         message,
         timestamp: new Date().toISOString(),
-        userAgent: userAgent || '',
-        referrer: referrer || ''
       };
 
       // Read existing feedback
       const feedbackArray = await readFeedback(FEEDBACK_FILE);
+
+      // Purge entries older than the retention window before adding.
+      const cutoffMs = Date.now() - CONFIG.MAX_FEEDBACK_AGE_DAYS * 86400 * 1000;
+      for (let i = feedbackArray.length - 1; i >= 0; i--) {
+        if (new Date(feedbackArray[i].timestamp).getTime() < cutoffMs) {
+          feedbackArray.splice(i, 1);
+        }
+      }
 
       // Add new feedback
       feedbackArray.push(feedback);
@@ -385,6 +374,8 @@ function buildApp(opts = {}) {
   // Get all feedback (for dashboard) - Admin only
   app.get('/api/feedback', adminAuth, async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Pragma', 'no-cache');
       const feedbackArray = await readFeedback(FEEDBACK_FILE);
       res.json({
         success: true,
@@ -404,8 +395,7 @@ function buildApp(opts = {}) {
     try {
       const feedbackArray = await readFeedback(FEEDBACK_FILE);
 
-      // Add cache control header - cache for 60 seconds
-      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.setHeader('Cache-Control', 'no-store');
 
       if (feedbackArray.length === 0) {
         return res.json({
@@ -448,6 +438,8 @@ function buildApp(opts = {}) {
   // Export CSV - Admin only
   app.get('/api/feedback/export-csv', adminAuth, async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Pragma', 'no-cache');
       const feedbackArray = await readFeedback(FEEDBACK_FILE);
 
       if (feedbackArray.length === 0) {
@@ -476,6 +468,8 @@ function buildApp(opts = {}) {
   // Delete all feedback (with confirmation) - Admin only
   app.delete('/api/feedback', adminAuth, async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Pragma', 'no-cache');
       const { confirm } = req.body;
 
       if (confirm !== 'DELETE_ALL_FEEDBACK') {

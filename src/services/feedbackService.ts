@@ -8,10 +8,11 @@ class FeedbackService {
 
   // Submit feedback to server with localStorage backup
   async submitFeedback(formData: FeedbackFormData): Promise<FeedbackSubmissionResponse> {
+    // Network payload deliberately omits userAgent/referrer — server no longer
+    // collects them (PII minimization). Local backup may still capture them
+    // below for the user's own dashboard.
     const feedbackData = {
       ...formData,
-      userAgent: navigator.userAgent,
-      referrer: document.referrer || 'direct'
     };
 
     try {
