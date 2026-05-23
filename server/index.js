@@ -167,7 +167,8 @@ function buildApp(opts = {}) {
     MAX_FEEDBACK_AGE_DAYS: 365,
     LLM_TIMEOUT_MS: 30000,
     LLM_API_URL: env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions',
-    LLM_MODEL: env.VITE_LLM_MODEL || 'gpt-4.1-mini',
+    LLM_TEMPERATURE: 0.5,
+    LLM_MAX_TOKENS: 300,
   };
 
   // Model whitelist. The client may suggest a model via the request body, but
@@ -186,14 +187,16 @@ function buildApp(opts = {}) {
   const DAILY_TOKEN_BUDGET = Number(env.LLM_DAILY_TOKEN_BUDGET || 100000);
   const tokenLedger = { dayKey: '', used: 0 };
   function todayKey() { return new Date().toISOString().slice(0, 10); }
-  function checkBudget() {
+  function rollDayIfNeeded() {
     const k = todayKey();
     if (tokenLedger.dayKey !== k) { tokenLedger.dayKey = k; tokenLedger.used = 0; }
+  }
+  function checkBudget() {
+    rollDayIfNeeded();
     return tokenLedger.used < DAILY_TOKEN_BUDGET;
   }
   function recordTokens(n) {
-    const k = todayKey();
-    if (tokenLedger.dayKey !== k) { tokenLedger.dayKey = k; tokenLedger.used = 0; }
+    rollDayIfNeeded();
     tokenLedger.used += Number(n) || 0;
   }
 
@@ -232,7 +235,7 @@ function buildApp(opts = {}) {
   }));
 
   // Body parser with size limits
-  app.use(express.json({ limit: '50kb' })); // Increased to 50kb to accommodate system prompts with knowledge base
+  app.use(express.json({ limit: '50kb' })); // 50kb: covers ~6kb client context + up to 20 chat turns
 
   // Trust proxy (important for rate limiting behind nginx)
   // Only trust loopback, link-local, and unique local addresses
@@ -540,7 +543,7 @@ function buildApp(opts = {}) {
       }
       upstreamMessages.push(...messages);
 
-      const chosenModel = ALLOWED_MODELS.has(model) ? model : DEFAULT_MODEL;
+      const chosenModel = (typeof model === 'string' && ALLOWED_MODELS.has(model)) ? model : DEFAULT_MODEL;
 
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
@@ -556,8 +559,8 @@ function buildApp(opts = {}) {
           body: JSON.stringify({
             messages: upstreamMessages,
             model: chosenModel,
-            temperature: 0.5,
-            max_tokens: 300
+            temperature: CONFIG.LLM_TEMPERATURE,
+            max_tokens: CONFIG.LLM_MAX_TOKENS
           }),
           signal: controller.signal
         });
@@ -595,7 +598,7 @@ function buildApp(opts = {}) {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
   });
 
-  return { app, paths: { FEEDBACK_FILE, CSV_DIR }, config: CONFIG };
+  return { app, paths: { FEEDBACK_FILE, CSV_DIR }, config: CONFIG, defaultModel: DEFAULT_MODEL };
 }
 
 // ---------------------------------------------------------------------------
@@ -603,7 +606,7 @@ function buildApp(opts = {}) {
 // ---------------------------------------------------------------------------
 
 async function startServer() {
-  const { app, paths, config } = buildApp();
+  const { app, paths, config, defaultModel } = buildApp();
   await ensureDirectories(paths);
   await initializeDataFile(paths.FEEDBACK_FILE);
 
@@ -611,7 +614,7 @@ async function startServer() {
     console.log(`✅ Server running on port ${config.PORT}`);
     console.log(`📊 Feedback data: ${paths.FEEDBACK_FILE}`);
     console.log(`📁 CSV files: ${paths.CSV_DIR}`);
-    console.log(`🤖 LLM Model: ${config.LLM_MODEL}`);
+    console.log(`🤖 LLM Model: ${defaultModel}`);
     console.log(`⚡ Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }
