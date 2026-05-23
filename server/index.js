@@ -80,12 +80,15 @@ async function initializeDataFile(feedbackFile) {
 }
 
 // Read feedback from file
-async function readFeedback(feedbackFile) {
+async function readFeedback(feedbackFile, maxAgeDays) {
   try {
     const data = await fs.readFile(feedbackFile, 'utf8');
-    return JSON.parse(data);
+    const arr = JSON.parse(data);
+    if (!Array.isArray(arr) || !maxAgeDays) return arr;
+    const cutoff = Date.now() - maxAgeDays * 86400 * 1000;
+    return arr.filter(f => new Date(f.timestamp).getTime() >= cutoff);
   } catch (error) {
-    console.error('Error reading feedback:', error);
+    if (error.code !== 'ENOENT') console.error('Error reading feedback:', error);
     return [];
   }
 }
@@ -325,16 +328,8 @@ function buildApp(opts = {}) {
         timestamp: new Date().toISOString(),
       };
 
-      // Read existing feedback
-      const feedbackArray = await readFeedback(FEEDBACK_FILE);
-
-      // Purge entries older than the retention window before adding.
-      const cutoffMs = Date.now() - CONFIG.MAX_FEEDBACK_AGE_DAYS * 86400 * 1000;
-      for (let i = feedbackArray.length - 1; i >= 0; i--) {
-        if (new Date(feedbackArray[i].timestamp).getTime() < cutoffMs) {
-          feedbackArray.splice(i, 1);
-        }
-      }
+      // Read existing feedback (retention purge happens inside readFeedback)
+      const feedbackArray = await readFeedback(FEEDBACK_FILE, CONFIG.MAX_FEEDBACK_AGE_DAYS);
 
       // Add new feedback
       feedbackArray.push(feedback);
@@ -376,7 +371,7 @@ function buildApp(opts = {}) {
     try {
       res.setHeader('Cache-Control', 'no-store');
       res.setHeader('Pragma', 'no-cache');
-      const feedbackArray = await readFeedback(FEEDBACK_FILE);
+      const feedbackArray = await readFeedback(FEEDBACK_FILE, CONFIG.MAX_FEEDBACK_AGE_DAYS);
       res.json({
         success: true,
         data: feedbackArray
@@ -393,7 +388,7 @@ function buildApp(opts = {}) {
   // Get feedback statistics (with caching)
   app.get('/api/feedback/stats', async (req, res) => {
     try {
-      const feedbackArray = await readFeedback(FEEDBACK_FILE);
+      const feedbackArray = await readFeedback(FEEDBACK_FILE, CONFIG.MAX_FEEDBACK_AGE_DAYS);
 
       res.setHeader('Cache-Control', 'no-store');
 
@@ -440,7 +435,7 @@ function buildApp(opts = {}) {
     try {
       res.setHeader('Cache-Control', 'no-store');
       res.setHeader('Pragma', 'no-cache');
-      const feedbackArray = await readFeedback(FEEDBACK_FILE);
+      const feedbackArray = await readFeedback(FEEDBACK_FILE, CONFIG.MAX_FEEDBACK_AGE_DAYS);
 
       if (feedbackArray.length === 0) {
         return res.status(404).json({
