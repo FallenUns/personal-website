@@ -5,7 +5,6 @@ import { knowledgeBaseService } from './knowledgeBase';
 
 class LLMService {
   private config: LLMConfig;
-  private systemPrompt: string;
 
   constructor() {
     this.config = {
@@ -15,42 +14,10 @@ class LLMService {
       maxTokens: 300,
       temperature: 0.5
     };
-    this.systemPrompt = `
-You are Zora, Patrick Adrianus's portfolio AI assistant. You can ONLY answer questions about Patrick's portfolio, experience, projects, and this website.
-
-**STRICT BOUNDARIES:**
-- ONLY discuss: Patrick's background, projects, skills, experience, contact info, and website features
-- DO NOT answer: General questions, math problems, coding help, definitions, or anything unrelated to Patrick's portfolio
-- If asked about unrelated topics, politely redirect: "I'm specifically designed to help you learn about Patrick's work and experience. What would you like to know about his projects or background?"
-
-**About Patrick:** Patrick is an RMIT Data Science Graduate with expertise in machine learning, data analysis, and full-stack development.
-
-**Core Purpose:** Help visitors learn about Patrick's experience, projects, skills, and how to contact him.
-
-**Portfolio Topics ONLY:**
-- Patrick's work experience (iOS hackathon, Apple Foundation Program, Urban Waste)
-- His projects (Liquid Glass, LLM Privacy Research, data science work, etc.)
-- Technical skills and expertise
-- Education background
-- Website features and navigation
-- How to contact Patrick or download his resume
-
-**Website Controls:** You can navigate sections, change time/theme, toggle auto-sync.
-
-**Feedback:** Direct users to the blue feedback button (bottom-left) for ratings/comments.
-
-**Response Style:**
-- Keep responses SHORT (1-3 sentences max)
-- Be specific and enthusiastic about Patrick's work
-- Use occasional emojis
-- For detailed requests, provide key points only
-- ALWAYS redirect off-topic questions back to Patrick's portfolio
-
-**Example Redirects:**
-- "What's 2+2?" → "I'm here to help you learn about Patrick's work! Would you like to see his data science projects?"
-- "How do I code in Python?" → "I'm Patrick's portfolio assistant! I can tell you about his Python projects though. Want to hear about them?"
-- "What's the weather?" → "I focus on Patrick's portfolio! Are you interested in his work experience or projects?"
-`;
+    // NOTE: The system prompt now lives server-side (see ZORA_SYSTEM_PROMPT in
+    // server/index.js). The client only sends user/assistant messages plus an
+    // optional `context` field — see `sendMessage`. Sending a client-side
+    // system prompt is rejected by the backend validator.
   }
 
   private validateConfig(): boolean {
@@ -185,40 +152,22 @@ You are Zora, Patrick Adrianus's portfolio AI assistant. You can ONLY answer que
         relevantContext = knowledgeBaseService.getBasicContext();
       }
 
-      // 3) Build enhanced system prompt with context
-      const enhancedSystemPrompt = `${this.systemPrompt}
+      // 3) Send only user/assistant messages plus a separate `context` field.
+      // The server prepends its own immutable system prompt and wraps
+      // `context` in a [CONTEXT] block that the system prompt distrusts —
+      // this defeats client-side prompt injection (CWE-74).
+      const recentMessages = messages
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .slice(-6);
 
-**KNOWLEDGE BASE - Use this information to answer questions about Patrick:**
-
-${relevantContext}
-
-**Response Guidelines:**
-- ALWAYS keep responses SHORT (2-4 sentences max)
-- Focus on key highlights only
-- Even for detailed requests, provide concise summaries with main points
-- Be enthusiastic but brief
-- Use bullet points for multiple items
-
-Remember: Prioritize brevity while staying informative and engaging.`;
-
-      // Keep only the last 6 messages (3 exchanges) to prevent payload from growing too large
-      const recentMessages = messages.slice(-6);
-
-      const messagesWithSystem: LLMMessage[] = [
-        { role: 'system', content: enhancedSystemPrompt },
-        ...recentMessages
-      ];
-
-      // 4) Send to backend API (which handles LLM authentication)
       const response = await fetch(this.config.apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: messagesWithSystem,
-          model: this.config.model
-        })
+          messages: recentMessages,
+          model: this.config.model,
+          context: relevantContext.slice(0, 6000),
+        }),
       });
 
       if (!response.ok) {
@@ -274,10 +223,6 @@ Remember: Prioritize brevity while staying informative and engaging.`;
     const h = Math.floor(time);
     const m = Math.round((time % 1) * 60);
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-  }
-
-  updateSystemPrompt(newPrompt: string): void {
-    this.systemPrompt = newPrompt;
   }
 }
 
