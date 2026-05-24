@@ -36,3 +36,28 @@ RewriteRule . /index.html [L]
     ExpiresByType image/ico "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 year"
 </IfModule>
+
+# --- Security headers ---
+<IfModule mod_headers.c>
+    # HTTPS-only for 1 year, include subdomains.
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    # Clickjacking + content-type sniffing.
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Trim referrer leakage.
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Lock down browser features the site doesn't use.
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)"
+
+    # CSP for the SPA (script-src 'self' only; style inline allowed for Tailwind/framer-motion).
+    # sha256 hash is for inline <script type="application/ld+json"> in index.html — regenerate if that block changes
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-0TbJfcwsFCrtLtXLco8jmTeVS70SUjTjtPeLtFktE08='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+
+    # Don't cache the HTML document.
+    <FilesMatch "\.html$">
+        Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>

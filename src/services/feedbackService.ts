@@ -1,5 +1,12 @@
 import type { FeedbackData, FeedbackFormData, FeedbackSubmissionResponse } from '../types/feedback';
 
+function csvEscape(value: unknown): string {
+  if (value === null || value === undefined) return '""';
+  let str = String(value);
+  if (/^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
 class FeedbackService {
   private readonly STORAGE_KEY = 'portfolio_feedback';
   private readonly API_BASE_URL = import.meta.env.PROD
@@ -8,10 +15,11 @@ class FeedbackService {
 
   // Submit feedback to server with localStorage backup
   async submitFeedback(formData: FeedbackFormData): Promise<FeedbackSubmissionResponse> {
+    // Network payload deliberately omits userAgent/referrer — server no longer
+    // collects them (PII minimization). Local backup may still capture them
+    // below for the user's own dashboard.
     const feedbackData = {
       ...formData,
-      userAgent: navigator.userAgent,
-      referrer: document.referrer || 'direct'
     };
 
     try {
@@ -257,15 +265,15 @@ class FeedbackService {
       const csvRows = [
         headers.join(','),
         ...allFeedback.map((f: FeedbackData) => [
-          f.id,
-          `"${f.name.replace(/"/g, '""')}"`, // Escape quotes in names
-          f.email,
-          f.rating,
-          f.category,
-          `"${f.message.replace(/"/g, '""')}"`, // Escape quotes in messages
-          typeof f.timestamp === 'string' ? f.timestamp : new Date(f.timestamp).toISOString(),
-          `"${(f.userAgent || '').replace(/"/g, '""')}"`,
-          `"${(f.referrer || '').replace(/"/g, '""')}"`
+          csvEscape(f.id),
+          csvEscape(f.name),
+          csvEscape(f.email),
+          csvEscape(f.rating),
+          csvEscape(f.category),
+          csvEscape(f.message),
+          csvEscape(typeof f.timestamp === 'string' ? f.timestamp : new Date(f.timestamp).toISOString()),
+          csvEscape(f.userAgent || ''),
+          csvEscape(f.referrer || '')
         ].join(','))
       ];
 
@@ -304,16 +312,16 @@ class FeedbackService {
       const csvRows = [
         headers.join(','),
         ...allFeedback.map((f: FeedbackData) => [
-          f.id,
-          `"${f.name.replace(/"/g, '""')}"`,
-          f.email,
-          f.rating,
-          f.category,
-          `"${f.message.replace(/"/g, '""')}"`,
-          typeof f.timestamp === 'string' ? f.timestamp : new Date(f.timestamp).toISOString()
+          csvEscape(f.id),
+          csvEscape(f.name),
+          csvEscape(f.email),
+          csvEscape(f.rating),
+          csvEscape(f.category),
+          csvEscape(f.message),
+          csvEscape(typeof f.timestamp === 'string' ? f.timestamp : new Date(f.timestamp).toISOString())
         ].join(','))
       ];
-      
+
       const csvContent = csvRows.join('\n');
       await navigator.clipboard.writeText(csvContent);
       console.log('CSV content copied to clipboard as fallback');
