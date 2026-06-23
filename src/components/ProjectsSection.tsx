@@ -7,6 +7,7 @@ import './performance.css';
 import { projects } from '../data/projects';
 import { hudLog } from '../hooks/useHudBus';
 import { StickySectionBackground } from './visuals/SectionBackground';
+import { useOptionalTime } from '../contexts/TimeContext';
 
 // SVG filter for pixelated blur effect
 const PixelateFilter = memo(() => (
@@ -868,6 +869,8 @@ const useResponsiveCards = (containerRef: React.RefObject<HTMLDivElement | null>
 const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof projects[0]; index: number; cardWidth: number; }) => {
   const cardHeight = 380; // Increased from 340px to 380px for more height
   const [isHovered, setIsHovered] = useState(false);
+  const timeContext = useOptionalTime();
+  const reffyIconSrc = timeContext?.isDarkMode ? '/reffy-logo-dark.svg' : '/reffy-logo-light.svg';
 
   // Special liquid glass configuration for the liquid glass project
   const isLiquidGlassProject = project.slug === 'liquid-glass-design';
@@ -1029,7 +1032,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                 style={{ filter: 'url(#pixelate-filter)' }}
               >
                 <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
-                  <h3 className="text-base sm:text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
+                  <h3 className="text-base sm:text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 min-w-0 line-clamp-2 break-words">
                     Mystery Project Title Here
                   </h3>
                   <motion.span
@@ -1053,7 +1056,7 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
             ) : (
               <div className="relative z-10 mb-3">
                 <div className="flex items-start justify-between mb-2 min-h-[52px] gap-2">
-                  <h3 className="text-base sm:text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 line-clamp-2 break-words">
+                  <h3 className="text-base sm:text-lg font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)] leading-tight flex-1 min-w-0 line-clamp-2 break-words">
                     {project.title}
                   </h3>
                   <span className="px-2.5 py-1 text-[9px] sm:text-[10px] font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm border border-white/10 flex-shrink-0 whitespace-nowrap mt-0.5">
@@ -1185,6 +1188,34 @@ const ProjectCard = memo(({ project, index, cardWidth }: { project: typeof proje
                       className="absolute bottom-3 left-3 w-2 h-2 bg-orange-300/70 rounded-full"
                       animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
                       transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    />
+                  </div>
+                ) : project.slug === 'reffy' ? (
+                  // App-icon style hero for Reffy
+                  <div className="relative w-full h-32 bg-gradient-to-br from-sky-500/12 via-white/5 to-orange-500/12 rounded-2xl backdrop-blur-sm border border-sky-300/20 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,147,0,0.16),transparent_50%)]" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        className={`h-24 w-24 rounded-[24px] flex items-center justify-center shadow-[0_16px_36px_rgba(0,0,0,0.32)] ring-1 ${timeContext?.isDarkMode ? 'bg-[#070b12] ring-white/15' : 'bg-[#f8fbff] ring-sky-200/70'}`}
+                        animate={{ scale: [1, 1.025, 1] }}
+                        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <img
+                          src={reffyIconSrc}
+                          alt="Reffy app icon"
+                          className="h-20 w-20 object-contain"
+                        />
+                      </motion.div>
+                    </div>
+                    <motion.div
+                      className="absolute top-3 left-3 w-2 h-2 bg-sky-300/70 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 w-2 h-2 bg-orange-300/70 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                     />
                   </div>
                 ) : project.slug === 'cliniwatch' ? (

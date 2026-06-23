@@ -131,6 +131,54 @@ export const projects: Project[] = [
   },
   {
     id: 1,
+    title: 'Reffy',
+    description: 'A mobile app for running casual sports nights with auto-balanced teams, live scoring, fair sit-out rotation, and persistent ELO leaderboards.',
+    mockupType: 'ui-ux',
+    technologies: [
+      'Expo',
+      'React Native',
+      'React',
+      'TypeScript',
+      'Expo Router',
+      'SQLite',
+      'Zustand',
+      'Supabase',
+      'Astro',
+    ],
+    category: 'Mobile',
+    slug: 'reffy',
+    fullDescription:
+      'Reffy is a mobile companion for casual sports sessions where the hardest part is usually not the game, but organizing fair teams, rotating sit-outs, tracking scores, and keeping everyone bought into the leaderboard. The app lets a host add players, choose a sport and format, auto-pair balanced teams every round using player ratings, enter scores per court, and carry persistent ELO ratings across sessions. The newer connected version adds accounts, cloud backup, profiles, clubs, live rooms, QR/deep-link flows, and a PlayReffy landing site so regular groups can keep their roster, ratings, and match history moving across devices.',
+    images: ['/reffy-logo-dark.svg'],
+    imageCaptions: ['Reffy bullseye logo used across the app and PlayReffy landing site.'],
+    liveUrl: 'https://playreffy.com',
+    githubUrl: '#',
+    features: [
+      'Auto-balanced team pairing for every round using player ratings, recent partner history, opponent history, and fair sit-out rotation',
+      'Flexible session setup for sports and formats such as badminton, pickleball, basketball, FIFA, singles, doubles, and larger team sizes',
+      'Live per-court scoring with match timer support, autosave flows, round editing, and end-of-session confirmation',
+      'Persistent ELO and Glicko-style ranked ratings with leaderboards, player profiles, trends, and match history',
+      'Shareable recap cards, player cards, QR invites, profile claims, and deep-link fallbacks through playreffy.com',
+      'Cloud backup and sync with Supabase-backed accounts, device identity, outbox handling, clubs, rooms, and online profile parity',
+      'Companion Astro marketing site with App Store links, deep-link routes, legal pages, and product mockups',
+      'Parallel SwiftUI iOS exploration with native design-system components, repositories, session screens, and scoring tests'
+    ],
+    challenges: [
+      'Designing pairing logic that balances competitive fairness, randomness, sit-out equity, and avoiding repeated teammates or opponents',
+      'Keeping score entry fast enough for real games while preserving editability, validation, and session history',
+      'Building offline-first local storage with SQLite and Zustand, then layering cloud backup and sync without breaking local play',
+      'Coordinating deep links, QR scanning, rooms, clubs, profile claims, and App Store fallbacks across native and web surfaces',
+      'Creating a sports-focused interface with large tap targets, readable live states, shareable visuals, and consistent branding'
+    ],
+    outcomes: [
+      'Built a substantial Expo/React Native mobile product that handles session setup, scoring, ratings, profiles, sharing, and sync',
+      'Created a clear PlayReffy landing site and deep-link system for installation, profile claims, club joins, and room invites',
+      'Developed broad automated coverage across scoring, pairing, sessions, sync, rooms, clubs, profiles, backup, and app bootstrap behavior',
+      'Produced a reusable design language around the Reffy bullseye mark, sport-first cards, rounded controls, and readable stat surfaces'
+    ]
+  },
+  {
+    id: 2,
     title: 'Liquid Glass Design System',
     description: 'Advanced glassmorphism UI library with fluid animations and shader effects',
     mockupType: 'web',
@@ -158,7 +206,7 @@ export const projects: Project[] = [
     outcomes: ['>30fps performance', '≈98% browser compatibility']
   },
   {
-    id: 2,
+    id: 3,
     title: 'LLM Privacy Violation Detection',
     description: 'End-to-end system to flag potential privacy violations in Stack Overflow posts using LLMs + heuristics',
     mockupType: 'paper',
@@ -295,7 +343,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 3,
+    id: 4,
     title: 'Interactive Portfolio Website',
     description: 'A personal portfolio website featuring a dynamic, time-based background, a "liquid glass" UI, and an integrated AI assistant.',
     mockupType: 'web',
@@ -337,7 +385,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 4,
+    id: 5,
     title: 'Cliniwatch – iOS Mental Health Companion App',
     description: 'A proactive monitoring system developed for the RMIT First Health iOS Hackathon to detect early signs of mental health deterioration before crisis point.',
     mockupType: 'ui-ux',
@@ -398,7 +446,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 5,
+    id: 6,
     title: 'Interactive CO₂ & GDP Explorer',
     description: 'Built an interactive dashboard to compare countries on CO₂ emissions and GDP over time with world map, time-series, and bar charts.',
     mockupType: 'web',
@@ -455,7 +503,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 6,
+    id: 7,
     title: 'Job Ads Data Parsing & Integration',
     description: 'End-to-end data cleaning and integration pipeline for heterogeneous job advertisement datasets with schema alignment and salary normalisation.',
     mockupType: 'paper',
@@ -523,7 +571,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 7,
+    id: 8,
     title: 'Life Expectancy Prediction',
     description: 'Regression modelling to predict national life expectancy using multivariate public-health data with regularisation and feature selection.',
     mockupType: 'paper',
@@ -651,7 +699,7 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 8,
+    id: 9,
     title: 'Persuasion Detection in Memes',
     description: 'Multimodal deep learning system for detecting propaganda techniques in memes using BERT + Xception fusion with multi-task learning.',
     mockupType: 'paper',
