@@ -26,35 +26,44 @@ jobs:
         run: npm run build
 
       - name: Setup SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
+      - name: Configure SSH host key
+        env:
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_KNOWN_HOSTS"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
       - name: Create release dirs on server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
+          ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
             mkdir -p ${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/server \
             && mkdir -p ${{ vars.DEPLOY_PATH }}/shared \
           "
 
       - name: Upload frontend dist
         run: |
-          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" dist/ \
+          rsync -az --delete -e ssh dist/ \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/
 
       - name: Upload backend (no sudo)
         run: |
-          rsync -az -e "ssh -o StrictHostKeyChecking=no" server/ \
+          rsync -az -e ssh server/ \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/server/
 
       - name: Upload nginx config (optional if you manage vhost separately)
         run: |
-          rsync -az -e "ssh -o StrictHostKeyChecking=no" nginx.conf \
+          rsync -az -e ssh nginx.conf \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/nginx.conf
 
       - name: Activate release and restart backend
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "
+          ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "
             set -e
 
             DEPLOY_PATH=\"${{ vars.DEPLOY_PATH }}\"
@@ -66,6 +75,7 @@ jobs:
 
             # 2) Runtime data: symlink release data -> shared data (persists across deploys)
             mkdir -p /var/www/server-data/csv
+            chmod 700 /var/www/server-data /var/www/server-data/csv
             rm -rf \"\$DEPLOY_PATH/current/server/data\" || true
             ln -sfn /var/www/server-data \"\$DEPLOY_PATH/current/server/data\"
 
@@ -90,6 +100,6 @@ jobs:
 
       - name: Purge old releases (keep last 5)
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
+          ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }} "\
             ls -1dt ${{ vars.DEPLOY_PATH }}/releases/* | tail -n +6 | xargs -r rm -rf \
           "

@@ -111,8 +111,10 @@ if [ -d "$SERVER_PATH" ]; then
         sudo chmod 644 "$SERVER_PATH/index.js"
     fi
     # Create data directory if it doesn't exist
-    sudo mkdir -p "$SERVER_PATH/data"
+    sudo mkdir -p "$SERVER_PATH/data/csv"
     sudo chown -R www-data:www-data "$SERVER_PATH/data"
+    sudo find "$SERVER_PATH/data" -type d -exec chmod 700 {} +
+    sudo find "$SERVER_PATH/data" -type f -exec chmod 600 {} +
     echo "✅ Permissions set for $SERVER_PATH"
 else
     echo "⚠️  Server directory $SERVER_PATH not found - skipping file permissions"

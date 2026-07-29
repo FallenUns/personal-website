@@ -61,12 +61,11 @@ function generateCSV(feedbackArray) {
 
 // Ensure data directories exist
 async function ensureDirectories(paths) {
-  try {
-    await fs.mkdir(path.dirname(paths.FEEDBACK_FILE), { recursive: true });
-    await fs.mkdir(paths.CSV_DIR, { recursive: true });
-  } catch (error) {
-    console.error('Error creating directories:', error);
-  }
+  const dataDir = path.dirname(paths.FEEDBACK_FILE);
+  await fs.mkdir(dataDir, { recursive: true, mode: 0o700 });
+  await fs.mkdir(paths.CSV_DIR, { recursive: true, mode: 0o700 });
+  await fs.chmod(dataDir, 0o700);
+  await fs.chmod(paths.CSV_DIR, 0o700);
 }
 
 // Initialize data file if it doesn't exist
@@ -75,8 +74,9 @@ async function initializeDataFile(feedbackFile) {
     await fs.access(feedbackFile);
   } catch (error) {
     // File doesn't exist, create it with empty array
-    await fs.writeFile(feedbackFile, JSON.stringify([], null, 2));
+    await fs.writeFile(feedbackFile, JSON.stringify([], null, 2), { mode: 0o600 });
   }
+  await fs.chmod(feedbackFile, 0o600);
 }
 
 // Read feedback from file
@@ -97,6 +97,7 @@ async function readFeedback(feedbackFile, maxAgeDays) {
 async function writeFeedback(feedbackFile, feedbackArray) {
   try {
     await fs.writeFile(feedbackFile, JSON.stringify(feedbackArray, null, 2));
+    await fs.chmod(feedbackFile, 0o600);
     return true;
   } catch (error) {
     console.error('Error writing feedback:', error);
@@ -112,7 +113,8 @@ async function saveCSVToServer(csvDir, feedbackArray) {
 
   try {
     const csvContent = generateCSV(feedbackArray);
-    await fs.writeFile(filepath, csvContent);
+    await fs.writeFile(filepath, csvContent, { mode: 0o600 });
+    await fs.chmod(filepath, 0o600);
     return { success: true, filename, filepath };
   } catch (error) {
     console.error('Error saving CSV:', error);
@@ -295,6 +297,14 @@ function buildApp(opts = {}) {
   const FEEDBACK_FILE = path.join(DATA_DIR, 'feedback.json');
   const CSV_DIR = path.join(DATA_DIR, 'csv');
 
+  // ponytail: one process-local queue; use a transactional/shared store if multiple workers are needed.
+  let feedbackMutationQueue = Promise.resolve();
+  const enqueueFeedbackMutation = (mutation) => {
+    const result = feedbackMutationQueue.then(mutation);
+    feedbackMutationQueue = result.catch(() => {});
+    return result;
+  };
+
   // API Routes
 
   // Submit feedback with validation and rate limiting
@@ -327,24 +337,23 @@ function buildApp(opts = {}) {
         timestamp: new Date().toISOString(),
       };
 
-      // Read existing feedback (retention purge happens inside readFeedback)
-      const feedbackArray = await readFeedback(FEEDBACK_FILE, CONFIG.MAX_FEEDBACK_AGE_DAYS);
+      const saved = await enqueueFeedbackMutation(async () => {
+        // Read existing feedback (retention purge happens inside readFeedback)
+        const feedbackArray = await readFeedback(FEEDBACK_FILE, CONFIG.MAX_FEEDBACK_AGE_DAYS);
 
-      // Add new feedback
-      feedbackArray.push(feedback);
+        feedbackArray.push(feedback);
 
-      // Keep only last N entries as configured
-      if (feedbackArray.length > CONFIG.MAX_FEEDBACK_ENTRIES) {
-        feedbackArray.splice(0, feedbackArray.length - CONFIG.MAX_FEEDBACK_ENTRIES);
-      }
+        // Keep only last N entries as configured
+        if (feedbackArray.length > CONFIG.MAX_FEEDBACK_ENTRIES) {
+          feedbackArray.splice(0, feedbackArray.length - CONFIG.MAX_FEEDBACK_ENTRIES);
+        }
 
-      // Save to file
-      const saved = await writeFeedback(FEEDBACK_FILE, feedbackArray);
+        const saved = await writeFeedback(FEEDBACK_FILE, feedbackArray);
+        if (saved) await saveCSVToServer(CSV_DIR, feedbackArray);
+        return saved;
+      });
 
       if (saved) {
-        // Also save CSV backup
-        await saveCSVToServer(CSV_DIR, feedbackArray);
-
         res.json({
           success: true,
           message: 'Thank you for your feedback! Your input has been saved and will help make this portfolio better. 🙏',
@@ -417,7 +426,7 @@ function buildApp(opts = {}) {
           totalFeedback: feedbackArray.length,
           averageRating: Math.round(averageRating * 10) / 10,
           categories,
-          recentFeedback: feedbackArray.slice(-5).reverse()
+          recentFeedback: []
         }
       });
     } catch (error) {
@@ -473,7 +482,7 @@ function buildApp(opts = {}) {
         });
       }
 
-      await writeFeedback(FEEDBACK_FILE, []);
+      await enqueueFeedbackMutation(() => writeFeedback(FEEDBACK_FILE, []));
 
       res.json({
         success: true,

@@ -948,7 +948,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               whileTap={{ scale: 0.98 }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(project.liveUrl, '_blank');
+                                window.open(project.liveUrl, '_blank', 'noopener,noreferrer');
                               }}
                               style={{ pointerEvents: 'auto' }}
                             >
@@ -962,7 +962,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ slug }) => {
                               whileTap={{ scale: 0.98 }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(project.githubUrl, '_blank');
+                                window.open(project.githubUrl, '_blank', 'noopener,noreferrer');
                               }}
                               style={{ pointerEvents: 'auto' }}
                             >
