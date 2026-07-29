@@ -75,7 +75,6 @@ jobs:
 
             # 2) Runtime data: symlink release data -> shared data (persists across deploys)
             mkdir -p /var/www/server-data/csv
-            chmod 700 /var/www/server-data /var/www/server-data/csv
             rm -rf \"\$DEPLOY_PATH/current/server/data\" || true
             ln -sfn /var/www/server-data \"\$DEPLOY_PATH/current/server/data\"
 
