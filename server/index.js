@@ -175,7 +175,7 @@ function buildApp(opts = {}) {
     PORT: env.PORT || 3001,
     MAX_FEEDBACK_ENTRIES: 500,
     MAX_FEEDBACK_AGE_DAYS: 90,
-    LLM_TIMEOUT_MS: 60000,
+    LLM_TIMEOUT_MS: 30000,
     LLM_API_URL: env.VITE_LLM_API_URL || 'https://integrate.api.nvidia.com/v1/chat/completions',
     LLM_TEMPERATURE: 0.5,
     LLM_MAX_TOKENS: 300,
