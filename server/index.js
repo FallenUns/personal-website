@@ -577,7 +577,9 @@ function buildApp(opts = {}) {
         clearTimeout(timeout);
 
         if (!response.ok) {
-          throw new Error(`LLM API error: ${response.status}`);
+          throw Object.assign(new Error(`LLM API error: ${response.status}`), {
+            upstreamStatus: response.status,
+          });
         }
 
         const data = await response.json();
@@ -595,9 +597,11 @@ function buildApp(opts = {}) {
       }
     } catch (error) {
       console.error('Error calling LLM API:', error);
-      res.status(500).json({
+      const upstreamStatus = Number.isInteger(error.upstreamStatus) ? error.upstreamStatus : undefined;
+      res.status(upstreamStatus ? 502 : 500).json({
         success: false,
-        message: 'Failed to process chat request'
+        message: upstreamStatus ? 'AI provider request failed' : 'Failed to process chat request',
+        ...(upstreamStatus && { upstreamStatus }),
       });
     }
   });

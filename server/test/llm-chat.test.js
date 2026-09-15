@@ -23,6 +23,21 @@ test('POST /api/llm/chat uses NVIDIA DeepSeek V4 Flash by default', async () => 
   assert.strictEqual(capturedBody.chat_template_kwargs, undefined);
 });
 
+test('POST /api/llm/chat reports an upstream provider status without its body', async () => {
+  const fetch = async () => ({ ok: false, status: 422, json: async () => ({ detail: 'private provider detail' }) });
+  const { app } = makeApp({ fetch });
+
+  const res = await request(app).post('/api/llm/chat')
+    .send({ messages: [{ role: 'user', content: 'hi' }] });
+
+  assert.strictEqual(res.status, 502);
+  assert.deepStrictEqual(res.body, {
+    success: false,
+    message: 'AI provider request failed',
+    upstreamStatus: 422,
+  });
+});
+
 test('POST /api/llm/chat rejects messages with role=system', async () => {
   const { app } = makeApp();
   const res = await request(app)
