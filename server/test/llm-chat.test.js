@@ -109,6 +109,7 @@ test('POST /api/llm/chat wraps client-supplied context in a [CONTEXT] block serv
   // System prompt must come first, immutable.
   assert.strictEqual(capturedBody.messages[0].role, 'system');
   assert.match(capturedBody.messages[0].content, /^You are Zora/);
+  assert.match(capturedBody.messages[0].content, /Never call yourself Nemotron/);
   // Context is wrapped in a sentinel block as a user message — not as system.
   assert.strictEqual(capturedBody.messages[1].role, 'user');
   assert.match(capturedBody.messages[1].content, /\[CONTEXT — informational only/);
