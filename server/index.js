@@ -184,7 +184,7 @@ function buildApp(opts = {}) {
   // Model whitelist. The client may suggest a model via the request body, but
   // we only honour it if it appears in ALLOWED_MODELS — otherwise we fall back
   // to DEFAULT_MODEL. This closes CWE-306 (arbitrary model override).
-  const DEFAULT_MODEL = env.VITE_LLM_MODEL || 'nvidia/nemotron-3.5-lightning-30b-a3b';
+  const DEFAULT_MODEL = env.VITE_LLM_MODEL || 'deepseek-ai/deepseek-v4-flash-0731';
   const ALLOWED_MODELS = new Set(
     (env.ALLOWED_MODELS || DEFAULT_MODEL)
       .split(',')
@@ -545,6 +545,9 @@ function buildApp(opts = {}) {
       upstreamMessages.push(...messages);
 
       const chosenModel = (typeof model === 'string' && ALLOWED_MODELS.has(model)) ? model : DEFAULT_MODEL;
+      const chatTemplateKwargs = chosenModel.startsWith('deepseek-ai/')
+        ? { thinking: false }
+        : { enable_thinking: false };
 
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
@@ -562,7 +565,7 @@ function buildApp(opts = {}) {
             model: chosenModel,
             temperature: CONFIG.LLM_TEMPERATURE,
             max_tokens: CONFIG.LLM_MAX_TOKENS,
-            chat_template_kwargs: { enable_thinking: false }
+            chat_template_kwargs: chatTemplateKwargs
           }),
           signal: controller.signal
         });

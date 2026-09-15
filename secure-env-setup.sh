@@ -64,7 +64,7 @@ prompt_secret "DATABASE_URL" "Database connection string (if using external data
 echo ""
 echo "LLM Service Configuration:"
 echo "VITE_LLM_API_URL=https://integrate.api.nvidia.com/v1/chat/completions" | sudo tee -a "$ENV_FILE" > /dev/null
-echo "VITE_LLM_MODEL=nvidia/nemotron-3.5-lightning-30b-a3b" | sudo tee -a "$ENV_FILE" > /dev/null
+echo "VITE_LLM_MODEL=deepseek-ai/deepseek-v4-flash-0731" | sudo tee -a "$ENV_FILE" > /dev/null
 
 echo ""
 echo "✅ Environment file created at $ENV_FILE"

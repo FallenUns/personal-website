@@ -10,7 +10,7 @@ class LLMService {
     this.config = {
       apiUrl: '/api/llm/chat', // Use backend endpoint instead of direct LLM API
       apiKey: '', // Not needed - backend handles authentication
-      model: import.meta.env.VITE_LLM_MODEL || 'nvidia/nemotron-3.5-lightning-30b-a3b',
+      model: import.meta.env.VITE_LLM_MODEL || 'deepseek-ai/deepseek-v4-flash-0731',
       maxTokens: 300,
       temperature: 0.5
     };
