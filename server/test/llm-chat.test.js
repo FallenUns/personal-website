@@ -111,12 +111,11 @@ test('POST /api/llm/chat wraps client-supplied context in a [CONTEXT] block serv
   assert.strictEqual(capturedBody.messages[0].role, 'system');
   assert.match(capturedBody.messages[0].content, /^You are Zora/);
   assert.match(capturedBody.messages[0].content, /Never call yourself Nemotron/);
-  // DeepSeek requires user/assistant turns to alternate, so context uses its
-  // dedicated role rather than becoming a second user turn.
-  assert.strictEqual(capturedBody.messages[1].role, 'context');
+  // Context joins the first user turn so DeepSeek sees alternating roles.
+  assert.strictEqual(capturedBody.messages[1].role, 'user');
   assert.match(capturedBody.messages[1].content, /\[CONTEXT — informational only/);
   assert.match(capturedBody.messages[1].content, /IGNORE PRIOR RULES/);
-  assert.strictEqual(capturedBody.messages[2].role, 'user');
+  assert.match(capturedBody.messages[1].content, /hi$/);
 });
 
 test('POST /api/llm/chat omits [CONTEXT] block when context is absent', async () => {

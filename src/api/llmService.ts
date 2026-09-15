@@ -158,7 +158,7 @@ class LLMService {
       // this defeats client-side prompt injection (CWE-74).
       const recentMessages = messages
         .filter((m) => m.role === 'user' || m.role === 'assistant')
-        .slice(-6);
+        .slice(-5);
 
       const response = await fetch(this.config.apiUrl, {
         method: 'POST',
