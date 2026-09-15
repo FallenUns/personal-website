@@ -51,7 +51,7 @@ echo ""
 echo "📝 Please provide the following environment variables:"
 
 # Prompt for sensitive variables
-prompt_secret "LLM_API_KEY" "GitHub Models Personal Access Token (for AI assistant)"
+prompt_secret "LLM_API_KEY" "NVIDIA NIM API key (for the AI assistant)"
 prompt_secret "SECRET_KEY" "Secret key for server operations (generate a random 64-character string)"
 
 # Optional variables
@@ -63,8 +63,8 @@ prompt_secret "DATABASE_URL" "Database connection string (if using external data
 # LLM Configuration (can be public)
 echo ""
 echo "LLM Service Configuration:"
-echo "VITE_LLM_API_URL=https://models.github.ai/inference/chat/completions" | sudo tee -a "$ENV_FILE" > /dev/null
-echo "VITE_LLM_MODEL=openai/gpt-4o-mini" | sudo tee -a "$ENV_FILE" > /dev/null
+echo "VITE_LLM_API_URL=https://integrate.api.nvidia.com/v1/chat/completions" | sudo tee -a "$ENV_FILE" > /dev/null
+echo "VITE_LLM_MODEL=nvidia/nemotron-3.5-lightning-30b-a3b" | sudo tee -a "$ENV_FILE" > /dev/null
 
 echo ""
 echo "✅ Environment file created at $ENV_FILE"

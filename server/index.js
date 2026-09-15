@@ -172,7 +172,7 @@ function buildApp(opts = {}) {
     MAX_FEEDBACK_ENTRIES: 500,
     MAX_FEEDBACK_AGE_DAYS: 90,
     LLM_TIMEOUT_MS: 30000,
-    LLM_API_URL: env.VITE_LLM_API_URL || 'https://models.inference.ai.azure.com/chat/completions',
+    LLM_API_URL: env.VITE_LLM_API_URL || 'https://integrate.api.nvidia.com/v1/chat/completions',
     LLM_TEMPERATURE: 0.5,
     LLM_MAX_TOKENS: 300,
   };
@@ -180,7 +180,7 @@ function buildApp(opts = {}) {
   // Model whitelist. The client may suggest a model via the request body, but
   // we only honour it if it appears in ALLOWED_MODELS — otherwise we fall back
   // to DEFAULT_MODEL. This closes CWE-306 (arbitrary model override).
-  const DEFAULT_MODEL = env.VITE_LLM_MODEL || 'openai/gpt-4.1-mini';
+  const DEFAULT_MODEL = env.VITE_LLM_MODEL || 'nvidia/nemotron-3.5-lightning-30b-a3b';
   const ALLOWED_MODELS = new Set(
     (env.ALLOWED_MODELS || DEFAULT_MODEL)
       .split(',')
@@ -557,7 +557,8 @@ function buildApp(opts = {}) {
             messages: upstreamMessages,
             model: chosenModel,
             temperature: CONFIG.LLM_TEMPERATURE,
-            max_tokens: CONFIG.LLM_MAX_TOKENS
+            max_tokens: CONFIG.LLM_MAX_TOKENS,
+            chat_template_kwargs: { enable_thinking: false }
           }),
           signal: controller.signal
         });

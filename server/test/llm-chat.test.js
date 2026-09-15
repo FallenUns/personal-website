@@ -3,6 +3,25 @@ const assert = require('node:assert');
 const request = require('supertest');
 const { makeApp } = require('./helpers');
 
+test('POST /api/llm/chat uses NVIDIA Nemotron Lightning by default', async () => {
+  let capturedUrl;
+  let capturedBody;
+  const fetch = async (url, opts) => {
+    capturedUrl = url;
+    capturedBody = JSON.parse(opts.body);
+    return { ok: true, status: 200, json: async () => ({ choices: [{ message: { content: 'ok' } }] }) };
+  };
+  const { app } = makeApp({ fetch });
+
+  await request(app).post('/api/llm/chat')
+    .send({ messages: [{ role: 'user', content: 'hi' }] })
+    .expect(200);
+
+  assert.strictEqual(capturedUrl, 'https://integrate.api.nvidia.com/v1/chat/completions');
+  assert.strictEqual(capturedBody.model, 'nvidia/nemotron-3.5-lightning-30b-a3b');
+  assert.deepStrictEqual(capturedBody.chat_template_kwargs, { enable_thinking: false });
+});
+
 test('POST /api/llm/chat rejects messages with role=system', async () => {
   const { app } = makeApp();
   const res = await request(app)
