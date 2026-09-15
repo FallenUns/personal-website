@@ -38,6 +38,27 @@ test('POST /api/llm/chat reports an upstream provider status without its body', 
   });
 });
 
+test('POST /api/llm/chat falls back to Lightning when DeepSeek is unavailable', async () => {
+  const requestedModels = [];
+  const fetch = async (_url, opts) => {
+    const body = JSON.parse(opts.body);
+    requestedModels.push(body.model);
+    if (requestedModels.length === 1) return { ok: false, status: 503 };
+    return { ok: true, status: 200, json: async () => ({ choices: [{ message: { content: 'fallback response' } }] }) };
+  };
+  const { app } = makeApp({ fetch });
+
+  const res = await request(app).post('/api/llm/chat')
+    .send({ messages: [{ role: 'user', content: 'hi' }] });
+
+  assert.strictEqual(res.status, 200);
+  assert.deepStrictEqual(requestedModels, [
+    'deepseek-ai/deepseek-v4-flash-0731',
+    'nvidia/nemotron-3.5-lightning-30b-a3b',
+  ]);
+  assert.strictEqual(res.body.data.choices[0].message.content, 'fallback response');
+});
+
 test('POST /api/llm/chat rejects messages with role=system', async () => {
   const { app } = makeApp();
   const res = await request(app)

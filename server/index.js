@@ -549,52 +549,58 @@ function buildApp(opts = {}) {
       upstreamMessages.push(...contextualMessages);
 
       const chosenModel = (typeof model === 'string' && ALLOWED_MODELS.has(model)) ? model : DEFAULT_MODEL;
-      const modelOptions = chosenModel.startsWith('deepseek-ai/')
-        ? { reasoning_effort: 'none' }
-        : { chat_template_kwargs: { enable_thinking: false } };
+      const callModel = async (selectedModel) => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), CONFIG.LLM_TIMEOUT_MS);
+        const modelOptions = selectedModel.startsWith('deepseek-ai/')
+          ? { reasoning_effort: 'none' }
+          : { chat_template_kwargs: { enable_thinking: false } };
 
-      // Add timeout to prevent hanging requests
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), CONFIG.LLM_TIMEOUT_MS);
-
-      try {
-        const response = await fetch(CONFIG.LLM_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.LLM_API_KEY}`
-          },
-          body: JSON.stringify({
-            messages: upstreamMessages,
-            model: chosenModel,
-            temperature: CONFIG.LLM_TEMPERATURE,
-            max_tokens: CONFIG.LLM_MAX_TOKENS,
-            ...modelOptions
-          }),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeout);
-
-        if (!response.ok) {
-          throw Object.assign(new Error(`LLM API error: ${response.status}`), {
-            upstreamStatus: response.status,
+        try {
+          const response = await fetch(CONFIG.LLM_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${env.LLM_API_KEY}`
+            },
+            body: JSON.stringify({
+              messages: upstreamMessages,
+              model: selectedModel,
+              temperature: CONFIG.LLM_TEMPERATURE,
+              max_tokens: CONFIG.LLM_MAX_TOKENS,
+              ...modelOptions
+            }),
+            signal: controller.signal
           });
-        }
 
-        const data = await response.json();
-        if (data?.usage?.total_tokens) recordTokens(data.usage.total_tokens);
-        res.json({
-          success: true,
-          data
-        });
-      } catch (fetchError) {
-        clearTimeout(timeout);
-        if (fetchError.name === 'AbortError') {
-          throw new Error('Request timeout');
+          if (!response.ok) {
+            throw Object.assign(new Error(`LLM API error: ${response.status}`), {
+              upstreamStatus: response.status,
+            });
+          }
+
+          return response.json();
+        } catch (fetchError) {
+          if (fetchError.name === 'AbortError') throw new Error('Request timeout');
+          throw fetchError;
+        } finally {
+          clearTimeout(timeout);
         }
-        throw fetchError;
+      };
+
+      let data;
+      try {
+        data = await callModel(chosenModel);
+      } catch (error) {
+        if (!chosenModel.startsWith('deepseek-ai/')) throw error;
+        data = await callModel('nvidia/nemotron-3.5-lightning-30b-a3b');
       }
+
+      if (data?.usage?.total_tokens) recordTokens(data.usage.total_tokens);
+      res.json({
+        success: true,
+        data
+      });
     } catch (error) {
       console.error('Error calling LLM API:', error);
       const upstreamStatus = Number.isInteger(error.upstreamStatus) ? error.upstreamStatus : undefined;
