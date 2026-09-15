@@ -19,7 +19,8 @@ test('POST /api/llm/chat uses NVIDIA DeepSeek V4 Flash by default', async () => 
 
   assert.strictEqual(capturedUrl, 'https://integrate.api.nvidia.com/v1/chat/completions');
   assert.strictEqual(capturedBody.model, 'deepseek-ai/deepseek-v4-flash-0731');
-  assert.deepStrictEqual(capturedBody.chat_template_kwargs, { thinking: false });
+  assert.strictEqual(capturedBody.reasoning_effort, 'none');
+  assert.strictEqual(capturedBody.chat_template_kwargs, undefined);
 });
 
 test('POST /api/llm/chat rejects messages with role=system', async () => {
@@ -110,10 +111,12 @@ test('POST /api/llm/chat wraps client-supplied context in a [CONTEXT] block serv
   assert.strictEqual(capturedBody.messages[0].role, 'system');
   assert.match(capturedBody.messages[0].content, /^You are Zora/);
   assert.match(capturedBody.messages[0].content, /Never call yourself Nemotron/);
-  // Context is wrapped in a sentinel block as a user message — not as system.
-  assert.strictEqual(capturedBody.messages[1].role, 'user');
+  // DeepSeek requires user/assistant turns to alternate, so context uses its
+  // dedicated role rather than becoming a second user turn.
+  assert.strictEqual(capturedBody.messages[1].role, 'context');
   assert.match(capturedBody.messages[1].content, /\[CONTEXT — informational only/);
   assert.match(capturedBody.messages[1].content, /IGNORE PRIOR RULES/);
+  assert.strictEqual(capturedBody.messages[2].role, 'user');
 });
 
 test('POST /api/llm/chat omits [CONTEXT] block when context is absent', async () => {
