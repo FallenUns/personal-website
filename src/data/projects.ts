@@ -148,7 +148,7 @@ export const projects: Project[] = [
     category: 'Mobile',
     slug: 'reffy',
     fullDescription:
-      'Reffy is a mobile companion for casual sports sessions where the hardest part is usually not the game, but organizing fair teams, rotating sit-outs, tracking scores, and keeping everyone bought into the leaderboard. The app lets a host add players, choose a sport and format, auto-pair balanced teams every round using player ratings, enter scores per court, and carry persistent Elo ratings across sessions. The newer connected version adds accounts, cloud backup, profiles, clubs, live rooms, QR/deep-link flows, and a PlayReffy landing site so regular groups can keep their roster, ratings, and match history moving across devices.',
+      'Reffy helps groups run sports sessions with fair teams, player rotations, offline scoring, local Elo leaderboards and shareable recaps. Hosts can set up a sport and format, pair teams each round, record scores per court and keep session history on the device. Connected accounts and profiles add live rooms with QR joining and cloud backup. Ranked results affect official account ratings only after participant confirmation; local and unrated results remain separate. On supported iPhones, Live Activities show active match progress. The companion Astro website at playreffy.com introduces the app and supports invite and share links.',
     images: [
       '/reffy-session-score-recap.webp',
       '/reffy-rank-live.webp',
@@ -171,23 +171,23 @@ export const projects: Project[] = [
       'Live per-court scoring with match timer support, autosave flows, round editing, and end-of-session confirmation',
       'Ranked results require participant confirmation before they affect official account ratings',
       'Live Activities show active match progress on supported iPhones',
-      'Persistent Elo and Glicko-style ranked ratings with leaderboards, player profiles, trends, and match history',
+      'Local Elo leaderboards, player profiles and match history',
       'Shareable recap cards, player cards, QR invites, profile claims, and deep-link fallbacks through playreffy.com',
-      'Cloud backup and sync with Supabase-backed accounts, device identity, outbox handling, clubs, rooms, and online profile parity',
-      'Companion Astro marketing site with App Store links, deep-link routes, legal pages, and product mockups',
+      'Cloud backup and sync for connected accounts and profiles while local scoring remains available offline',
+      'Companion Astro website with product pages, deep-link routes, legal pages and product mockups',
       'Parallel SwiftUI iOS exploration with native design-system components, repositories, session screens, and scoring tests'
     ],
     challenges: [
       'Designing pairing logic that balances competitive fairness, randomness, sit-out equity, and avoiding repeated teammates or opponents',
       'Keeping score entry fast enough for real games while preserving editability, validation, and session history',
       'Building offline-first local storage with SQLite and Zustand, then layering cloud backup and sync without breaking local play',
-      'Coordinating deep links, QR scanning, rooms, clubs, profile claims, and App Store fallbacks across native and web surfaces',
+      'Coordinating deep links, QR scanning, live rooms, profile claims and app install fallbacks across native and web surfaces',
       'Creating a sports-focused interface with large tap targets, readable live states, shareable visuals, and consistent branding'
     ],
     outcomes: [
       'Built a substantial Expo/React Native mobile product that handles session setup, scoring, ratings, profiles, sharing, and sync',
-      'Created a clear PlayReffy landing site and deep-link system for installation, profile claims, club joins, and room invites',
-      'Developed broad automated coverage across scoring, pairing, sessions, sync, rooms, clubs, profiles, backup, and app bootstrap behavior',
+      'Created a PlayReffy landing site and deep-link system for installation, profile claims and room invites',
+      'Developed automated coverage across scoring, pairing, sessions, sync, rooms, profiles, backup and app bootstrap behavior',
       'Produced a reusable design language around the Reffy bullseye mark, sport-first cards, rounded controls, and readable stat surfaces'
     ]
   },
