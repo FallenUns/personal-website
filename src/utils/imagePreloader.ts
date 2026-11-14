@@ -6,18 +6,21 @@ const isVideoFile = (src: string): boolean => {
   return /\.(mp4|webm|mov)$/i.test(src);
 };
 
+// Images used by the first screen; project and experience media load on demand.
+export const getCriticalImages = (): string[] => [
+  '/Subject.webp',
+  '/react-logo.png',
+  '/python-logo.png',
+  '/js-logo.png',
+  '/tensorflow-logo.png',
+  '/r-logo.png',
+  '/sql-logo.png',
+  '/logo.png'
+];
+
 // Collect all images used throughout the application
 export const getAllImages = (): string[] => {
-  const heroImages = [
-    '/Subject.png',
-    '/react-logo.png',
-    '/python-logo.png',
-    '/js-logo.png',
-    '/tensorflow-logo.png',
-    '/r-logo.png',
-    '/sql-logo.png',
-    '/logo.png'
-  ];
+  const heroImages = getCriticalImages();
 
   // Collect project images from data (excluding videos)
   const projectImages: string[] = [];

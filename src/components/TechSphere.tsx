@@ -162,7 +162,7 @@ const TechSphere: React.FC = () => {
           
           {/* Portrait Image */}
           <motion.img
-            src="/Subject.png" alt="Patrick Adrianus"
+            src="/Subject.webp" alt="Patrick Adrianus"
             initial={{ clipPath: 'inset(0% 50% 0% 50%)' }}
             animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
             transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}

@@ -149,14 +149,28 @@ export const projects: Project[] = [
     slug: 'reffy',
     fullDescription:
       'Reffy is a mobile companion for casual sports sessions where the hardest part is usually not the game, but organizing fair teams, rotating sit-outs, tracking scores, and keeping everyone bought into the leaderboard. The app lets a host add players, choose a sport and format, auto-pair balanced teams every round using player ratings, enter scores per court, and carry persistent ELO ratings across sessions. The newer connected version adds accounts, cloud backup, profiles, clubs, live rooms, QR/deep-link flows, and a PlayReffy landing site so regular groups can keep their roster, ratings, and match history moving across devices.',
-    images: ['/reffy-logo-dark.svg'],
-    imageCaptions: ['Reffy bullseye logo used across the app and PlayReffy landing site.'],
+    images: [
+      '/reffy-session-score-recap.webp',
+      '/reffy-rank-live.webp',
+      '/reffy-rules-share.webp',
+      '/reffy-website.webp',
+      '/reffy-logo-dark.svg'
+    ],
+    imageCaptions: [
+      'Set up a session, record scores live and see the final recap.',
+      'Player rankings, live room joining and a Live Activity.',
+      'Sport rules, shareable results and the session leaderboard.',
+      'The Reffy website at playreffy.com.',
+      'Reffy bullseye logo used across the app and website.'
+    ],
     liveUrl: 'https://playreffy.com',
     githubUrl: '#',
     features: [
       'Auto-balanced team pairing for every round using player ratings, recent partner history, opponent history, and fair sit-out rotation',
       'Flexible session setup for sports and formats such as badminton, pickleball, basketball, FIFA, singles, doubles, and larger team sizes',
       'Live per-court scoring with match timer support, autosave flows, round editing, and end-of-session confirmation',
+      'Ranked results require participant confirmation before they affect official account ratings',
+      'Live Activities show active match progress on supported iPhones',
       'Persistent ELO and Glicko-style ranked ratings with leaderboards, player profiles, trends, and match history',
       'Shareable recap cards, player cards, QR invites, profile claims, and deep-link fallbacks through playreffy.com',
       'Cloud backup and sync with Supabase-backed accounts, device identity, outbox handling, clubs, rooms, and online profile parity',
@@ -221,7 +235,7 @@ export const projects: Project[] = [
     slug: 'software-engineering-project',
     fullDescription:
       'Research + production-minded pipeline that collects Stack Overflow posts (2020–2024), filters candidates with rule-based heuristics, and evaluates LLMs (GPT-4o, DeepSeek) across zero-shot, few-shot, and chain-of-thought prompts. Includes manual annotation, metrics, and a small API/dashboard for triage.',
-    images: ['/Subject.png'],
+    images: ['/Subject.webp'],
     liveUrl: '#',
     githubUrl: 'https://github.com/FallenUns/Detecting-Privacy-Violation-using-LLM',
     features: [

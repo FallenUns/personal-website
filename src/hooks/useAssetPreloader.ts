@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLoading } from '../contexts/LoadingContext';
-import { preloadAllMedia } from '../utils/imagePreloader';
+import { getCriticalImages, preloadImage } from '../utils/imagePreloader';
 
 interface UseAssetPreloaderOptions {
   images?: string[];
@@ -13,10 +13,9 @@ interface UseAssetPreloaderOptions {
 // Cache for loaded assets to prevent reloading
 const assetCache = new Set<string>();
 
-type MediaPreloadResult = Awaited<ReturnType<typeof preloadAllMedia>>;
 type MediaProgressListener = (loaded: number, total: number, currentAsset: string) => void;
 
-let mediaPreloadPromise: Promise<MediaPreloadResult> | null = null;
+let mediaPreloadPromise: Promise<void> | null = null;
 let mediaPreloadSnapshot: { loaded: number; total: number; currentAsset: string } | null = null;
 const mediaProgressListeners = new Set<MediaProgressListener>();
 
@@ -27,12 +26,20 @@ const notifyMediaProgress = (loaded: number, total: number, currentAsset: string
 
 const ensureMediaPreload = () => {
   if (!mediaPreloadPromise) {
-    mediaPreloadPromise = preloadAllMedia(notifyMediaProgress);
+    const images = getCriticalImages();
+    let completed = 0;
+    mediaPreloadPromise = Promise.allSettled(images.map(async (src) => {
+      try {
+        await preloadImage(src);
+      } finally {
+        notifyMediaProgress(++completed, images.length, src);
+      }
+    })).then(() => {});
   }
   return mediaPreloadPromise;
 };
 
-// Hook for comprehensive image preloading using the new image preloader
+// Wait only for first-screen images. Detail media loads when opened.
 export const useImagePreloader = () => {
   const { registerLoader, markLoaded, setCustomProgress } = useLoading();
   const didMarkLoadedRef = useRef(false);
@@ -58,13 +65,13 @@ export const useImagePreloader = () => {
         mediaPreloadSnapshot.currentAsset
       );
     } else {
-      console.log('🚀 Starting comprehensive media preloading (images + videos)...');
+      console.log('🚀 Starting first-screen image preloading...');
     }
 
     ensureMediaPreload().then(() => {
       if (cancelled || didMarkLoadedRef.current) return;
       didMarkLoadedRef.current = true;
-      console.log('🎉 All media (images + videos) preloaded successfully!');
+      console.log('🎉 First-screen images preloaded!');
       markLoaded('image-preloader');
     }).catch((error) => {
       if (cancelled || didMarkLoadedRef.current) return;

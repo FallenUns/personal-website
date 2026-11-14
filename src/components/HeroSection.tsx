@@ -863,7 +863,7 @@ const HeroProfileCard: React.FC<{ variant: 'desktop' | 'mobile' }> = ({ variant 
     mode="shader"
   >
     <PreloadedImage
-      src="/Subject.png"
+      src="/Subject.webp"
       alt="Patrick's Portrait"
       className="hero-profile-glass__image"
     />

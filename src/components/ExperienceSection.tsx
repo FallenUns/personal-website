@@ -18,7 +18,8 @@ import { StickySectionBackground } from './visuals/SectionBackground';
 import {
   experiences,
   formatPeriod,
-  diffMonths
+  diffMonths,
+  countCoveredMonths
 } from '../data/experiences';
 import type {
   Experience
@@ -853,7 +854,7 @@ const ExperienceSection: React.FC = () => {
   };
 
   // Calculate total experience metrics for the header
-  const totalMonths = sorted.reduce((acc, exp) => acc + diffMonths(exp.start, exp.end), 0);
+  const totalMonths = React.useMemo(() => countCoveredMonths(sorted), [sorted]);
   const totalSkills = new Set(sorted.flatMap(exp => exp.skills)).size;
   const totalProjects = sorted.length;
 

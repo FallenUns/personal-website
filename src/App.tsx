@@ -15,9 +15,6 @@ import FilmGrain from './components/FilmGrain';
 import CameraWheel from './components/CameraWheel';
 import ProjectsSection from './components/ProjectsSection';
 import ExperienceSection from './components/ExperienceSection';
-import ExperienceDetail from './components/ExperienceDetail';
-import ProjectDetail from './components/ProjectDetail';
-import BirthdayPage from './components/BirthdayPage';
 import Navbar from './components/NavBar';
 import Contact from './components/Contact';
 import DustToOrbLoader from './components/DustToOrbLoader';
@@ -28,8 +25,40 @@ import { GlobalFeedbackShortcut } from './components/GlobalFeedbackShortcut';
 import TerminalHud from './components/TerminalHud';
 import { websiteControlService } from './api/controlService';
 import { scrollToSection } from './utils/navigation';
-import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug, isBirthdayPage } from './utils/router';
+import { getCurrentPath, isProjectDetailPage, getProjectSlug, isExperienceDetailPage, getExperienceSlug, isBirthdayPage, navigateBack, navigateTo } from './utils/router';
 import './components/performance.css';
+
+const ExperienceDetail = React.lazy(() => import('./components/ExperienceDetail'));
+const ProjectDetail = React.lazy(() => import('./components/ProjectDetail'));
+const BirthdayPage = React.lazy(() => import('./components/BirthdayPage'));
+
+const leaveBirthdayPage = () => navigateTo('/');
+
+const PageLoadingFallback: React.FC<{ label: string; onBack: () => void }> = ({ label, onBack }) => {
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onBack();
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, [onBack]);
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4 rounded-2xl bg-slate-950/90 border border-white/10 text-white">
+      <p role="status" aria-live="polite" className="text-sm text-white/80">Loading {label}…</p>
+      <button
+        type="button"
+        onClick={onBack}
+        className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Back
+      </button>
+    </div>
+  );
+};
 
 // Function to get the background color based on the hour
 const getLoaderBackgroundColor = (hour: number) => {
@@ -346,7 +375,9 @@ const AppContent: React.FC = () => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
               <div className="w-full h-full">
-                <ProjectDetail slug={projectSlug || undefined} />
+                <React.Suspense fallback={<PageLoadingFallback label="project" onBack={navigateBack} />}>
+                  <ProjectDetail slug={projectSlug || undefined} />
+                </React.Suspense>
               </div>
             </motion.div>
           )}
@@ -363,7 +394,9 @@ const AppContent: React.FC = () => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
               <div className="w-full h-full">
-                <ExperienceDetail slug={experienceSlug || undefined} />
+                <React.Suspense fallback={<PageLoadingFallback label="experience" onBack={navigateBack} />}>
+                  <ExperienceDetail slug={experienceSlug || undefined} />
+                </React.Suspense>
               </div>
             </motion.div>
           )}
@@ -379,7 +412,9 @@ const AppContent: React.FC = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              <BirthdayPage />
+              <React.Suspense fallback={<PageLoadingFallback label="birthday page" onBack={leaveBirthdayPage} />}>
+                <BirthdayPage />
+              </React.Suspense>
             </motion.div>
           )}
         </AnimatePresence>

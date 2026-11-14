@@ -40,7 +40,80 @@ export const diffMonths = (start: Experience['start'], end?: Experience['end']) 
   return (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth()) + 1;
 };
 
+export const countCoveredMonths = (
+  entries: Pick<Experience, 'start' | 'end'>[],
+  today = new Date()
+) => {
+  const coveredMonths = new Set<number>();
+  const currentMonth = today.getFullYear() * 12 + today.getMonth() + 1;
+  entries.forEach(({ start, end }) => {
+    const first = start.year * 12 + start.month;
+    const last = end ? end.year * 12 + end.month : currentMonth;
+    for (let month = first; month <= last; month++) coveredMonths.add(month);
+  });
+  return coveredMonths.size;
+};
+
 export const experiences: Experience[] = [
+  {
+    id: 'duplex-software-engineer',
+    role: 'Junior Software Engineer',
+    company: 'Duplex',
+    start: { year: 2026, month: 9 },
+    location: 'Northcote, Melbourne · Part-time',
+    category: 'Full‑Stack',
+    skills: ['Automation', 'AI-assisted workflows', 'CRM integration', 'Email', 'SMS', 'Telephony', 'Testing'],
+    highlights: [
+      'Develop AI-assisted automation for email, web, SMS and phone enquiries, with CRM matching and staff review for uncertain cases',
+      'Built internal review dashboards with unified customer search, queue visibility and access controls',
+      'Integrated 36 website forms into a shared enquiry workflow and improved classification and duplicate handling using staff review feedback',
+      'Hardened email, SMS and telephony integrations with validation, recovery, regression tests and documented deployment checks'
+    ],
+    fullDescription:
+      'Part-time Junior Software Engineer at Duplex, developing enquiry automation and internal tools that help staff review customer requests across web, email, SMS and phone channels.',
+    responsibilities: [
+      'Develop AI-assisted enquiry workflows with CRM matching and staff review for uncertain cases',
+      'Build internal dashboards for customer search, review queues and access controls',
+      'Maintain website form, email, SMS and telephony integrations with validation, recovery and regression checks'
+    ],
+    achievements: [
+      'Integrated 36 website forms into a shared enquiry workflow',
+      'Built internal review dashboards with unified customer search and queue visibility'
+    ],
+    impact: [
+      'Improved enquiry classification and duplicate handling using staff review feedback',
+      'Strengthened integration reliability through validation, recovery and documented deployment checks'
+    ]
+  },
+  {
+    id: 'reffy-founder',
+    role: 'Founder',
+    company: 'Reffy',
+    start: { year: 2026, month: 5 },
+    category: 'Full‑Stack',
+    skills: ['Product Design', 'React Native', 'Expo', 'TypeScript', 'SQLite', 'Supabase', 'Astro'],
+    highlights: [
+      'Founded Reffy and led product design, mobile development, testing, release preparation and technical operations',
+      'Built fair team generation, player rotations, offline scoring and Elo leaderboards using React Native/Expo, SQLite and Supabase',
+      'Developed live rooms, shareable session recaps and the Astro website at playreffy.com'
+    ],
+    fullDescription:
+      'Founded Reffy, a sports session app for making fair teams, rotating players, recording scores and sharing results. I lead its product design, mobile development, testing, release preparation and technical operations.',
+    responsibilities: [
+      'Design and develop the Reffy mobile app and its offline-first scoring flow',
+      'Build fair team generation, player rotations, Elo leaderboards and live rooms',
+      'Develop shareable session recaps and the companion Astro website'
+    ],
+    achievements: [
+      'Built offline scoring, fair team generation and Elo leaderboards',
+      'Developed live rooms, session recaps and playreffy.com'
+    ],
+    impact: [
+      'Bring team organization, live scoring and results into one sports session flow'
+    ],
+    links: [{ label: 'Visit Reffy', url: 'https://playreffy.com' }],
+    photos: [{ url: '/reffy-session-score-recap.webp', caption: 'Reffy session setup, live scoring and recap screens' }]
+  },
   {
     id: 'ios-hackathon-2025',
     role: 'Hackathon Participant – App Prototype "Cliniwatch"',
