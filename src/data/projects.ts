@@ -132,7 +132,7 @@ export const projects: Project[] = [
   {
     id: 1,
     title: 'Reffy',
-    description: 'A mobile app for running casual sports nights with auto-balanced teams, live scoring, fair sit-out rotation, and persistent ELO leaderboards.',
+    description: 'Reffy helps groups run sports sessions with fair teams, player rotations, offline scoring and Elo leaderboards.',
     mockupType: 'ui-ux',
     technologies: [
       'Expo',
@@ -148,7 +148,7 @@ export const projects: Project[] = [
     category: 'Mobile',
     slug: 'reffy',
     fullDescription:
-      'Reffy is a mobile companion for casual sports sessions where the hardest part is usually not the game, but organizing fair teams, rotating sit-outs, tracking scores, and keeping everyone bought into the leaderboard. The app lets a host add players, choose a sport and format, auto-pair balanced teams every round using player ratings, enter scores per court, and carry persistent ELO ratings across sessions. The newer connected version adds accounts, cloud backup, profiles, clubs, live rooms, QR/deep-link flows, and a PlayReffy landing site so regular groups can keep their roster, ratings, and match history moving across devices.',
+      'Reffy is a mobile companion for casual sports sessions where the hardest part is usually not the game, but organizing fair teams, rotating sit-outs, tracking scores, and keeping everyone bought into the leaderboard. The app lets a host add players, choose a sport and format, auto-pair balanced teams every round using player ratings, enter scores per court, and carry persistent Elo ratings across sessions. The newer connected version adds accounts, cloud backup, profiles, clubs, live rooms, QR/deep-link flows, and a PlayReffy landing site so regular groups can keep their roster, ratings, and match history moving across devices.',
     images: [
       '/reffy-session-score-recap.webp',
       '/reffy-rank-live.webp',
@@ -171,7 +171,7 @@ export const projects: Project[] = [
       'Live per-court scoring with match timer support, autosave flows, round editing, and end-of-session confirmation',
       'Ranked results require participant confirmation before they affect official account ratings',
       'Live Activities show active match progress on supported iPhones',
-      'Persistent ELO and Glicko-style ranked ratings with leaderboards, player profiles, trends, and match history',
+      'Persistent Elo and Glicko-style ranked ratings with leaderboards, player profiles, trends, and match history',
       'Shareable recap cards, player cards, QR invites, profile claims, and deep-link fallbacks through playreffy.com',
       'Cloud backup and sync with Supabase-backed accounts, device identity, outbox handling, clubs, rooms, and online profile parity',
       'Companion Astro marketing site with App Store links, deep-link routes, legal pages, and product mockups',

@@ -60,7 +60,7 @@ export const experiences: Experience[] = [
     role: 'Junior Software Engineer',
     company: 'Duplex',
     start: { year: 2026, month: 9 },
-    location: 'Northcote, Melbourne · Part-time',
+    location: 'Northcote, Melbourne · On-site · Part-time',
     category: 'Full‑Stack',
     skills: ['Automation', 'AI-assisted workflows', 'CRM integration', 'Email', 'SMS', 'Telephony', 'Testing'],
     highlights: [
@@ -90,6 +90,7 @@ export const experiences: Experience[] = [
     role: 'Founder',
     company: 'Reffy',
     start: { year: 2026, month: 5 },
+    location: 'Melbourne, Victoria, Australia · On-site · Self-employed',
     category: 'Full‑Stack',
     skills: ['Product Design', 'React Native', 'Expo', 'TypeScript', 'SQLite', 'Supabase', 'Astro'],
     highlights: [
