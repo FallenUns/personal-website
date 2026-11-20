@@ -1,5 +1,4 @@
-import React, { memo } from 'react';
-import { motion } from 'framer-motion';
+import { memo } from 'react';
 import {
   BarChart,
   Bar,
@@ -19,11 +18,10 @@ import {
   ScatterChart,
   Scatter
 } from 'recharts';
-import type { ChartConfig } from '../data/projects';
+import type { ChartConfig } from '../content/types';
 
 interface InteractiveChartProps {
   config: ChartConfig;
-  className?: string;
 }
 
 // Type definitions for recharts custom components
@@ -86,10 +84,10 @@ const renderCustomizedLabel = ({
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-3 shadow-lg">
-        <p className="text-white/90 font-medium mb-2">{label}</p>
+      <div className="chart-tip">
+        <p><strong>{label}</strong></p>
         {payload.map((entry: TooltipPayloadItem, index: number) => (
-          <p key={index} style={{ color: entry.color }} className="text-sm">
+          <p key={index} style={{ color: entry.color }}>
             {`${entry.dataKey}: ${entry.value}`}
           </p>
         ))}
@@ -102,31 +100,27 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 // Custom legend with dark theme
 const CustomLegend = ({ payload }: CustomLegendProps) => {
   return (
-    <div className="flex justify-center gap-4 mt-4">
+    <div className="chart-legend">
       {payload?.map((entry: LegendPayloadItem, index: number) => (
-        <div key={index} className="flex items-center gap-2">
-          <div 
-            className="w-3 h-3 rounded-sm" 
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-white/80 text-sm capitalize">{entry.value}</span>
-        </div>
+        <span key={index}>
+          <i style={{ backgroundColor: entry.color }} />
+          {entry.value}
+        </span>
       ))}
     </div>
   );
 };
 
-const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className = '' }) => {
+const InteractiveChart = ({ config }: InteractiveChartProps) => {
   const {
     type,
     title,
     data,
     xAxisKey,
     yAxisKeys,
-    colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316'],
-    width = 500,
-    height = 300
+    colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316']
   } = config;
+  const height = 300;
 
   const chartColors = colors.length >= yAxisKeys.length ? colors : [
     ...colors,
@@ -143,21 +137,21 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className =
       case 'bar':
         return (
           <BarChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.12} />
             <XAxis 
               dataKey={xAxisKey} 
-              stroke="rgba(255,255,255,0.7)"
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={10}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
               interval={0}
               angle={-35}
               textAnchor="end"
               height={60}
             />
             <YAxis 
-              stroke="rgba(255,255,255,0.7)"
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={10}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
@@ -177,17 +171,17 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className =
       case 'line':
         return (
           <LineChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.12} />
             <XAxis 
               dataKey={xAxisKey} 
-              stroke="rgba(255,255,255,0.7)"
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={10}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
             />
             <YAxis 
-              stroke="rgba(255,255,255,0.7)"
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={10}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
@@ -218,17 +212,17 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className =
                 </linearGradient>
               ))}
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.12} />
             <XAxis 
               dataKey={xAxisKey} 
-              stroke="rgba(255,255,255,0.7)"
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={12}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
             />
             <YAxis 
-              stroke="rgba(255,255,255,0.7)"
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={12}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
@@ -248,7 +242,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className =
           </AreaChart>
         );
 
-      case 'pie':
+      case 'pie': {
         const pieData = data.map((item, index) => ({
           ...item,
           value: item[yAxisKeys[0]] as number,
@@ -263,7 +257,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className =
               cy="50%"
               labelLine={false}
               label={renderCustomizedLabel}
-              outerRadius={Math.min(width, height) * 0.3}
+              outerRadius={height * 0.3}
               fill="#8884d8"
               dataKey="value"
               animationDuration={1000}
@@ -276,21 +270,29 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className =
             <Legend content={<CustomLegend />} />
           </PieChart>
         );
+      }
 
       case 'scatter':
         return (
           <ScatterChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.12} />
             <XAxis 
-              dataKey={xAxisKey} 
-              stroke="rgba(255,255,255,0.7)"
+              dataKey={xAxisKey}
+              type="number"
+              name={xAxisKey}
+              domain={[(min: number) => Math.floor(min - 2), (max: number) => Math.ceil(max + 2)]} 
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={12}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
             />
             <YAxis 
-              stroke="rgba(255,255,255,0.7)"
+              type="number"
+              dataKey={yAxisKeys[0]}
+              name={yAxisKeys[0]}
+              domain={[(min: number) => Math.floor(min - 2), (max: number) => Math.ceil(max + 2)]}
+              stroke="currentColor" strokeOpacity={0.5}
               fontSize={12}
-              tick={{ fill: 'rgba(255,255,255,0.7)' }}
+              tick={{ fill: 'currentColor', fillOpacity: 0.75 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
@@ -305,27 +307,19 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({ config, className =
         );
 
       default:
-        return <div className="text-white/60">Unsupported chart type: {type}</div>;
+        return <p>Unsupported chart type: {type}</p>;
     }
   };
 
   return (
-    <motion.div 
-      className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 ${className}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-      </div>
-      
-      <div className="w-full overflow-hidden" style={{ height: Math.min(height, 300) }}>
+    <figure className="chart">
+      <figcaption>{title}</figcaption>
+      <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           {renderChart()}
         </ResponsiveContainer>
       </div>
-    </motion.div>
+    </figure>
   );
 };
 

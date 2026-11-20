@@ -1,26 +1,18 @@
-export interface FeedbackData {
-  id?: string;
-  name: string;
-  email: string;
-  rating: number; // 1-5 stars
-  category: 'design' | 'content' | 'functionality' | 'performance' | 'general';
-  message: string;
-  timestamp: Date;
-  userAgent?: string;
-  referrer?: string;
-}
-
 export interface FeedbackFormData {
   name: string;
   email: string;
-  rating: number;
-  category: FeedbackData['category'];
+  rating: number; // 1-5
+  category: 'design' | 'content' | 'functionality' | 'performance' | 'general';
   message: string;
+}
+
+/** A stored entry as the server returns it. */
+export interface FeedbackData extends FeedbackFormData {
+  id: string;
+  timestamp: string; // ISO date
 }
 
 export interface FeedbackSubmissionResponse {
   success: boolean;
   message: string;
-  id?: string;
-  offline?: boolean; // Indicates if feedback was saved locally due to connectivity issues
 }

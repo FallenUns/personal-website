@@ -1,58 +1,22 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
-import path from 'node:path'
+import { content } from './scripts/content/plugin'
+import { devRender } from './scripts/dev-render-plugin'
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    react()
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
+  plugins: [react(), content(), devRender()],
   server: {
-    hmr: {
-      overlay: false
-    }
+    proxy: { '/api': 'http://localhost:3001' },
   },
-  // Handle client-side routing for production
   build: {
-    target: 'esnext',
+    target: 'es2022',
+    manifest: true,
     minify: 'terser',
-    cssMinify: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          motion: ['framer-motion'],
-          three: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing']
-        }
-      }
-    },
     terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+      compress: { pure_funcs: ['console.log', 'console.debug'], drop_debugger: true },
+    },
   },
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'framer-motion',
-      'three',
-      '@react-three/fiber',
-      '@react-three/drei',
-      'troika-three-text',
-      '@mediapipe/tasks-vision',
-      'three-stdlib',
-      'unified'
-    ]
+  test: {
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'scripts/**/*.test.mjs'],
   },
-  assetsInclude: ['**/*.glsl']
 })

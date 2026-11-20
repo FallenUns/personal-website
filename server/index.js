@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
-const fs = require('fs').promises;
+const fsSync = require('fs');
+const fs = fsSync.promises;
 const path = require('path');
 const fetchDefault = require('node-fetch');
 const rateLimit = require('express-rate-limit');
@@ -192,24 +193,6 @@ function buildApp(opts = {}) {
       .filter(Boolean)
   );
 
-  // Daily token-budget circuit breaker. Caps total spend per UTC day. Resets
-  // automatically when the day key rolls over. Defaults to 100k tokens.
-  const DAILY_TOKEN_BUDGET = Number(env.LLM_DAILY_TOKEN_BUDGET || 100000);
-  const tokenLedger = { dayKey: '', used: 0 };
-  function todayKey() { return new Date().toISOString().slice(0, 10); }
-  function rollDayIfNeeded() {
-    const k = todayKey();
-    if (tokenLedger.dayKey !== k) { tokenLedger.dayKey = k; tokenLedger.used = 0; }
-  }
-  function checkBudget() {
-    rollDayIfNeeded();
-    return tokenLedger.used < DAILY_TOKEN_BUDGET;
-  }
-  function recordTokens(n) {
-    rollDayIfNeeded();
-    tokenLedger.used += Number(n) || 0;
-  }
-
   // Rate Limiting Constants
   const RATE_LIMITS = {
     GLOBAL: {
@@ -300,6 +283,45 @@ function buildApp(opts = {}) {
   const DATA_DIR = env.DATA_DIR || path.join(__dirname, 'data');
   const FEEDBACK_FILE = path.join(DATA_DIR, 'feedback.json');
   const CSV_DIR = path.join(DATA_DIR, 'csv');
+
+  // Daily token-budget circuit breaker. Caps total spend per UTC day and resets
+  // when the day key rolls over. The count is kept in DATA_DIR/llm-ledger.json
+  // so a restart does not hand out a fresh budget.
+  const DAILY_TOKEN_BUDGET = Number(env.LLM_DAILY_TOKEN_BUDGET || 100000);
+  const LEDGER_FILE = path.join(DATA_DIR, 'llm-ledger.json');
+  const tokenLedger = { dayKey: '', used: 0 };
+  try {
+    const saved = JSON.parse(fsSync.readFileSync(LEDGER_FILE, 'utf8'));
+    if (typeof saved.dayKey === 'string' && Number.isFinite(saved.used)) {
+      tokenLedger.dayKey = saved.dayKey;
+      tokenLedger.used = saved.used;
+    }
+  } catch {
+    // no ledger yet, or unreadable: start the day at zero
+  }
+  function todayKey() { return new Date().toISOString().slice(0, 10); }
+  function rollDayIfNeeded() {
+    const k = todayKey();
+    if (tokenLedger.dayKey !== k) { tokenLedger.dayKey = k; tokenLedger.used = 0; }
+  }
+  function checkBudget() {
+    rollDayIfNeeded();
+    return tokenLedger.used < DAILY_TOKEN_BUDGET;
+  }
+  // ponytail: one process-local write chain; temp file then rename keeps the file whole.
+  let ledgerWrites = Promise.resolve();
+  function recordTokens(n) {
+    rollDayIfNeeded();
+    tokenLedger.used += Number(n) || 0;
+    const snapshot = JSON.stringify(tokenLedger);
+    ledgerWrites = ledgerWrites
+      .then(async () => {
+        await fs.writeFile(LEDGER_FILE + '.tmp', snapshot);
+        await fs.rename(LEDGER_FILE + '.tmp', LEDGER_FILE);
+      })
+      .catch((error) => console.error('Could not save the LLM ledger:', error));
+    return ledgerWrites;
+  }
 
   // ponytail: one process-local queue; use a transactional/shared store if multiple workers are needed.
   let feedbackMutationQueue = Promise.resolve();
@@ -525,6 +547,7 @@ function buildApp(opts = {}) {
         return res.status(429).json({
           success: false,
           message: 'Daily AI budget reached. Please try again tomorrow.',
+          code: 'budget_exhausted',
         });
       }
 
@@ -596,7 +619,7 @@ function buildApp(opts = {}) {
         data = await callModel('nvidia/nemotron-3.5-lightning-30b-a3b');
       }
 
-      if (data?.usage?.total_tokens) recordTokens(data.usage.total_tokens);
+      if (data?.usage?.total_tokens) await recordTokens(data.usage.total_tokens);
       res.json({
         success: true,
         data

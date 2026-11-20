@@ -1,19 +1,11 @@
-// API types for LLM integration
 export interface LLMMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
 }
 
-export interface LLMResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
-export interface LLMConfig {
-  apiUrl: string;
-  apiKey: string;
-  model: string;
-  maxTokens?: number;
-  temperature?: number;
-}
+/** What one chat request ends as. `busy` covers rate limits and server errors. */
+export type ChatResult =
+  | { kind: 'reply'; message: string }
+  | { kind: 'budget' }
+  | { kind: 'offline' }
+  | { kind: 'busy'; message: string };

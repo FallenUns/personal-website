@@ -79,7 +79,7 @@ test('POST /api/llm/chat ignores client-supplied disallowed model', async () => 
     capturedBody = JSON.parse(opts.body);
     return { ok: true, status: 200, json: async () => ({ choices: [{ message: { content: 'ok' } }] }) };
   };
-  const { app } = makeApp({ fetch, env: { ALLOWED_MODELS: 'openai/gpt-4.1-mini' } });
+  const { app } = makeApp({ fetch, env: { ALLOWED_MODELS: 'openai/gpt-4.1-mini', VITE_LLM_MODEL: 'openai/gpt-4.1-mini' } });
   const res = await request(app)
     .post('/api/llm/chat')
     .send({
@@ -167,4 +167,24 @@ test('POST /api/llm/chat omits [CONTEXT] block when context is absent', async ()
   assert.strictEqual(capturedBody.messages[0].role, 'system');
   assert.strictEqual(capturedBody.messages[1].role, 'user');
   assert.strictEqual(capturedBody.messages[1].content, 'hi');
+});
+
+test('the daily token count survives a restart and stops with a budget code', async () => {
+  const fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ choices: [{ message: { content: 'ok' } }], usage: { total_tokens: 60 } }),
+  });
+  const ask = (app) => request(app).post('/api/llm/chat').send({ messages: [{ role: 'user', content: 'hi' }] });
+  const env = { LLM_DAILY_TOKEN_BUDGET: '100' };
+
+  const first = makeApp({ fetch, env });
+  await ask(first.app).expect(200);
+
+  // A second app on the same DATA_DIR stands in for the server restarting.
+  const second = makeApp({ fetch, env: { ...env, DATA_DIR: first.tmpDir } });
+  await ask(second.app).expect(200); // 60 used < 100
+  const res = await ask(second.app); // 120 used
+  assert.strictEqual(res.status, 429);
+  assert.strictEqual(res.body.code, 'budget_exhausted');
 });

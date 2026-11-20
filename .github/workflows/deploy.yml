@@ -1,14 +1,14 @@
-name: build-and-deploy
+name: check-and-deploy
 
 on:
   push:
-    branches: [ "main" ]
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  build:
+  # Runs on every push and pull request. A failure here stops the deploy.
+  check:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,8 +22,61 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Build frontend
+      - name: Install server deps
+        run: npm ci
+        working-directory: server
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      - name: Server tests
+        run: npm test
+        working-directory: server
+
+      - name: Build (media, type check, pages)
         run: npm run build
+
+      - name: Size limits
+        run: npm run check:limits
+
+      # A report only: results vary between runs on shared machines.
+      - name: Lighthouse report
+        continue-on-error: true
+        run: npx --yes @lhci/cli@0.15.x autorun
+
+      - name: Upload Lighthouse report
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: lighthouse-report
+          if-no-files-found: ignore
+
+      - name: Keep the build for the deploy job
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          include-hidden-files: true
+
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch the checked build
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
 
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387
@@ -48,18 +101,18 @@ jobs:
 
       - name: Upload frontend dist
         run: |
-          rsync -az --delete -e ssh dist/ \
+          rsync -az --delete --exclude 'server/' -e ssh dist/ \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/
 
       - name: Upload backend (no sudo)
         run: |
-          rsync -az -e ssh server/ \
+          rsync -az --exclude 'node_modules' --exclude 'node_modules.nosync' --exclude 'data' -e ssh server/ \
             ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/releases/${{ github.sha }}/server/
 
-      - name: Upload nginx config (optional if you manage vhost separately)
+      - name: Upload nginx config and rollback script (installed by hand)
         run: |
-          rsync -az -e ssh nginx.conf \
-            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/nginx.conf
+          rsync -az -e ssh nginx.conf scripts/rollback.sh \
+            ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:${{ vars.DEPLOY_PATH }}/
 
       - name: Activate release and restart backend
         run: |
@@ -68,32 +121,43 @@ jobs:
 
             DEPLOY_PATH=\"${{ vars.DEPLOY_PATH }}\"
             SHA=\"${{ github.sha }}\"
+            RELEASE=\"\$DEPLOY_PATH/releases/\$SHA\"
 
-            # 1) Flip symlinks atomically
-            ln -sfn \"\$DEPLOY_PATH/releases/\$SHA\" \"\$DEPLOY_PATH/current\"
-            ln -sfn \"\$DEPLOY_PATH/current\" \"\$DEPLOY_PATH/html\"
-
-            # 2) Runtime data: symlink release data -> shared data (persists across deploys)
-            rm -rf \"\$DEPLOY_PATH/current/server/data\" || true
-            ln -sfn /var/www/server-data \"\$DEPLOY_PATH/current/server/data\"
-
-            # 3) Install backend deps (only if lockfile present)
-            cd \"\$DEPLOY_PATH/current/server\"
-            if [ -f package-lock.json ]; then
-              npm ci --omit=dev || npm install --omit=dev
-            else
-              npm install --omit=dev
+            # 0) Keep one copy of the site as it was before the rebuild, for rollback.
+            #    Runs once: skipped when the archive exists or there is no live release.
+            if [ ! -e \"\$DEPLOY_PATH/archive/pre-rebuild\" ] && [ -e \"\$DEPLOY_PATH/current/index.html\" ]; then
+              mkdir -p \"\$DEPLOY_PATH/archive\"
+              cp -a \"\$(readlink -f \"\$DEPLOY_PATH/current\")\" \"\$DEPLOY_PATH/archive/pre-rebuild\"
             fi
 
-            # 4) Make group 'www-data' own the code tree (no sudo chown needed; you already set membership)
-            chgrp -R www-data \"\$DEPLOY_PATH/current/server\" || true
-            chmod -R g+rwX \"\$DEPLOY_PATH/current/server\" || true
-            find \"\$DEPLOY_PATH/current/server\" -type d -exec chmod g+s {} \\; || true
+            # 1) Prepare the new release before it goes live
+            rm -rf \"\$RELEASE/server/data\"
+            ln -sfn /var/www/server-data \"\$RELEASE/server/data\"
+            cd \"\$RELEASE/server\"
+            npm ci --omit=dev
 
-            # 5) Restart service (allowed in sudoers)
-            sudo systemctl restart portfolio-server || true
+            # Make group 'www-data' own the code tree (no sudo chown needed)
+            chgrp -R www-data \"\$RELEASE/server\" || true
+            chmod -R g+rwX \"\$RELEASE/server\" || true
+            find \"\$RELEASE/server\" -type d -exec chmod g+s {} \\; || true
 
-            echo \"Release \$SHA activated\"
+            # 2) Flip symlinks atomically
+            ln -sfn \"\$RELEASE\" \"\$DEPLOY_PATH/current\"
+            ln -sfn \"\$DEPLOY_PATH/current\" \"\$DEPLOY_PATH/html\"
+
+            # 3) Restart the backend. A failed restart fails the deploy.
+            sudo systemctl restart portfolio-server
+
+            # 4) The backend must answer before the deploy counts as done
+            for attempt in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -fsS http://127.0.0.1:3001/api/health >/dev/null; then
+                echo \"Release \$SHA activated\"
+                exit 0
+              fi
+              sleep 1
+            done
+            echo 'Backend did not answer /api/health after the restart' >&2
+            exit 1
           "
 
       - name: Purge old releases (keep last 5)

@@ -2,56 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Primary Meta Tags -->
-    <title>Patrick Adrianus - Data Scientist & Software Developer</title>
-    <meta name="title" content="Patrick Adrianus - Data Scientist & Software Developer" />
-    <meta name="description" content="Hello! I'm Patrick, a Data Scientist who loves building projects from apps and data solutions to creative tools and always experimenting with new technologies. Explore my portfolio of innovative projects and professional experience." />
-    <meta name="keywords" content="Patrick Adrianus, Data Scientist, Software Developer, Machine Learning, React, TypeScript, Python, TensorFlow, Portfolio, Personal Website" />
     <meta name="author" content="Patrick Adrianus" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://patrickadrianus.com" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://patrickadrianus.com" />
-    <meta property="og:title" content="Patrick Adrianus - Data Scientist & Software Developer" />
-    <meta property="og:description" content="Hello! I'm Patrick, a Data Scientist who loves building projects from apps and data solutions to creative tools and always experimenting with new technologies." />
-    <meta property="og:image" content="https://patrickadrianus.com/logo.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Patrick Adrianus - Data Scientist & Software Developer" />
-    <meta property="og:site_name" content="Patrick Adrianus Portfolio" />
-    <meta property="og:locale" content="en_US" />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://patrickadrianus.com" />
-    <meta property="twitter:title" content="Patrick Adrianus - Data Scientist & Software Developer" />
-    <meta property="twitter:description" content="Hello! I'm Patrick, a Data Scientist who loves building projects from apps and data solutions to creative tools and always experimenting with new technologies." />
-    <meta property="twitter:image" content="https://patrickadrianus.com/logo.png" />
-    <meta property="twitter:image:alt" content="Patrick Adrianus - Data Scientist & Software Developer" />
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
+    <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo.png" />
-    
-    <!-- Display fonts for kinetic hero typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Critical Image Preloading - Only preload above-the-fold critical images -->
-    <!-- Removed preload tags - let the preloader handle all images dynamically -->
-    <!-- This prevents "not used within a few seconds" warnings and crossorigin mismatches -->
-
-    <!-- JSON-LD Structured Data -->
+    <!--app-head-->
+    <link rel="preload" href="/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/space-grotesk-var.woff2" as="font" type="font/woff2" crossorigin />
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -60,24 +17,14 @@
       "jobTitle": "Data Scientist",
       "description": "Data Scientist who loves building projects from apps and data solutions to creative tools and always experimenting with new technologies",
       "url": "https://patrickadrianus.com",
-      "image": "https://patrickadrianus.com/logo.png",
-      "sameAs": [
-        "https://patrickadrianus.com"
-      ],
-      "knowsAbout": [
-        "Data Science",
-        "Machine Learning",
-        "Software Development",
-        "React",
-        "TypeScript",
-        "Python",
-        "TensorFlow"
-      ]
+      "image": "https://patrickadrianus.com/og.png",
+      "sameAs": ["https://linkedin.com/in/patrick-adrianus", "https://github.com/FallenUns"],
+      "knowsAbout": ["Data Science", "Machine Learning", "Software Development", "React", "TypeScript", "Python", "TensorFlow"]
     }
     </script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!--app-html-->
+    <script type="module" src="/src/client.ts"></script>
   </body>
 </html>

@@ -1,0 +1,128 @@
+/* Loaded with the chat island, not with the page. */
+.chat {
+  position: fixed;
+  right: 1rem;
+  bottom: 4.5rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(24rem, calc(100vw - 2rem));
+  height: min(32rem, calc(100dvh - 6.5rem));
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--card);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 0.35);
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .chat {
+    animation: chat-in 0.2s ease-out;
+  }
+  @keyframes chat-in {
+    from {
+      opacity: 0;
+      translate: 0 0.75rem;
+    }
+  }
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.chat-head h2 {
+  margin: 0;
+  font: 600 1rem/1.2 var(--font-text);
+}
+
+.chat-close {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -0.5rem -0.75rem -0.5rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chat-msg {
+  max-width: 88%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.chat-msg > :first-child {
+  margin-top: 0;
+}
+
+.chat-msg > :last-child {
+  margin-bottom: 0;
+}
+
+.chat-msg ul,
+.chat-msg ol {
+  padding-left: 1.2rem;
+}
+
+.chat-user {
+  align-self: flex-end;
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.chat-assistant {
+  align-self: flex-start;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.chat-hint,
+.chat-notice {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.chat-notice {
+  padding: 0.6rem 0.85rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.9rem;
+  color: var(--fg);
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+}

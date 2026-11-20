@@ -1,268 +1,168 @@
-# Personal Website 🚀
+# patrickadrianus.com
 
-A high-performance, interactive personal portfolio website featuring immersive 3D graphics, AI-powered chat assistant, and dynamic time-based theming. Built with modern web technologies for optimal user experience.
+Personal portfolio of Patrick Adrianus. Every page is a finished HTML file, so
+text is readable before any JavaScript runs. Interactive parts (chat assistant,
+feedback form, charts, admin page) load their own code only when used.
 
-## ✨ Features
+Design and decisions: [docs/designs/portfolio-rebuild-3d-desk.md](docs/designs/portfolio-rebuild-3d-desk.md).
+This is Release 1 (the text site). Release 2 adds a 3D desk to the home page.
 
-### 🎨 Interactive 3D Graphics
-- **Three.js Integration**: Stunning 3D background with React Three Fiber
-- **Dynamic Particle System**: Tech-themed particle sphere with dynamic animations
-- **Post-Processing Effects**: Advanced visual effects using @react-three/postprocessing
-- **Time-Based Theming**: Dynamic color schemes that change based on time of day (Dawn, Day, Dusk, Night)
-
-### 🤖 AI Chat Assistant
-- **Floating Assistant Orb**: Interactive AI chatbot with smooth animations
-- **LLM Integration**: Powered by OpenAI APIs for intelligent responses
-- **Context-Aware**: Maintains conversation history and project-specific knowledge
-- **Project-Focused Responses**: AI assistant trained on portfolio content and technical details
-- **Secure API Management**: Environment variable-based configuration
-
-### � Responsive Design
-- **Mobile Detection**: Adaptive experience based on device capabilities
-- **Progressive Enhancement**: Full-featured desktop experience with optimized mobile view
-- **Touch Optimizations**: Mobile-friendly interactions and gestures
-
-### 🎯 Interactive Components
-- **Smooth Scrolling**: Section navigation with scroll spy
-- **Project Showcase**: Detailed project cards with interactive charts (Recharts)
-- **Experience Timeline**: Professional experience section with detailed views
-- **Feedback System**: In-app feedback collection and management
-- **Custom Routing**: Client-side routing for seamless navigation
-
-### 🎭 Advanced Animations
-- **Framer Motion**: Fluid page transitions and micro-interactions
-- **Hardware Acceleration**: GPU-accelerated animations for 60fps performance
-- **Reduced Motion Support**: Accessibility-friendly animations respecting user preferences
-
-## �️ Tech Stack
-
-### Core Technologies
-- **React 19.1.0** - Latest React with concurrent features
-- **TypeScript 5.8.3** - Type-safe development
-- **Vite 6.3.5** - Lightning-fast build tool with HMR
-- **Tailwind CSS 4.1.10** - Utility-first CSS framework
-
-### 3D & Graphics
-- **Three.js 0.177.0** - WebGL 3D graphics library
-- **@react-three/fiber 9.2.0** - React renderer for Three.js
-- **@react-three/drei 10.4.2** - Useful helpers for React Three Fiber
-- **@react-three/postprocessing 3.0.4** - Post-processing effects
-- **simplex-noise 4.0.3** - Noise generation for procedural animations
-
-### UI & Animation
-- **Framer Motion 12.18.1** - Production-ready animation library
-- **[liquid-glass-react](https://github.com/rdev/liquid-glass-react) 1.1.1** - Glassmorphism effects (customized for this project)
-- **Recharts 3.2.1** - Composable charting library
-- **react-markdown 10.1.0** - Markdown rendering
-
-### Development Tools
-- **@vitejs/plugin-react-swc 3.9.0** - Fast Refresh with SWC
-- **ESLint 9.25.0** - Code quality and consistency
-- **TypeScript ESLint 8.30.1** - TypeScript-specific linting
-- **Terser 5.43.1** - JavaScript minification
-- **stats.js 0.17.0** - Performance monitoring
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
+## Run
 
 ```bash
-# Clone the repository
-git clone https://github.com/FallenUns/personal-website.git
-cd personal-website
-
-# Install dependencies
 npm install
-
-# Set up environment variables (for AI assistant)
-# Create .env file with your API keys
-cp .env
-
-# Start development server
-npm run dev
+npm run dev          # site on http://localhost:5173
 ```
 
-### Available Scripts
+The chat and feedback features need the backend:
 
 ```bash
-# Start development server with HMR
-npm run dev
-
-# Type-check and build for production
-npm run build
-
-# Preview production build locally
-npm run preview
-
-# Lint code
-npm run lint
+cd server && npm install
+cp ../.env.example .env   # set LLM_API_KEY and ADMIN_API_KEY
+npm start                 # http://localhost:3001; the dev site forwards /api to it
 ```
 
-## 🎯 Performance Optimizations
+With the backend stopped the site still works; the chat and the feedback form
+say they could not reach the server.
 
-### React Optimizations
-- **Lazy Loading**: Route-based code splitting
-- **React.memo**: Memoized components to prevent unnecessary re-renders
-- **useCallback & useMemo**: Optimized hooks for expensive computations
-- **Context API**: Efficient global state management (LoadingContext, TimeContext)
+## Commands
 
-### Rendering Optimizations
-- **Hardware Acceleration**: CSS transforms with `translate3d` and `translateZ(0)`
-- **will-change Property**: Optimized for animated elements
-- **CSS Containment**: Layout, style, and paint containment
-- **RequestAnimationFrame**: Smooth 60fps animations
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Resizes media, then serves pages rendered on request |
+| `npm run build` | Media step, type check, browser build, build-side build, one HTML file per address in `dist/` |
+| `npm test` | Vitest: content compiler, routes, theme, chat commands, size checker |
+| `npm run lint` | ESLint |
+| `npm run check:limits` | Fails when a size limit is exceeded (run after a build) |
+| `npm test` in `server/` | Backend tests |
 
-### Asset Optimizations
-- **Asset Preloader**: Custom hook for preloading critical resources
-- **Image Optimization**: Lazy loading and preloading strategies
-- **Font Display**: `font-display: swap` for better loading UX
-- **SVG Optimization**: Inline optimized SVGs
+## How it is put together
 
-### Bundle Optimizations
-- **Code Splitting**: Vendor and animation chunks separated
-- **Tree Shaking**: Dead code elimination
-- **Minification**: Terser for production builds
-- **Modern Target**: ESNext for smaller bundles
-
-### Performance Monitoring
-- **Core Web Vitals**: FCP, LCP, CLS, FID tracking
-- **FPS Monitoring**: Real-time frame rate tracking (development)
-- **Memory Profiling**: Heap usage monitoring
-- **Resource Timing**: Slow resource detection
-
-## 📊 Performance Metrics
-
-Target metrics for optimal user experience:
-- **First Contentful Paint (FCP)**: < 1.5s
-- **Largest Contentful Paint (LCP)**: < 2.5s
-- **Cumulative Layout Shift (CLS)**: < 0.1
-- **First Input Delay (FID)**: < 100ms
-- **Frame Rate**: Consistent 60fps on desktop
-
-## 🌐 Browser Support
-
-- Chrome 88+ ✅
-- Firefox 85+ ✅
-- Edge 88+ ✅
-
-## 📁 Project Structure
-
-```
-src/
-├── api/              # API services and types
-├── components/       # React components
-├── contexts/         # React contexts
-├── data/             # Static data (projects, experiences)
-├── hooks/            # Custom React hooks
-├── services/         # Business logic services
-├── types/            # TypeScript type definitions
-└── utils/            # Utility functions
+```text
+content/**/*.md ──> scripts/content/compile.ts ──> entries (HTML + fields)
+media/**       ──> scripts/media.mjs ──────────> public/m/<name>.<width>.<hash>.avif|webp
+src/pages/*    ──> src/entry-server.tsx renders each address to a string
+               ──> scripts/prerender.mjs writes dist/<address>/index.html and dist/404.html
 ```
 
-## 🔒 Security
+- `src/client.ts` is the only script every page loads. It wires the theme
+  button and loads **islands**: elements marked `data-island`, whose code
+  (`src/islands/`) loads on click, when scrolled into view, or at once.
+- Pages are React components rendered at build time only. No page code ships
+  to the browser.
+- Links are ordinary page loads. Browsers that support cross-document View
+  Transitions animate between pages.
+- The theme is `dark` or `light` in `localStorage` under `theme`; with no saved
+  choice it is dark from 17:00 to 05:00. `src/theme-inline.js` applies it before
+  first paint. `nginx.conf` allows that script by hash, and a test fails when
+  the two drift apart.
 
-### Comprehensive Security Measures
+## Add a project
 
-This website implements multiple layers of security to protect against abuse and attacks:
+1. Put images in `media/` (PNG or JPEG; any size, they are resized).
+2. Create `content/projects/<slug>.md`:
 
-#### Rate Limiting
-- **Global API**: 100 requests per 15 minutes per IP
-- **LLM Endpoint**: 10 requests per minute per IP (prevents API abuse)
-- **Feedback**: 5 submissions per hour per IP (prevents spam)
+   ```markdown
+   ---
+   title: My project
+   summary: One sentence, at most 200 characters.
+   category: Mobile        # Mobile, Development, UI Library, Research, Data Science, Machine Learning
+   technologies: [Swift, SwiftUI]
+   order: 10               # lower shows first
+   featured: true          # optional: show on the home page
+   cover: my-shot.png      # optional; needs coverAlt
+   coverAlt: What the picture shows
+   links:
+     - { label: Live site, url: https://example.com }
+   ---
 
-#### Input Validation
-- All user inputs validated and sanitized
-- XSS protection with HTML escaping
-- SQL injection prevention
-- Email format validation
-- Length and type enforcement
+   Body in Markdown.
 
-#### Security Headers
-- Helmet.js provides 11+ security headers
-- X-Frame-Options (clickjacking protection)
-- X-Content-Type-Options (MIME sniffing protection)
-- X-XSS-Protection
-- Strict-Transport-Security (HSTS)
+   ![What the picture shows](another-shot.png "Optional caption")
 
-#### Request Protection
-- Request body size limited to 10KB
-- 30-second timeout on all requests
-- Message count and length limits
-- Automatic error handling
+   ::video{src="demo.mp4" poster="demo-poster.jpg"}
 
-#### API Key Security
-- Environment variables for all secrets
-- Server-side API proxy (keys never exposed to client)
-- No hardcoded credentials
-- Secure credential storage
+   ::chart{id="accuracy"}
+   ```
 
-### Security Documentation
+   A `::chart` marker names an entry in a `charts` list in the front matter
+   (see `content/projects/life-expectancy-prediction.md`). An image path with a
+   leading slash is a file in `public/` and is used as it is.
 
-- 📖 **[SECURITY.md](./SECURITY.md)** - Complete security documentation
-- ✅ **[SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)** - Pre-deployment checklist
-- 📋 **[SECURITY_QUICK_REF.md](./SECURITY_QUICK_REF.md)** - Quick reference guide
-- 📊 **[SECURITY_SUMMARY.md](./SECURITY_SUMMARY.md)** - Security improvements summary
+3. `npm run dev`. A missing field, an image with no description or an unknown
+   category stops the build with the file name and the rule.
 
-### Testing Security
+Experience entries live in `content/experience/` (`role`, `company`, `start`
+and `end` as `YYYY-MM`, `location`, `summary`). `content/about.md` holds the
+about text. The chat assistant reads all of it.
 
-Run the security test suite:
+## Limits
+
+`npm run check:limits` blocks a deploy when one is exceeded. Sizes are gzip
+level 9 for JavaScript and file size for media.
+
+| What | Limit | Release 1 build |
+| --- | --- | --- |
+| JavaScript a page loads before interaction | 30 KB | 1.9 KB |
+| Chat island with its Markdown reader | 150 KB | 110 KB |
+| Fonts | 2 files, 120 KB | 56 KB |
+| Any image file | 200 KB | largest 177 KB |
+| Video | 4 MB | 0.2 MB |
+| Desk scene (Release 2) | 250 KB | not built yet |
+
+The site before the rebuild loaded about 664 KB of gzip-compressed JavaScript
+on every page and 3 to 6.5 MB per image.
+
+Lighthouse runs in CI as a report that cannot fail the job. Numbers to record
+here once measured: baseline of the old live site (not measured yet) and the
+new site (not measured yet).
+
+## Deploy
+
+`.github/workflows/deploy.yml` has two jobs. `check` runs on every push: lint,
+tests, server tests, build, size limits, Lighthouse report. `deploy` needs
+`check` and runs only on `main`: it uploads `dist/` and `server/` to
+`$DEPLOY_PATH/releases/<commit>`, points `current` and `html` at it, restarts
+`portfolio-server`, and fails unless `/api/health` answers.
+
+`nginx.conf` is uploaded but installed by hand. It serves both this build and
+the build from before the rebuild, so install it before merging:
+
 ```bash
-# Test local server
-./test-security.sh http://localhost:3001
-
-# Test production server
-./test-security.sh https://patrickadrianus.com
-
-# Verbose mode
-VERBOSE=true ./test-security.sh http://localhost:3001
+sudo cp "$DEPLOY_PATH/nginx.conf" /etc/nginx/sites-available/patrickadrianus.com
+sudo nginx -t && sudo systemctl reload nginx
 ```
 
-### Security Score: 8/10 ✅
+### Roll back
 
-- ✅ Rate limiting (3 layers)
-- ✅ Input validation (all endpoints)
-- ✅ Security headers (11+)
-- ✅ Request limits (size & timeout)
-- ✅ API key protection
-- ✅ CORS configuration
-- ✅ Error handling
-- ✅ Cost protection (~96% abuse prevention)
+On the server:
 
-## 🎨 Customization
+```bash
+DEPLOY_PATH=/var/www ./rollback.sh /var/www/archive/pre-rebuild
+```
 
-### Time-Based Themes
-The website dynamically adjusts colors based on time of day:
-- **Dawn** (5am-8am): Purple hues
-- **Day** (8am-5pm): Blue tones  
-- **Dusk** (5pm-8pm): Deep purple
-- **Night** (8pm-5am): Dark indigo
+The first deploy of the rebuild copies the previous live release to
+`archive/pre-rebuild`. Any folder under `releases/` works the same way.
 
-### Adding Projects
-Edit `src/data/projects.ts` to add new portfolio projects.
+## Backend
 
-### Adding Experience
-Edit `src/data/experiences.ts` to update work experience.
+`server/index.js` (Express): `POST /api/llm/chat`, `POST /api/feedback`, and
+admin routes `GET /api/feedback`, `GET /api/feedback/export-csv`,
+`DELETE /api/feedback`, which need the `x-admin-api-key` header.
+`/admin/feedback` asks for that key and keeps it in memory only.
+Ctrl/Cmd + Shift + F opens that page.
 
-## � Contributing
+The chat stops for the day after `LLM_DAILY_TOKEN_BUDGET` tokens (default
+100,000). The count is kept in `DATA_DIR/llm-ledger.json`.
 
-This is a personal portfolio project, but suggestions and feedback are welcome!
+## Working inside iCloud Drive
 
-## 📝 License
+If this folder is synced by iCloud, `node_modules` must stay out of sync or
+builds stall. Keep the real folder as `node_modules.nosync` with a link:
 
-© 2025 Patrick Adrianus. All rights reserved.
+```bash
+mv node_modules node_modules.nosync && ln -s node_modules.nosync node_modules
+```
 
-## 🙏 Acknowledgments
-
-- Three.js community for amazing 3D capabilities
-- React Three Fiber for seamless React integration
-- Framer Motion for beautiful animations
-- [rdev/liquid-glass-react](https://github.com/rdev/liquid-glass-react) for the glassmorphism effects foundation
-- The open-source community for incredible tools
-
----
-
-**Built with ❤️ by Patrick Adrianus**
+`npm install` replaces the link with a real folder, so repeat the line above
+after each install (and the same in `server/`).

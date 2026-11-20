@@ -57,7 +57,7 @@ prompt_secret "SECRET_KEY" "Secret key for server operations (generate a random 
 # Optional variables
 echo ""
 echo "Optional configuration (press Enter to skip):"
-prompt_secret "ADMIN_PASSWORD_HASH" "Hashed password for admin access to feedback data"
+prompt_secret "ADMIN_API_KEY" "Admin key for /admin/feedback (long random string; the server refuses to start without it)"
 prompt_secret "DATABASE_URL" "Database connection string (if using external database)"
 
 # LLM Configuration (can be public)
